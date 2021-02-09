@@ -1,3 +1,4 @@
+export 'package:ar_flutter_plugin/widgets/ar_view.dart';
 
 import 'dart:async';
 

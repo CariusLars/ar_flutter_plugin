@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 
 class CloudAnchorWidget extends StatelessWidget {
   CloudAnchorWidget({Key key}) : super(key: key);
@@ -9,6 +10,8 @@ class CloudAnchorWidget extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Cloud Anchors'),
         ),
-        body: Container(child: Text('Hello world')));
+        body: Container(
+            child: PlatformARView(Theme.of(context).platform)
+                .build(context: context)));
   }
 }
