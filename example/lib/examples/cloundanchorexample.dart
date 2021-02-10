@@ -10,8 +10,6 @@ class CloudAnchorWidget extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Cloud Anchors'),
         ),
-        body: Container(
-            child: PlatformARView(Theme.of(context).platform)
-                .build(context: context)));
+        body: Container(child: ARView()));
   }
 }
