@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Factory method for creating a platform-dependent AR view
 abstract class PlatformARView {
@@ -18,6 +19,8 @@ abstract class PlatformARView {
   void onPlatformViewCreated(int id);
 }
 
+/// Android-specific implementation of [PlatformARView]
+/// Uses Hybrid Composition to increase peformance on Android 9 and below (https://flutter.dev/docs/development/platform-integration/platform-views)
 class AndroidARView implements PlatformARView {
   @override
   void onPlatformViewCreated(int id) {
@@ -26,13 +29,22 @@ class AndroidARView implements PlatformARView {
 
   @override
   Widget build({@required BuildContext context}) {
+    // This is used in the platform side to register the view.
+    final String viewType = 'ar_flutter_plugin';
+    // Pass parameters to the platform side.
+    final Map<String, dynamic> creationParams = <String, dynamic>{};
+
     return AndroidView(
-      viewType: 'ar_flutter_plugin',
+      viewType: viewType,
+      layoutDirection: TextDirection.ltr,
+      creationParams: creationParams,
+      creationParamsCodec: const StandardMessageCodec(),
       onPlatformViewCreated: onPlatformViewCreated,
     );
   }
 }
 
+/// iOS-specific implementation of [PlatformARView]
 class IosARView implements PlatformARView {
   @override
   void onPlatformViewCreated(int id) {
@@ -41,7 +53,17 @@ class IosARView implements PlatformARView {
 
   @override
   Widget build({@required BuildContext context}) {
-    return Text('Placeholder for IosARView');
+    // This is used in the platform side to register the view.
+    final String viewType = 'ar_flutter_plugin';
+    // Pass parameters to the platform side.
+    final Map<String, dynamic> creationParams = <String, dynamic>{};
+
+    return UiKitView(
+      viewType: viewType,
+      layoutDirection: TextDirection.ltr,
+      creationParams: creationParams,
+      creationParamsCodec: const StandardMessageCodec(),
+    );
   }
 }
 
