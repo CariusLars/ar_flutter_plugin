@@ -7,7 +7,7 @@ public class SwiftArFlutterPlugin: NSObject, FlutterPlugin {
     let instance = SwiftArFlutterPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
 
-    let factory = IosARViewFactory(messenger: registrar.messenger)
+    let factory = IosARViewFactory(messenger: registrar.messenger())
     registrar.register(factory, withId: "ar_flutter_plugin")
   }
 
