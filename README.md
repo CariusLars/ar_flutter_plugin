@@ -1,6 +1,8 @@
 # ar_flutter_plugin
 
-Flutter Plugin for AR (Augmented Reality) - Supports ARKit for iOS and ARCore for Android devices
+Flutter Plugin for AR (Augmented Reality) - Supports ARKit for iOS and ARCore for Android devices.
+
+Many thanks to Oleksandr Leuschenko for the [arkit_flutter_plugin](https://github.com/olexale/arkit_flutter_plugin) and to Gian Marco Di Francesco for the [arcore_flutter_plugin](https://github.com/giandifra/arcore_flutter_plugin) which both served as a great basis and starting point for this project.
 
 ## Getting Started
 
