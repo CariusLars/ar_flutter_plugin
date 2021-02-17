@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 
 /// Factory method for creating a platform-dependent AR view
 abstract class PlatformARView {
@@ -23,13 +24,17 @@ abstract class PlatformARView {
 /// Android-specific implementation of [PlatformARView]
 /// Uses Hybrid Composition to increase peformance on Android 9 and below (https://flutter.dev/docs/development/platform-integration/platform-views)
 class AndroidARView implements PlatformARView {
+  BuildContext _context;
+
   @override
   void onPlatformViewCreated(int id) {
     print("Android platform view created!");
+    ARSessionManager(id, _context);
   }
 
   @override
   Widget build({@required BuildContext context}) {
+    _context = context;
     // This is used in the platform side to register the view.
     final String viewType = 'ar_flutter_plugin';
     // Pass parameters to the platform side.
@@ -47,13 +52,17 @@ class AndroidARView implements PlatformARView {
 
 /// iOS-specific implementation of [PlatformARView]
 class IosARView implements PlatformARView {
+  BuildContext _context;
+
   @override
   void onPlatformViewCreated(int id) {
     print("iOS platform view created!");
+    ARSessionManager(id, _context);
   }
 
   @override
   Widget build({@required BuildContext context}) {
+    _context = context;
     // This is used in the platform side to register the view.
     final String viewType = 'ar_flutter_plugin';
     // Pass parameters to the platform side.
@@ -64,6 +73,7 @@ class IosARView implements PlatformARView {
       layoutDirection: TextDirection.ltr,
       creationParams: creationParams,
       creationParamsCodec: const StandardMessageCodec(),
+      onPlatformViewCreated: onPlatformViewCreated,
     );
   }
 }

@@ -50,7 +50,7 @@ class ArFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     this.flutterPluginBinding.platformViewRegistry.registerViewFactory(
-        "ar_flutter_plugin", AndroidARViewFactory(binding.activity))
+        "ar_flutter_plugin", AndroidARViewFactory(binding.activity, flutterPluginBinding.binaryMessenger))
   }
 
   override fun onDetachedFromActivityForConfigChanges() {

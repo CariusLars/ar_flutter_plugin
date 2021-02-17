@@ -10,19 +10,25 @@ import android.widget.Toast
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
 import com.google.ar.sceneform.ArSceneView
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 
 internal class AndroidARView(
         val activity: Activity,
         context: Context,
+        messenger: BinaryMessenger,
         id: Int,
         creationParams: Map<String?, Any?>?
-) : PlatformView {
+) : PlatformView, MethodChannel.MethodCallHandler {
     // constants
     private val TAG: String = AndroidARView::class.java.name
     // Lifecycle variables
     private var mUserRequestedInstall = true
     lateinit var activityLifecycleCallbacks: Application.ActivityLifecycleCallbacks
+    // Platform channels
+    private val sessionManagerChannel: MethodChannel = MethodChannel(messenger, "arsession_$id")
     // UI variables
     private lateinit var arSceneView: ArSceneView
 
@@ -45,8 +51,20 @@ internal class AndroidARView(
         arSceneView = ArSceneView(context)
         setupLifeCycle(context)
 
+        sessionManagerChannel.setMethodCallHandler(this)
+
         onResume() // call onResume once to setup initial session
         // TODO: find out why this does not happen automatically
+    }
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        when (call.method) {
+            "init" -> {
+                sessionManagerChannel.invokeMethod("onError", listOf("TEST from Android"))
+            }
+            else -> {
+            }
+        }
     }
 
     private fun setupLifeCycle(context: Context) {
