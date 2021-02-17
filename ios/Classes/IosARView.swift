@@ -3,8 +3,8 @@ import UIKit
 import Foundation
 import ARKit
 
-class IosARView: NSObject, FlutterPlatformView {
-    private var _sceneView: ARSCNView
+class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
+    let sceneView: ARSCNView
 
     init(
         frame: CGRect,
@@ -12,14 +12,18 @@ class IosARView: NSObject, FlutterPlatformView {
         arguments args: Any?,
         binaryMessenger messenger: FlutterBinaryMessenger?
     ) {
-        _sceneView = ARSCNView(frame: frame)
+        self.sceneView = ARSCNView(frame: frame)
         super.init()
-        _sceneView.delegate = self
-        _sceneView.seesion.run()
+        //self.sceneView.delegate = self
+        let configuration = ARWorldTrackingConfiguration()
+        configuration.planeDetection = .horizontal
+        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints,ARSCNDebugOptions.showWorldOrigin]    
+        self.sceneView.delegate = self
+        self.sceneView.session.run(configuration)
     }
 
     func view() -> UIView {
-        return _sceneView
+        return self.sceneView
     }
 
     //func createNativeView(view _view: UIView){
