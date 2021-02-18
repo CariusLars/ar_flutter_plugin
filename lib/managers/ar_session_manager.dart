@@ -16,7 +16,9 @@ class ARSessionManager {
     _channel = MethodChannel('arsession_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
     _channel.invokeMethod<void>('init', {});
-    print("ARSessionManager initialized");
+    if (debug) {
+      print("ARSessionManager initialized");
+    }
   }
 
   Future<void> _platformCallHandler(MethodCall call) {

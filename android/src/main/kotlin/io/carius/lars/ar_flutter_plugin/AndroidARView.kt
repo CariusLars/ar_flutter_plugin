@@ -21,7 +21,7 @@ internal class AndroidARView(
         messenger: BinaryMessenger,
         id: Int,
         creationParams: Map<String?, Any?>?
-) : PlatformView, MethodChannel.MethodCallHandler {
+) : PlatformView {
     // constants
     private val TAG: String = AndroidARView::class.java.name
     // Lifecycle variables
@@ -29,8 +29,35 @@ internal class AndroidARView(
     lateinit var activityLifecycleCallbacks: Application.ActivityLifecycleCallbacks
     // Platform channels
     private val sessionManagerChannel: MethodChannel = MethodChannel(messenger, "arsession_$id")
+    private val objectManagerChannel: MethodChannel = MethodChannel(messenger, "arobjects_$id")
     // UI variables
     private lateinit var arSceneView: ArSceneView
+
+    //Method channel handlers
+    private val onSessionMethodCall = object : MethodChannel.MethodCallHandler {
+        override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+            Log.d(TAG, "AndroidARView onsessionmethodcall reveived a call!")
+            when (call.method) {
+                "init" -> {
+                    sessionManagerChannel.invokeMethod("onError", listOf("SessionTEST from Android"))
+                }
+                else -> {
+                }
+            }
+        }
+    }
+    private val onObjectMethodCall = object : MethodChannel.MethodCallHandler {
+        override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+            Log.d(TAG, "AndroidARView onobjectmethodcall reveived a call!")
+            when (call.method) {
+                "init" -> {
+                    objectManagerChannel.invokeMethod("onError", listOf("ObjectTEST from Android"))
+                }
+                else -> {
+                }
+            }
+        }
+    }
 
     override fun getView(): View {
         return arSceneView
@@ -51,20 +78,11 @@ internal class AndroidARView(
         arSceneView = ArSceneView(context)
         setupLifeCycle(context)
 
-        sessionManagerChannel.setMethodCallHandler(this)
+        sessionManagerChannel.setMethodCallHandler(onSessionMethodCall)
+        objectManagerChannel.setMethodCallHandler(onObjectMethodCall)
 
         onResume() // call onResume once to setup initial session
         // TODO: find out why this does not happen automatically
-    }
-
-    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        when (call.method) {
-            "init" -> {
-                sessionManagerChannel.invokeMethod("onError", listOf("TEST from Android"))
-            }
-            else -> {
-            }
-        }
     }
 
     private fun setupLifeCycle(context: Context) {

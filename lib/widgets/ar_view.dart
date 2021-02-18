@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 
 /// Factory method for creating a platform-dependent AR view
 abstract class PlatformARView {
@@ -30,6 +31,7 @@ class AndroidARView implements PlatformARView {
   void onPlatformViewCreated(int id) {
     print("Android platform view created!");
     ARSessionManager(id, _context);
+    ARObjectManager(id);
   }
 
   @override
@@ -58,6 +60,7 @@ class IosARView implements PlatformARView {
   void onPlatformViewCreated(int id) {
     print("iOS platform view created!");
     ARSessionManager(id, _context);
+    ARObjectManager(id);
   }
 
   @override

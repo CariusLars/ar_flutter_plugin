@@ -5,7 +5,8 @@ import ARKit
 
 class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
     let sceneView: ARSCNView
-    let channel: FlutterMethodChannel
+    let sessionManagerChannel: FlutterMethodChannel
+    let objectManagerChannel: FlutterMethodChannel
 
     init(
         frame: CGRect,
@@ -14,7 +15,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
         binaryMessenger messenger: FlutterBinaryMessenger
     ) {
         self.sceneView = ARSCNView(frame: frame)
-        self.channel = FlutterMethodChannel(name: "arsession_\(viewId)", binaryMessenger: messenger)
+        self.sessionManagerChannel = FlutterMethodChannel(name: "arsession_\(viewId)", binaryMessenger: messenger)
+        self.objectManagerChannel = FlutterMethodChannel(name: "arobjects_\(viewId)", binaryMessenger: messenger)
         super.init()
 
         let configuration = ARWorldTrackingConfiguration()
@@ -23,19 +25,34 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
         self.sceneView.delegate = self
         self.sceneView.session.run(configuration)
 
-        self.channel.setMethodCallHandler(self.onMethodCalled)
+        self.sessionManagerChannel.setMethodCallHandler(self.onSessionMethodCalled)
+        self.objectManagerChannel.setMethodCallHandler(self.onObjectMethodCalled)
     }
 
     func view() -> UIView {
         return self.sceneView
     }
 
-    func onMethodCalled(_ call :FlutterMethodCall, _ result:FlutterResult) {
+    func onSessionMethodCalled(_ call :FlutterMethodCall, _ result:FlutterResult) {
         let arguments = call.arguments as? Dictionary<String, Any>
           
         switch call.method {
             case "init":
-                self.channel.invokeMethod("onError", arguments: ["TEST"])
+                self.sessionManagerChannel.invokeMethod("onError", arguments: ["SessionTEST from iOS"])
+                result(nil)
+                break
+            default:
+                result(FlutterMethodNotImplemented)
+                break
+        }
+    }
+
+    func onObjectMethodCalled(_ call :FlutterMethodCall, _ result:FlutterResult) {
+        let arguments = call.arguments as? Dictionary<String, Any>
+          
+        switch call.method {
+            case "init":
+                self.objectManagerChannel.invokeMethod("onError", arguments: ["ObjectTEST from iOS"])
                 result(nil)
                 break
             default:
