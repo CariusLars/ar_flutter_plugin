@@ -4,6 +4,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 
+/// Type definitions to enforce a consistent use of the API
+typedef ARViewCreatedCallback = void Function(
+    ARSessionManager arSessionManager, ARObjectManager arObjectManager);
+
 /// Factory method for creating a platform-dependent AR view
 abstract class PlatformARView {
   factory PlatformARView(TargetPlatform platform) {
@@ -17,26 +21,42 @@ abstract class PlatformARView {
     }
   }
 
-  Widget build({@required BuildContext context});
+  Widget build(
+      {@required BuildContext context,
+      @required ARViewCreatedCallback arViewCreatedCallback});
 
   void onPlatformViewCreated(int id);
+}
+
+/// Instantiates [ARSessionManager], [ARObjectManager] and returns them to the widget instantiating the [ARView] using the [arViewCreatedCallback]
+createManagers(
+    int id, BuildContext context, ARViewCreatedCallback arViewCreatedCallback) {
+  if (arViewCreatedCallback == null) {
+    return;
+  }
+  arViewCreatedCallback(ARSessionManager(id, context), ARObjectManager(id));
 }
 
 /// Android-specific implementation of [PlatformARView]
 /// Uses Hybrid Composition to increase peformance on Android 9 and below (https://flutter.dev/docs/development/platform-integration/platform-views)
 class AndroidARView implements PlatformARView {
   BuildContext _context;
+  ARViewCreatedCallback _arViewCreatedCallback;
 
   @override
   void onPlatformViewCreated(int id) {
     print("Android platform view created!");
-    ARSessionManager(id, _context);
-    ARObjectManager(id);
+    createManagers(id, _context, _arViewCreatedCallback);
+    //ARSessionManager(id, _context);
+    //ARObjectManager(id);
   }
 
   @override
-  Widget build({@required BuildContext context}) {
+  Widget build(
+      {@required BuildContext context,
+      @required ARViewCreatedCallback arViewCreatedCallback}) {
     _context = context;
+    _arViewCreatedCallback = arViewCreatedCallback;
     // This is used in the platform side to register the view.
     final String viewType = 'ar_flutter_plugin';
     // Pass parameters to the platform side.
@@ -55,17 +75,22 @@ class AndroidARView implements PlatformARView {
 /// iOS-specific implementation of [PlatformARView]
 class IosARView implements PlatformARView {
   BuildContext _context;
+  ARViewCreatedCallback _arViewCreatedCallback;
 
   @override
   void onPlatformViewCreated(int id) {
     print("iOS platform view created!");
-    ARSessionManager(id, _context);
-    ARObjectManager(id);
+    createManagers(id, _context, _arViewCreatedCallback);
+    //ARSessionManager(id, _context);
+    //ARObjectManager(id);
   }
 
   @override
-  Widget build({@required BuildContext context}) {
+  Widget build(
+      {@required BuildContext context,
+      @required ARViewCreatedCallback arViewCreatedCallback}) {
     _context = context;
+    _arViewCreatedCallback = arViewCreatedCallback;
     // This is used in the platform side to register the view.
     final String viewType = 'ar_flutter_plugin';
     // Pass parameters to the platform side.
@@ -88,8 +113,13 @@ class ARView extends StatefulWidget {
   final String permissionPromptDescription;
   final String permissionPromptButtonText;
   final String permissionPromptParentalRestriction;
+
+  /// Function to be called when the AR View is created
+  final ARViewCreatedCallback onARViewCreated;
+
   ARView(
       {Key key,
+      @required this.onARViewCreated,
       this.permissionPromptDescription =
           "Camera permission must be given to the app for AR functions to work",
       this.permissionPromptButtonText = "Grant Permission",
@@ -152,8 +182,9 @@ class _ARViewState extends State<ARView> {
           return Column(children: [
             Text(Theme.of(context).platform.toString()),
             Expanded(
-                child: PlatformARView(Theme.of(context).platform)
-                    .build(context: context)),
+                child: PlatformARView(Theme.of(context).platform).build(
+                    context: context,
+                    arViewCreatedCallback: widget.onARViewCreated)),
           ]);
         }
       case (PermissionStatus.denied):

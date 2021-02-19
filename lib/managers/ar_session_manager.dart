@@ -15,7 +15,6 @@ class ARSessionManager {
   ARSessionManager(int id, this.buildContext, {this.debug = false}) {
     _channel = MethodChannel('arsession_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
-    _channel.invokeMethod<void>('init', {});
     if (debug) {
       print("ARSessionManager initialized");
     }
@@ -42,6 +41,10 @@ class ARSessionManager {
       print('Error caught: ' + e);
     }
     return Future.value();
+  }
+
+  onInitialize() {
+    _channel.invokeMethod<void>('init', {});
   }
 
   /// Displays the [errorMessage] in a snackbar of the parent widget

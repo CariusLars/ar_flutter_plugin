@@ -11,7 +11,6 @@ class ARObjectManager {
   ARObjectManager(int id, {this.debug = false}) {
     _channel = MethodChannel('arobjects_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
-    _channel.invokeMethod<void>('init', {});
     if (debug) {
       print("ARObjectManager initialized");
     }
@@ -35,5 +34,9 @@ class ARObjectManager {
       print('Error caught: ' + e);
     }
     return Future.value();
+  }
+
+  onInitialize() {
+    _channel.invokeMethod<void>('init', {});
   }
 }
