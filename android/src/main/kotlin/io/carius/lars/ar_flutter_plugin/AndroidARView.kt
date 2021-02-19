@@ -10,10 +10,26 @@ import android.widget.Toast
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
 import com.google.ar.sceneform.ArSceneView
+import com.google.ar.sceneform.Node
+import com.google.ar.sceneform.FrameTime
+import com.google.ar.sceneform.math.Vector3
+import com.google.ar.sceneform.rendering.Color
+import com.google.ar.sceneform.rendering.Material
+import com.google.ar.sceneform.rendering.MaterialFactory
+import com.google.ar.sceneform.rendering.ShapeFactory
+import com.google.ar.sceneform.rendering.ModelRenderable
+import com.google.ar.sceneform.rendering.RenderableDefinition
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
+
+
+//import com.google.ar.core.PointCloud;
+
+
+
+import java.nio.FloatBuffer;
 
 internal class AndroidARView(
         val activity: Activity,
@@ -27,11 +43,14 @@ internal class AndroidARView(
     // Lifecycle variables
     private var mUserRequestedInstall = true
     lateinit var activityLifecycleCallbacks: Application.ActivityLifecycleCallbacks
+    private val viewContext: Context
     // Platform channels
     private val sessionManagerChannel: MethodChannel = MethodChannel(messenger, "arsession_$id")
     private val objectManagerChannel: MethodChannel = MethodChannel(messenger, "arobjects_$id")
     // UI variables
     private lateinit var arSceneView: ArSceneView
+    private var showFeaturePoints = false;
+    private var pointCloudNode = Node();
 
     //Method channel handlers
     private val onSessionMethodCall = object : MethodChannel.MethodCallHandler {
@@ -39,7 +58,8 @@ internal class AndroidARView(
             Log.d(TAG, "AndroidARView onsessionmethodcall reveived a call!")
             when (call.method) {
                 "init" -> {
-                    sessionManagerChannel.invokeMethod("onError", listOf("SessionTEST from Android"))
+                    //sessionManagerChannel.invokeMethod("onError", listOf("SessionTEST from Android"))
+                    initializeARView(call, result)
                 }
                 else -> {
                 }
@@ -75,7 +95,10 @@ internal class AndroidARView(
     init {
 
         Log.d(TAG, "Initializing AndroidARView")
+        viewContext = context
+
         arSceneView = ArSceneView(context)
+
         setupLifeCycle(context)
 
         sessionManagerChannel.setMethodCallHandler(onSessionMethodCall)
@@ -193,4 +216,59 @@ internal class AndroidARView(
     fun onPause() {
         arSceneView.pause()
     }
+
+    private fun initializeARView(call: MethodCall, result: MethodChannel.Result) {
+        // Unpack call arguments
+        val argShowFeaturePoints: Boolean? = call.argument<Boolean>("showFeaturePoints")
+        val argShowPlanes: Boolean? = call.argument<Boolean>("showPlanes")
+
+        arSceneView.scene.addOnUpdateListener { frameTime: FrameTime -> onFrame(frameTime) }
+
+        if (argShowFeaturePoints == true) { //explicit comparison necessary because of nullable type
+            arSceneView.scene.addChild(pointCloudNode)
+            showFeaturePoints = true
+        }
+        
+        arSceneView.planeRenderer.isVisible = if(argShowPlanes == true) true else false
+
+        result.success(null)
+    }
+
+    private fun onFrame(frameTime: FrameTime) {
+        //arSceneView.onUpdate(frameTime)
+
+        if (showFeaturePoints){
+            // remove points from last frame
+            while (pointCloudNode.children?.size ?: 0 > 0) {
+                pointCloudNode.children?.first()?.setParent(null)
+            }
+            // Automatically releases point cloud resources at end of try block.
+            var pointCloud = arSceneView.arFrame?.acquirePointCloud()
+            // Access point cloud data (returns FloatBufferw with x,y,z coordinates and confidence value).
+            val points = pointCloud?.getPoints() ?: FloatBuffer.allocate(0);
+            // Check if there are any feature points
+            if (points.limit() / 4 >= 1){    
+                for (index in 0 until points.limit() / 4){
+                    // Create a yellow cube at the given position
+                    val singlePoint = Node()                 
+                    var cubeRenderable: ModelRenderable? = null      
+                    MaterialFactory.makeOpaqueWithColor(viewContext, Color(android.graphics.Color.YELLOW))
+                    .thenAccept { material ->
+                        val vector3 = Vector3(0.01f, 0.01f, 0.01f)
+                        cubeRenderable = ShapeFactory.makeCube(vector3, Vector3(points.get(4 * index), points.get(4 * index + 1), points.get(4 * index +2 )), material)
+
+
+                        cubeRenderable!!.isShadowCaster = false
+                        cubeRenderable!!.isShadowReceiver = false
+                    }
+                    singlePoint.renderable = cubeRenderable
+                    singlePoint.setParent(pointCloudNode)
+                }
+            }  
+            // Release resources
+            pointCloud?.release()
+        }
+    }
+        
+
 }

@@ -43,8 +43,11 @@ class ARSessionManager {
     return Future.value();
   }
 
-  onInitialize() {
-    _channel.invokeMethod<void>('init', {});
+  onInitialize({bool showFeaturePoints = false, bool showPlanes = true}) {
+    _channel.invokeMethod<void>('init', {
+      'showFeaturePoints': showFeaturePoints,
+      'showPlanes': showPlanes,
+    });
   }
 
   /// Displays the [errorMessage] in a snackbar of the parent widget
