@@ -43,10 +43,14 @@ class ARSessionManager {
     return Future.value();
   }
 
-  onInitialize({bool showFeaturePoints = false, bool showPlanes = true}) {
+  onInitialize(
+      {bool showFeaturePoints = false,
+      bool showPlanes = true,
+      bool showWorldOrigin = false}) {
     _channel.invokeMethod<void>('init', {
       'showFeaturePoints': showFeaturePoints,
       'showPlanes': showPlanes,
+      'showWorldOrigin': showWorldOrigin,
     });
   }
 

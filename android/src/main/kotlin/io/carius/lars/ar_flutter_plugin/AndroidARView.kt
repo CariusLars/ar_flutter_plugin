@@ -221,6 +221,7 @@ internal class AndroidARView(
         // Unpack call arguments
         val argShowFeaturePoints: Boolean? = call.argument<Boolean>("showFeaturePoints")
         val argShowPlanes: Boolean? = call.argument<Boolean>("showPlanes")
+        val argShowWorldOrigin: Boolean? = call.argument<Boolean>("showWorldOrigin")
 
         arSceneView.scene.addOnUpdateListener { frameTime: FrameTime -> onFrame(frameTime) }
 

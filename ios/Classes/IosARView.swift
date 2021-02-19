@@ -38,8 +38,9 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
           
         switch call.method {
             case "init":
-                self.sessionManagerChannel.invokeMethod("onError", arguments: ["SessionTEST from iOS"])
-                result(nil)
+                //self.sessionManagerChannel.invokeMethod("onError", arguments: ["SessionTEST from iOS"])
+                //result(nil)
+                initializeARView(arguments: arguments!, result: result)
                 break
             default:
                 result(FlutterMethodNotImplemented)
@@ -59,5 +60,22 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                 result(FlutterMethodNotImplemented)
                 break
         }
+    }
+
+    func initializeARView(arguments: Dictionary<String,Any>, result: FlutterResult){
+
+        //Debug options
+        var debugOptions = ARSCNDebugOptions().rawValue
+        if let showFeaturePoints = arguments["showFeaturePoints"] as? Bool {
+            if (showFeaturePoints) {
+                debugOptions |= ARSCNDebugOptions.showFeaturePoints.rawValue
+            }
+        }
+        if let showWorldOrigin = arguments["showWorldOrigin"] as? Bool {
+            if (showWorldOrigin) {
+                debugOptions |= ARSCNDebugOptions.showWorldOrigin.rawValue
+            }
+        }
+        self.sceneView.debugOptions = ARSCNDebugOptions(rawValue: debugOptions)
     }
 }
