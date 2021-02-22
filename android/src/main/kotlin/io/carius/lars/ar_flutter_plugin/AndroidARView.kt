@@ -25,13 +25,9 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
-
-
-//import com.google.ar.core.PointCloud;
-
-
-
 import java.nio.FloatBuffer;
+
+import io.carius.lars.ar_flutter_plugin.ArModelBuilder
 
 internal class AndroidARView(
         val activity: Activity,
@@ -51,8 +47,10 @@ internal class AndroidARView(
     private val objectManagerChannel: MethodChannel = MethodChannel(messenger, "arobjects_$id")
     // UI variables
     private lateinit var arSceneView: ArSceneView
-    private var showFeaturePoints = false;
-    private var pointCloudNode = Node();
+    private var showFeaturePoints = false
+    private var pointCloudNode = Node()
+    // Model builder
+    private var modelBuilder = ArModelBuilder()
 
     //Method channel handlers
     private val onSessionMethodCall = object : MethodChannel.MethodCallHandler {
@@ -297,6 +295,13 @@ internal class AndroidARView(
                         }
             }       
         }
+
+        // Configure world origin
+        if (argShowWorldOrigin == true){
+            val worldOriginNode = modelBuilder.makeWorldOriginNode(viewContext)
+            arSceneView.scene.addChild(worldOriginNode)
+        }
+
         result.success(null)
     }
 

@@ -32,9 +32,11 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     this.arSessionManager = arSessionManager;
     this.arObjectManager = arObjectManager;
 
-    this
-        .arSessionManager
-        .onInitialize(showFeaturePoints: false, showPlanes: true);
+    this.arSessionManager.onInitialize(
+          showFeaturePoints: false,
+          showPlanes: true,
+          showWorldOrigin: true,
+        );
     this.arObjectManager.onInitialize();
   }
 }
