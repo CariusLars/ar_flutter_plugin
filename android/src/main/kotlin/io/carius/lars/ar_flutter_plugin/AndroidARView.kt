@@ -306,40 +306,25 @@ internal class AndroidARView(
     }
 
     private fun onFrame(frameTime: FrameTime) {
-        //arSceneView.onUpdate(frameTime)
-
         if (showFeaturePoints){
             // remove points from last frame
             while (pointCloudNode.children?.size ?: 0 > 0) {
                 pointCloudNode.children?.first()?.setParent(null)
             }
-            // Automatically releases point cloud resources at end of try block.
             var pointCloud = arSceneView.arFrame?.acquirePointCloud()
             // Access point cloud data (returns FloatBufferw with x,y,z coordinates and confidence value).
             val points = pointCloud?.getPoints() ?: FloatBuffer.allocate(0);
             // Check if there are any feature points
             if (points.limit() / 4 >= 1){    
                 for (index in 0 until points.limit() / 4){
-                    // Create a yellow cube at the given position
-                    val singlePoint = Node()                 
-                    var cubeRenderable: ModelRenderable? = null      
-                    MaterialFactory.makeOpaqueWithColor(viewContext, Color(android.graphics.Color.YELLOW))
-                    .thenAccept { material ->
-                        val vector3 = Vector3(0.01f, 0.01f, 0.01f)
-                        cubeRenderable = ShapeFactory.makeCube(vector3, Vector3(points.get(4 * index), points.get(4 * index + 1), points.get(4 * index +2 )), material)
-
-
-                        cubeRenderable!!.isShadowCaster = false
-                        cubeRenderable!!.isShadowReceiver = false
-                    }
-                    singlePoint.renderable = cubeRenderable
-                    singlePoint.setParent(pointCloudNode)
+                    // Add feature point to scene
+                    val featurePoint = modelBuilder.makeFeaturePointNode(viewContext, points.get(4 * index), points.get(4 * index + 1), points.get(4 * index +2 ))
+                    featurePoint.setParent(pointCloudNode)
                 }
             }  
             // Release resources
             pointCloud?.release()
         }
-    }
-        
+    } 
 
 }

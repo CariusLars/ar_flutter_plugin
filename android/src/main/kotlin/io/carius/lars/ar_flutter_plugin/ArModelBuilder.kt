@@ -14,6 +14,22 @@ import com.google.ar.sceneform.rendering.RenderableDefinition
 // Responsible for creating Renderables and Nodes
 class ArModelBuilder {
 
+    // Creates feature point node
+    fun makeFeaturePointNode(context: Context, xPos: Float, yPos: Float, zPos: Float): Node {
+        val featurePoint = Node()                 
+        var cubeRenderable: ModelRenderable? = null      
+        MaterialFactory.makeOpaqueWithColor(context, Color(android.graphics.Color.YELLOW))
+        .thenAccept { material ->
+            val vector3 = Vector3(0.01f, 0.01f, 0.01f)
+            cubeRenderable = ShapeFactory.makeCube(vector3, Vector3(xPos, yPos, zPos), material)
+            cubeRenderable?.isShadowCaster = false
+            cubeRenderable?.isShadowReceiver = false
+        }
+        featurePoint.renderable = cubeRenderable
+
+        return featurePoint
+    }
+
     // Creates a coordinate system model at the world origin (X-axis: red, Y-axis: green, Z-axis:blue)
     // The code for this function is adapted from Alexander's stackoverflow answer (https://stackoverflow.com/questions/48908358/arcore-how-to-display-world-origin-or-axes-in-debug-mode) 
     fun makeWorldOriginNode(context: Context): Node {
