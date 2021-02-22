@@ -87,7 +87,9 @@ internal class AndroidARView(
 
     override fun dispose() {
         // Destroy AR session
+        Log.d(TAG,"dispose called")
         try {
+            onPause()
             arSceneView.destroy()
         } catch (e: Exception) {
             e.printStackTrace()
