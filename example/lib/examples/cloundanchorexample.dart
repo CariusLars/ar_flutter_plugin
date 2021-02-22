@@ -2,6 +2,7 @@ import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 
 class CloudAnchorWidget extends StatefulWidget {
   CloudAnchorWidget({Key key}) : super(key: key);
@@ -22,6 +23,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
         body: Container(
             child: ARView(
           onARViewCreated: onARViewCreated,
+          planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
         )));
   }
 
@@ -32,7 +34,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
 
     this
         .arSessionManager
-        .onInitialize(showFeaturePoints: true, showPlanes: true);
+        .onInitialize(showFeaturePoints: false, showPlanes: true);
     this.arObjectManager.onInitialize();
   }
 }

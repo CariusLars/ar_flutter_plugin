@@ -19,6 +19,8 @@ import com.google.ar.sceneform.rendering.MaterialFactory
 import com.google.ar.sceneform.rendering.ShapeFactory
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.RenderableDefinition
+import com.google.ar.sceneform.rendering.PlaneRenderer
+import com.google.ar.sceneform.rendering.Texture
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -71,7 +73,7 @@ internal class AndroidARView(
             Log.d(TAG, "AndroidARView onobjectmethodcall reveived a call!")
             when (call.method) {
                 "init" -> {
-                    objectManagerChannel.invokeMethod("onError", listOf("ObjectTEST from Android"))
+                    //objectManagerChannel.invokeMethod("onError", listOf("ObjectTEST from Android"))
                 }
                 else -> {
                 }
@@ -220,18 +222,79 @@ internal class AndroidARView(
     private fun initializeARView(call: MethodCall, result: MethodChannel.Result) {
         // Unpack call arguments
         val argShowFeaturePoints: Boolean? = call.argument<Boolean>("showFeaturePoints")
+        val argPlaneDetectionConfig: Int? = call.argument<Int>("planeDetectionConfig")
         val argShowPlanes: Boolean? = call.argument<Boolean>("showPlanes")
         val argShowWorldOrigin: Boolean? = call.argument<Boolean>("showWorldOrigin")
 
         arSceneView.scene.addOnUpdateListener { frameTime: FrameTime -> onFrame(frameTime) }
 
+        // Configure feature points
         if (argShowFeaturePoints == true) { //explicit comparison necessary because of nullable type
             arSceneView.scene.addChild(pointCloudNode)
             showFeaturePoints = true
         }
-        
-        arSceneView.planeRenderer.isVisible = if(argShowPlanes == true) true else false
 
+        // Configure plane detection
+        val config = arSceneView.session?.config
+        if (config == null){
+            sessionManagerChannel.invokeMethod("onError", listOf("session is null"))
+        }
+        when (argPlaneDetectionConfig) {
+            1 -> {
+                config?.planeFindingMode = Config.PlaneFindingMode.HORIZONTAL
+            }
+            2 -> {
+                config?.planeFindingMode = Config.PlaneFindingMode.VERTICAL
+            }
+            3 -> {
+                config?.planeFindingMode = Config.PlaneFindingMode.HORIZONTAL_AND_VERTICAL
+            }
+            else -> {
+                config?.planeFindingMode = Config.PlaneFindingMode.DISABLED
+            }
+        }
+        arSceneView.session?.configure(config)
+
+        // Configure whether or not detected planes should be shown
+        arSceneView.planeRenderer.isVisible = if(argShowPlanes == true) true else false
+        // Create custom plane renderer (use triangles instead of dots & increase radius)
+        if (argShowPlanes == true){
+            val sampler =
+                    Texture.Sampler.builder()
+                            .setMinFilter(Texture.Sampler.MinFilter.LINEAR)
+                            .setWrapMode(Texture.Sampler.WrapMode.REPEAT)
+                            .build()
+            Texture.builder()
+            .setSource(viewContext, R.drawable.triangle)
+            .setSampler(sampler)
+            .build()
+            .thenAccept { texture: Texture? ->
+                arSceneView.planeRenderer
+                        .material
+                        .thenAccept { material: Material ->
+                            material.setTexture(
+                                    PlaneRenderer.MATERIAL_TEXTURE,
+                                    texture
+                            )
+                            material.setFloat(
+                                        PlaneRenderer.MATERIAL_SPOTLIGHT_RADIUS,
+                                        10f
+                                )
+                        }
+                        }  
+            //Set radius to render planes in
+            arSceneView.scene
+            .addOnUpdateListener { frameTime: FrameTime? ->
+                val planeRenderer = arSceneView.planeRenderer
+                planeRenderer.material
+                        .thenAccept { material: Material ->
+                            material.setFloat(
+                                    PlaneRenderer.MATERIAL_SPOTLIGHT_RADIUS,
+                                    10f
+                            ) //Sets the radius in which to visualize planes
+                        }
+            }       
+        }
         result.success(null)
     }
 

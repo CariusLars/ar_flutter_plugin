@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 
 class ARSessionManager {
   /// Platform channel used for communication from / to [ARSessionManager]
@@ -11,8 +12,12 @@ class ARSessionManager {
   /// Context of the [ARView] widget that this manager is attributed to
   final BuildContext buildContext;
 
+  /// Determines the types of planes ARCore and ARKit should show
+  final PlaneDetectionConfig planeDetectionConfig;
+
   /// Manages the session configuration, parameters and events of an [ARView]
-  ARSessionManager(int id, this.buildContext, {this.debug = false}) {
+  ARSessionManager(int id, this.buildContext, this.planeDetectionConfig,
+      {this.debug = false}) {
     _channel = MethodChannel('arsession_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
     if (debug) {
@@ -49,6 +54,7 @@ class ARSessionManager {
       bool showWorldOrigin = false}) {
     _channel.invokeMethod<void>('init', {
       'showFeaturePoints': showFeaturePoints,
+      'planeDetectionConfig': planeDetectionConfig.index,
       'showPlanes': showPlanes,
       'showWorldOrigin': showWorldOrigin,
     });
@@ -56,11 +62,11 @@ class ARSessionManager {
 
   /// Displays the [errorMessage] in a snackbar of the parent widget
   onError(String errorMessage) {
-    ScaffoldMessenger.of(this.buildContext).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(buildContext).showSnackBar(SnackBar(
         content: Text(errorMessage),
         action: SnackBarAction(
             label: 'HIDE',
             onPressed:
-                ScaffoldMessenger.of(this.buildContext).hideCurrentSnackBar)));
+                ScaffoldMessenger.of(buildContext).hideCurrentSnackBar)));
   }
 }

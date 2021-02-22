@@ -19,9 +19,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
         self.objectManagerChannel = FlutterMethodChannel(name: "arobjects_\(viewId)", binaryMessenger: messenger)
         super.init()
 
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = .horizontal
-        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints,ARSCNDebugOptions.showWorldOrigin]    
+        let configuration = ARWorldTrackingConfiguration() // Create default configuration before initializeARView is called
         self.sceneView.delegate = self
         self.sceneView.session.run(configuration)
 
@@ -63,8 +61,27 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
     }
 
     func initializeARView(arguments: Dictionary<String,Any>, result: FlutterResult){
+        // Set plane detection configuration
+        let configuration = ARWorldTrackingConfiguration()
+        if let planeDetectionConfig = arguments["planeDetectionConfig"] as? Int {
+            switch planeDetectionConfig {
+                case 1: 
+                    configuration.planeDetection = .horizontal
+                
+                case 2: 
+                    if #available(iOS 11.3, *) {
+                        configuration.planeDetection = .vertical
+                    }
+                case 3: 
+                    if #available(iOS 11.3, *) {
+                        configuration.planeDetection = [.horizontal, .vertical]
+                    }
+                default: 
+                    configuration.planeDetection = []
+            }
+        }
 
-        //Debug options
+        // Set debug options
         var debugOptions = ARSCNDebugOptions().rawValue
         if let showFeaturePoints = arguments["showFeaturePoints"] as? Bool {
             if (showFeaturePoints) {
@@ -77,5 +94,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
             }
         }
         self.sceneView.debugOptions = ARSCNDebugOptions(rawValue: debugOptions)
+    
+        // Update session configuration
+        self.sceneView.session.run(configuration)
     }
 }
