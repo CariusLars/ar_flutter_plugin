@@ -54,8 +54,6 @@ class AndroidARView implements PlatformARView {
   void onPlatformViewCreated(int id) {
     print("Android platform view created!");
     createManagers(id, _context, _arViewCreatedCallback, _planeDetectionConfig);
-    //ARSessionManager(id, _context);
-    //ARObjectManager(id);
   }
 
   @override
@@ -91,8 +89,6 @@ class IosARView implements PlatformARView {
   void onPlatformViewCreated(int id) {
     print("iOS platform view created!");
     createManagers(id, _context, _arViewCreatedCallback, _planeDetectionConfig);
-    //ARSessionManager(id, _context);
-    //ARObjectManager(id);
   }
 
   @override
@@ -118,7 +114,10 @@ class IosARView implements PlatformARView {
   }
 }
 
-/// If camera permission is granted, [ARView] creates a platform-dependent view from the factory method [PlatformARView].
+/// If camera permission is granted, [ARView] creates a platform-dependent view from the factory method [PlatformARView]. To instantiate an [ARView],
+/// the calling widget needs to pass the callback function [onARViewCreated] to which the function [createManagers] returns managers such as the
+/// [ARSessionManager] and the [ARObjectManager]. [planeDetectionConfig] is passed to the constructor to determine which types of planes the underlying
+/// AR frameworks should track (defaults to none).
 /// If camera permission is not given, the user is prompted to grant it. To modify the UI of the prompts, the following named parameters can be used:
 /// [permissionPromptDescription], [permissionPromptButtonText] and [permissionPromptParentalRestriction].
 class ARView extends StatefulWidget {

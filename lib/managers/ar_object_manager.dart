@@ -1,13 +1,13 @@
 import 'package:flutter/services.dart';
 
+/// Manages the session configuration, parameters and events of an [ARView]
 class ARObjectManager {
-  /// Platform channel used for communication from / to [ARObjectManager]
+  /// Platform channel used for communication from and to [ARObjectManager]
   MethodChannel _channel;
 
   /// Debugging status flag. If true, all platform calls are printed. Defaults to false.
   final bool debug;
 
-  /// Manages the session configuration, parameters and events of an [ARView]
   ARObjectManager(int id, {this.debug = false}) {
     _channel = MethodChannel('arobjects_$id');
     _channel.setMethodCallHandler(_platformCallHandler);

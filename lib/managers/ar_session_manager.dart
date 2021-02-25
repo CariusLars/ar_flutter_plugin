@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 
+/// Manages the session configuration, parameters and events of an [ARView]
 class ARSessionManager {
-  /// Platform channel used for communication from / to [ARSessionManager]
+  /// Platform channel used for communication from and to [ARSessionManager]
   MethodChannel _channel;
 
   /// Debugging status flag. If true, all platform calls are printed. Defaults to false.
@@ -15,7 +16,6 @@ class ARSessionManager {
   /// Determines the types of planes ARCore and ARKit should show
   final PlaneDetectionConfig planeDetectionConfig;
 
-  /// Manages the session configuration, parameters and events of an [ARView]
   ARSessionManager(int id, this.buildContext, this.planeDetectionConfig,
       {this.debug = false}) {
     _channel = MethodChannel('arsession_$id');

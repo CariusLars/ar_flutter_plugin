@@ -3,6 +3,7 @@ package io.carius.lars.ar_flutter_plugin
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -10,28 +11,18 @@ import android.widget.Toast
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
 import com.google.ar.sceneform.ArSceneView
-import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.FrameTime
-import com.google.ar.sceneform.math.Vector3
-import com.google.ar.sceneform.rendering.Color
+import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.rendering.Material
-import com.google.ar.sceneform.rendering.MaterialFactory
-import com.google.ar.sceneform.rendering.ShapeFactory
-import com.google.ar.sceneform.rendering.ModelRenderable
-import com.google.ar.sceneform.rendering.RenderableDefinition
 import com.google.ar.sceneform.rendering.PlaneRenderer
 import com.google.ar.sceneform.rendering.Texture
+import io.flutter.FlutterInjector
+import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
-import java.nio.FloatBuffer;
-
-import io.flutter.FlutterInjector;
-import io.flutter.embedding.engine.loader.FlutterLoader
-import android.net.Uri;
-
-import io.carius.lars.ar_flutter_plugin.ArModelBuilder
+import java.nio.FloatBuffer
 
 internal class AndroidARView(
         val activity: Activity,
@@ -55,33 +46,33 @@ internal class AndroidARView(
     private var pointCloudNode = Node()
     // Model builder
     private var modelBuilder = ArModelBuilder()
-    
-    //Method channel handlers
-    private val onSessionMethodCall = object : MethodChannel.MethodCallHandler {
-        override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-            Log.d(TAG, "AndroidARView onsessionmethodcall reveived a call!")
-            when (call.method) {
-                "init" -> {
-                    //sessionManagerChannel.invokeMethod("onError", listOf("SessionTEST from Android"))
-                    initializeARView(call, result)
-                }
-                else -> {
-                }
-            }
-        }
-    }
-    private val onObjectMethodCall = object : MethodChannel.MethodCallHandler {
-        override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-            Log.d(TAG, "AndroidARView onobjectmethodcall reveived a call!")
-            when (call.method) {
-                "init" -> {
-                    //objectManagerChannel.invokeMethod("onError", listOf("ObjectTEST from Android"))
-                }
-                else -> {
+
+    // Method channel handlers
+    private val onSessionMethodCall =
+            object : MethodChannel.MethodCallHandler {
+                override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+                    Log.d(TAG, "AndroidARView onsessionmethodcall reveived a call!")
+                    when (call.method) {
+                        "init" -> {
+                            initializeARView(call, result)
+                        }
+                        else -> {}
+                    }
                 }
             }
-        }
-    }
+    private val onObjectMethodCall =
+            object : MethodChannel.MethodCallHandler {
+                override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+                    Log.d(TAG, "AndroidARView onobjectmethodcall reveived a call!")
+                    when (call.method) {
+                        "init" -> {
+                            // objectManagerChannel.invokeMethod("onError", listOf("ObjectTEST from
+                            // Android"))
+                        }
+                        else -> {}
+                    }
+                }
+            }
 
     override fun getView(): View {
         return arSceneView
@@ -89,7 +80,7 @@ internal class AndroidARView(
 
     override fun dispose() {
         // Destroy AR session
-        Log.d(TAG,"dispose called")
+        Log.d(TAG, "dispose called")
         try {
             onPause()
             arSceneView.destroy()
@@ -234,14 +225,15 @@ internal class AndroidARView(
         arSceneView.scene.addOnUpdateListener { frameTime: FrameTime -> onFrame(frameTime) }
 
         // Configure feature points
-        if (argShowFeaturePoints == true) { //explicit comparison necessary because of nullable type
+        if (argShowFeaturePoints ==
+                true) { // explicit comparison necessary because of nullable type
             arSceneView.scene.addChild(pointCloudNode)
             showFeaturePoints = true
         }
 
         // Configure plane detection
         val config = arSceneView.session?.config
-        if (config == null){
+        if (config == null) {
             sessionManagerChannel.invokeMethod("onError", listOf("session is null"))
         }
         when (argPlaneDetectionConfig) {
@@ -261,51 +253,40 @@ internal class AndroidARView(
         arSceneView.session?.configure(config)
 
         // Configure whether or not detected planes should be shown
-        arSceneView.planeRenderer.isVisible = if(argShowPlanes == true) true else false
+        arSceneView.planeRenderer.isVisible = if (argShowPlanes == true) true else false
         // Create custom plane renderer (use supplied texture & increase radius)
-        argCustomPlaneTexturePath?.let{
+        argCustomPlaneTexturePath?.let {
             val loader: FlutterLoader = FlutterInjector.instance().flutterLoader()
             val key: String = loader.getLookupKeyForAsset(it)
 
             val sampler =
-            Texture.Sampler.builder()
-                    .setMinFilter(Texture.Sampler.MinFilter.LINEAR)
-                    .setWrapMode(Texture.Sampler.WrapMode.REPEAT)
-                    .build()
+                    Texture.Sampler.builder()
+                            .setMinFilter(Texture.Sampler.MinFilter.LINEAR)
+                            .setWrapMode(Texture.Sampler.WrapMode.REPEAT)
+                            .build()
             Texture.builder()
-            .setSource(viewContext, Uri.parse(key))
-            .setSampler(sampler)
-            .build()
-            .thenAccept { texture: Texture? ->
-                arSceneView.planeRenderer
-                        .material
-                        .thenAccept { material: Material ->
-                            material.setTexture(
-                                    PlaneRenderer.MATERIAL_TEXTURE,
-                                    texture
-                            )
-                            material.setFloat(
-                                        PlaneRenderer.MATERIAL_SPOTLIGHT_RADIUS,
-                                        10f
-                                )
+                    .setSource(viewContext, Uri.parse(key))
+                    .setSampler(sampler)
+                    .build()
+                    .thenAccept { texture: Texture? ->
+                        arSceneView.planeRenderer.material.thenAccept { material: Material ->
+                            material.setTexture(PlaneRenderer.MATERIAL_TEXTURE, texture)
+                            material.setFloat(PlaneRenderer.MATERIAL_SPOTLIGHT_RADIUS, 10f)
                         }
-                        }  
-            //Set radius to render planes in
-            arSceneView.scene
-            .addOnUpdateListener { frameTime: FrameTime? ->
+                    }
+            // Set radius to render planes in
+            arSceneView.scene.addOnUpdateListener { frameTime: FrameTime? ->
                 val planeRenderer = arSceneView.planeRenderer
-                planeRenderer.material
-                        .thenAccept { material: Material ->
-                            material.setFloat(
-                                    PlaneRenderer.MATERIAL_SPOTLIGHT_RADIUS,
-                                    10f
-                            ) //Sets the radius in which to visualize planes
-                        }
+                planeRenderer.material.thenAccept { material: Material ->
+                    material.setFloat(
+                            PlaneRenderer.MATERIAL_SPOTLIGHT_RADIUS,
+                            10f) // Sets the radius in which to visualize planes
+                }
             }
         }
 
         // Configure world origin
-        if (argShowWorldOrigin == true){
+        if (argShowWorldOrigin == true) {
             val worldOriginNode = modelBuilder.makeWorldOriginNode(viewContext)
             arSceneView.scene.addChild(worldOriginNode)
         }
@@ -314,25 +295,31 @@ internal class AndroidARView(
     }
 
     private fun onFrame(frameTime: FrameTime) {
-        if (showFeaturePoints){
+        if (showFeaturePoints) {
             // remove points from last frame
-            while (pointCloudNode.children?.size ?: 0 > 0) {
+            while (pointCloudNode.children?.size
+                    ?: 0 > 0) {
                 pointCloudNode.children?.first()?.setParent(null)
             }
             var pointCloud = arSceneView.arFrame?.acquirePointCloud()
-            // Access point cloud data (returns FloatBufferw with x,y,z coordinates and confidence value).
-            val points = pointCloud?.getPoints() ?: FloatBuffer.allocate(0);
+            // Access point cloud data (returns FloatBufferw with x,y,z coordinates and confidence
+            // value).
+            val points = pointCloud?.getPoints() ?: FloatBuffer.allocate(0)
             // Check if there are any feature points
-            if (points.limit() / 4 >= 1){    
-                for (index in 0 until points.limit() / 4){
+            if (points.limit() / 4 >= 1) {
+                for (index in 0 until points.limit() / 4) {
                     // Add feature point to scene
-                    val featurePoint = modelBuilder.makeFeaturePointNode(viewContext, points.get(4 * index), points.get(4 * index + 1), points.get(4 * index +2 ))
+                    val featurePoint =
+                            modelBuilder.makeFeaturePointNode(
+                                    viewContext,
+                                    points.get(4 * index),
+                                    points.get(4 * index + 1),
+                                    points.get(4 * index + 2))
                     featurePoint.setParent(pointCloudNode)
                 }
-            }  
+            }
             // Release resources
             pointCloud?.release()
         }
-    } 
-
+    }
 }

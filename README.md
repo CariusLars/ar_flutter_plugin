@@ -6,7 +6,7 @@ Many thanks to Oleksandr Leuschenko for the [arkit_flutter_plugin](https://githu
 
 ## Getting Started
 
-This plugin is still a work in progress and not usable right now. Keep posted for updates or contribute by creating a [pull request](https://github.com/CariusLars/ar_flutter_plugin/compare)!
+This plugin is still a work in progress. Keep posted for updates or contribute by creating a [pull request](https://github.com/CariusLars/ar_flutter_plugin/compare)!
 
 ## Roadmap
 
