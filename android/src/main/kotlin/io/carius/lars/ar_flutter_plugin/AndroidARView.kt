@@ -27,6 +27,10 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 import java.nio.FloatBuffer;
 
+import io.flutter.FlutterInjector;
+import io.flutter.embedding.engine.loader.FlutterLoader
+import android.net.Uri;
+
 import io.carius.lars.ar_flutter_plugin.ArModelBuilder
 
 internal class AndroidARView(
@@ -51,7 +55,7 @@ internal class AndroidARView(
     private var pointCloudNode = Node()
     // Model builder
     private var modelBuilder = ArModelBuilder()
-
+    
     //Method channel handlers
     private val onSessionMethodCall = object : MethodChannel.MethodCallHandler {
         override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -224,6 +228,7 @@ internal class AndroidARView(
         val argShowFeaturePoints: Boolean? = call.argument<Boolean>("showFeaturePoints")
         val argPlaneDetectionConfig: Int? = call.argument<Int>("planeDetectionConfig")
         val argShowPlanes: Boolean? = call.argument<Boolean>("showPlanes")
+        val argCustomPlaneTexturePath: String? = call.argument<String>("customPlaneTexturePath")
         val argShowWorldOrigin: Boolean? = call.argument<Boolean>("showWorldOrigin")
 
         arSceneView.scene.addOnUpdateListener { frameTime: FrameTime -> onFrame(frameTime) }
@@ -257,15 +262,18 @@ internal class AndroidARView(
 
         // Configure whether or not detected planes should be shown
         arSceneView.planeRenderer.isVisible = if(argShowPlanes == true) true else false
-        // Create custom plane renderer (use triangles instead of dots & increase radius)
-        if (argShowPlanes == true){
+        // Create custom plane renderer (use supplied texture & increase radius)
+        argCustomPlaneTexturePath?.let{
+            val loader: FlutterLoader = FlutterInjector.instance().flutterLoader()
+            val key: String = loader.getLookupKeyForAsset(it)
+
             val sampler =
-                    Texture.Sampler.builder()
-                            .setMinFilter(Texture.Sampler.MinFilter.LINEAR)
-                            .setWrapMode(Texture.Sampler.WrapMode.REPEAT)
-                            .build()
+            Texture.Sampler.builder()
+                    .setMinFilter(Texture.Sampler.MinFilter.LINEAR)
+                    .setWrapMode(Texture.Sampler.WrapMode.REPEAT)
+                    .build()
             Texture.builder()
-            .setSource(viewContext, R.drawable.triangle)
+            .setSource(viewContext, Uri.parse(key))
             .setSampler(sampler)
             .build()
             .thenAccept { texture: Texture? ->
@@ -293,7 +301,7 @@ internal class AndroidARView(
                                     10f
                             ) //Sets the radius in which to visualize planes
                         }
-            }       
+            }
         }
 
         // Configure world origin
