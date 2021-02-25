@@ -7,6 +7,10 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
     let sceneView: ARSCNView
     let sessionManagerChannel: FlutterMethodChannel
     let objectManagerChannel: FlutterMethodChannel
+    var showPlanes = false
+    var customPlaneTexturePath: String? = nil
+    private var trackedPlanes = [UUID: SCNNode]()
+    let modelBuilder = ArModelBuilder()
 
     init(
         frame: CGRect,
@@ -81,6 +85,14 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
             }
         }
 
+        // Set plane rendering options
+        if let configShowPlanes = arguments["showPlanes"] as? Bool {
+            showPlanes = configShowPlanes
+        }
+        if let configCustomPlaneTexturePath = arguments["customPlaneTexturePath"] as? String {
+            customPlaneTexturePath = configCustomPlaneTexturePath
+        }
+
         // Set debug options
         var debugOptions = ARSCNDebugOptions().rawValue
         if let showFeaturePoints = arguments["showFeaturePoints"] as? Bool {
@@ -97,5 +109,32 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
     
         // Update session configuration
         self.sceneView.session.run(configuration)
+    }
+
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        
+        if (showPlanes){
+            if let planeAnchor = anchor as? ARPlaneAnchor{
+                //print("Found plane: \(planeAnchor)")
+                let plane = modelBuilder.makePlane(anchor: planeAnchor, flutterAssetFile: customPlaneTexturePath)
+                trackedPlanes[anchor.identifier] = plane
+                node.addChildNode(plane)
+            }
+        }
+    }
+
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        
+        if (showPlanes){
+            if let planeAnchor = anchor as? ARPlaneAnchor, let planeNode = trackedPlanes[anchor.identifier] {
+                modelBuilder.updatePlaneNode(planeNode: planeNode, anchor: planeAnchor)
+            }
+        }     
+    }
+
+    func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
+        if (showPlanes){
+            trackedPlanes.removeValue(forKey: anchor.identifier)
+        } 
     }
 }
