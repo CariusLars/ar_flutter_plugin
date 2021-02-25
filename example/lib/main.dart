@@ -4,6 +4,8 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 
+import 'package:ar_flutter_plugin_example/examples/cloundanchorexample.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -15,6 +17,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
+  static const String _title = 'AR Plugin Demo';
 
   @override
   void initState() {
@@ -47,12 +50,62 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text(_title),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+        body: Column(children: [
+          Text('Running on: $_platformVersion\n'),
+          Expanded(
+            child: ExampleList(),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+class ExampleList extends StatelessWidget {
+  ExampleList({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final examples = [
+      Example(
+          'Cloud Anchors',
+          'Place and retrieve 3D objects using the Google Cloud Anchor API',
+          () => Navigator.push(context,
+              MaterialPageRoute(builder: (context) => CloudAnchorWidget())))
+    ];
+    return ListView(
+      children:
+          examples.map((example) => ExampleCard(example: example)).toList(),
+    );
+  }
+}
+
+class ExampleCard extends StatelessWidget {
+  ExampleCard({Key key, this.example}) : super(key: key);
+  final Example example;
+
+  @override
+  build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        splashColor: Colors.blue.withAlpha(30),
+        onTap: () {
+          example.onTap();
+        },
+        child: ListTile(
+          title: Text(example.name),
+          subtitle: Text(example.description),
         ),
       ),
     );
   }
+}
+
+class Example {
+  const Example(this.name, this.description, this.onTap);
+  final String name;
+  final String description;
+  final Function onTap;
 }
