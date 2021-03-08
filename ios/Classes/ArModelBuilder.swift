@@ -1,6 +1,7 @@
 import UIKit
 import Foundation
 import ARKit
+import GLTFSceneKit
 
 // Responsible for creating Renderables and Nodes
 class ArModelBuilder: NSObject {
@@ -53,5 +54,33 @@ class ArModelBuilder: NSObject {
             }
         }
        planeNode.position = SCNVector3Make(anchor.center.x, 0, anchor.center.z)
+    }
+
+    // Creates a node form a given gltf model path
+    func makeNodeFromGltf(modelPath: String, worldScale: SCNVector3, worldPosition: SCNVector3, worldRotation: SCNQuaternion) -> SCNNode? {
+        
+        var scene: SCNScene
+        let node: SCNNode = SCNNode()
+
+        do {
+            let sceneSource = try GLTFSceneSource(named: modelPath)
+            scene = try sceneSource.scene()
+
+            for child in scene.rootNode.childNodes {
+                child.scale = SCNVector3(0.01,0.01,0.01) // Compensate for the different model dimension definitions in iOS and Android (meters vs. millimeters)
+                child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                node.addChildNode(child)
+            }
+
+            node.scale = worldScale
+            node.position = worldPosition
+            node.worldOrientation = worldRotation
+
+            return node
+        } catch {
+            print("\(error.localizedDescription)")
+            return nil
+        }
     }
 }

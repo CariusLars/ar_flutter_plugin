@@ -58,6 +58,12 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                 self.objectManagerChannel.invokeMethod("onError", arguments: ["ObjectTEST from iOS"])
                 result(nil)
                 break
+            case "addObjectAtOrigin":
+                if let objectPath = arguments!["objectPath"] as? String, let scale = arguments!["scale"] as? Double {
+                    addObjectAtOrigin(objectPath: objectPath, scale: Float(scale))
+                }
+                result(nil)
+                        
             default:
                 result(FlutterMethodNotImplemented)
                 break
@@ -120,6 +126,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                 trackedPlanes[anchor.identifier] = plane
                 node.addChildNode(plane)
             }
+        
         }
     }
 
@@ -136,5 +143,18 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
         if (showPlanes){
             trackedPlanes.removeValue(forKey: anchor.identifier)
         } 
+    }
+
+    func addObjectAtOrigin(objectPath: String, scale: Float) {
+        // Get path to given Flutter asset
+        let key = FlutterDartProject.lookupKey(forAsset: objectPath)
+
+        // Add object to scene
+        if let node: SCNNode = modelBuilder.makeNodeFromGltf(modelPath: key, worldScale: SCNVector3Make(scale, scale, scale), worldPosition: SCNVector3Make(0,0,0), worldRotation: SCNQuaternion(1,0,0,0)) {
+            sceneView.scene.rootNode.addChildNode(node)
+            
+        } else {
+            self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(objectPath)"])
+        }
     }
 }
