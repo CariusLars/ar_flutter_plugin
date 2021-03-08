@@ -10,6 +10,10 @@ import com.google.ar.sceneform.rendering.MaterialFactory
 import com.google.ar.sceneform.rendering.ShapeFactory
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.RenderableDefinition
+import com.google.ar.sceneform.assets.RenderableSource
+
+import java.util.concurrent.CompletableFuture
+import android.net.Uri
 
 // Responsible for creating Renderables and Nodes
 class ArModelBuilder {
@@ -69,5 +73,34 @@ class ArModelBuilder {
                 }
 
         return rootNode
+    }
+
+    // Creates a node form a given gltf model path. The gltf asset loading in Scenform is asynchronous, so the function returns a compleatable future of type Node
+    fun makeNodeFromGltf(context: Context, modelPath: String, worldScale: Vector3, worldPosition: Vector3, worldRotation: Quaternion): CompletableFuture<Node> {
+        val completableFutureNode: CompletableFuture<Node> = CompletableFuture<Node>()
+
+        val gltfNode = Node()                 
+
+        ModelRenderable.builder()
+        .setSource(context, RenderableSource.builder().setSource(
+                context,
+                Uri.parse(modelPath),
+                RenderableSource.SourceType.GLTF2)
+                .build())
+        .setRegistryId(modelPath)
+        .build()
+        .thenAccept{ renderable -> 
+            gltfNode.renderable = renderable
+            gltfNode.worldScale = worldScale
+            gltfNode.worldPosition = worldPosition
+            gltfNode.worldRotation = worldRotation
+            completableFutureNode.complete(gltfNode)
+        }
+        .exceptionally({throwable -> 
+            completableFutureNode.completeExceptionally(throwable)
+            null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+        })
+
+        return completableFutureNode
     }
 }

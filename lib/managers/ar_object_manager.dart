@@ -39,4 +39,9 @@ class ARObjectManager {
   onInitialize() {
     _channel.invokeMethod<void>('init', {});
   }
+
+  addObjectAtOrigin(String objectPath, double scale) {
+    _channel.invokeMethod<void>(
+        'addObjectAtOrigin', {'objectPath': objectPath, 'scale': scale});
+  }
 }

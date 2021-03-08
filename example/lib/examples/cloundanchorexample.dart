@@ -21,10 +21,15 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
           title: const Text('Cloud Anchors'),
         ),
         body: Container(
-            child: ARView(
-          onARViewCreated: onARViewCreated,
-          planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
-        )));
+            child: Stack(children: [
+          ARView(
+            onARViewCreated: onARViewCreated,
+            planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
+          ),
+          ElevatedButton(
+              onPressed: onAddObjectAtOrigin,
+              child: Text("Add Object at Origin"))
+        ])));
   }
 
   void onARViewCreated(
@@ -39,5 +44,11 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
           showWorldOrigin: true,
         );
     this.arObjectManager.onInitialize();
+  }
+
+  void onAddObjectAtOrigin() {
+    this
+        .arObjectManager
+        .addObjectAtOrigin("Models/Chicken_01/Chicken_01.gltf", 0.2);
   }
 }

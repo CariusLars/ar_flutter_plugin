@@ -31,7 +31,7 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
     defaultConfig {
-        minSdkVersion 20
+        minSdkVersion 24
     }
 }
 
@@ -40,6 +40,7 @@ dependencies {
     implementation "com.google.ar:core:1.22.0"
 
     implementation 'com.google.ar.sceneform:core:1.15.0'
+    implementation 'com.google.ar.sceneform:assets:1.15.0'
 
 }
 

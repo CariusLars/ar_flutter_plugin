@@ -4,10 +4,13 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
 import com.google.ar.sceneform.ArSceneView
@@ -16,6 +19,8 @@ import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.rendering.Material
 import com.google.ar.sceneform.rendering.PlaneRenderer
 import com.google.ar.sceneform.rendering.Texture
+import com.google.ar.sceneform.math.Vector3
+import com.google.ar.sceneform.math.Quaternion
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.BinaryMessenger
@@ -68,6 +73,13 @@ internal class AndroidARView(
                         "init" -> {
                             // objectManagerChannel.invokeMethod("onError", listOf("ObjectTEST from
                             // Android"))
+                        }
+                        "addObjectAtOrigin" -> {
+                            val objectPath: String? = call.argument<String>("objectPath")
+                            val scale: Float = call.argument<Double>("scale")?.toFloat() ?: 1f
+
+                            objectPath?.let{addObjectAtOrigin(objectPath, scale)}
+                            result.success(null)
                         }
                         else -> {}
                     }
@@ -322,4 +334,24 @@ internal class AndroidARView(
             pointCloud?.release()
         }
     }
+
+    private fun addObjectAtOrigin(objectPath: String, scale: Float){
+        // Get path to given Flutter asset
+        val loader: FlutterLoader = FlutterInjector.instance().flutterLoader()
+        val key: String = loader.getLookupKeyForAsset(objectPath)
+
+        // Add object to scene
+        modelBuilder.makeNodeFromGltf(viewContext, key, Vector3(scale, scale, scale), Vector3(0f,0f,0f), Quaternion.axisAngle(Vector3(1f, 0f, 0f), 0f))
+        .thenAccept{node ->
+            arSceneView.scene.addChild(node)}
+        .exceptionally { throwable ->
+            // Pass error to session manager (this has to be done on the main thread if this activity)
+            val mainHandler = Handler(viewContext.mainLooper)
+            val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable $objectPath")) }
+            mainHandler.post(runnable)
+            null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+        }
+
+    }
+
 }
