@@ -81,6 +81,13 @@ internal class AndroidARView(
                             objectPath?.let{addObjectAtOrigin(objectPath, scale)}
                             result.success(null)
                         }
+                        "addWebObjectAtOrigin" -> {
+                            val objectURL: String? = call.argument<String>("objectURL")
+                            val scale: Float = call.argument<Double>("scale")?.toFloat() ?: 1f
+
+                            objectURL?.let{addWebObjectAtOrigin(objectURL, scale)}
+                            result.success(null)
+                        }
                         else -> {}
                     }
                 }
@@ -348,6 +355,21 @@ internal class AndroidARView(
             // Pass error to session manager (this has to be done on the main thread if this activity)
             val mainHandler = Handler(viewContext.mainLooper)
             val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable $objectPath")) }
+            mainHandler.post(runnable)
+            null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+        }
+
+    }
+
+    private fun addWebObjectAtOrigin(objectURL: String, scale: Float){
+        // Add object to scene
+        modelBuilder.makeNodeFromGltf(viewContext, objectURL, Vector3(scale, scale, scale), Vector3(0f,0f,0f), Quaternion.axisAngle(Vector3(1f, 0f, 0f), 0f))
+        .thenAccept{node ->
+            arSceneView.scene.addChild(node)}
+        .exceptionally { throwable ->
+            // Pass error to session manager (this has to be done on the main thread if this activity)
+            val mainHandler = Handler(viewContext.mainLooper)
+            val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable $objectURL")) }
             mainHandler.post(runnable)
             null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
         }

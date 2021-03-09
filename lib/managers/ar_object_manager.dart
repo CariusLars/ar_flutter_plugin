@@ -44,4 +44,10 @@ class ARObjectManager {
     _channel.invokeMethod<void>(
         'addObjectAtOrigin', {'objectPath': objectPath, 'scale': scale});
   }
+
+  /// Downloads objects at runtime and places them in the scene. PLEASE NOTE: 1) Only works with GLTF objects 2) apps using this call should check internet connectivity in advance
+  addWebObjectAtOrigin(String objectURL, double scale) {
+    _channel.invokeMethod<void>(
+        'addWebObjectAtOrigin', {'objectURL': objectURL, 'scale': scale});
+  }
 }

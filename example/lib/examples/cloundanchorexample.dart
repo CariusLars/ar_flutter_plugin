@@ -49,6 +49,9 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
   void onAddObjectAtOrigin() {
     this
         .arObjectManager
-        .addObjectAtOrigin("Models/Chicken_01/Chicken_01.gltf", 0.2);
+        //.addObjectAtOrigin("Models/Chicken_01/Chicken_01.gltf", 0.2);
+        .addWebObjectAtOrigin(
+            "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF/Duck.gltf",
+            0.2);
   }
 }

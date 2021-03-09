@@ -75,7 +75,7 @@ class ArModelBuilder {
         return rootNode
     }
 
-    // Creates a node form a given gltf model path. The gltf asset loading in Scenform is asynchronous, so the function returns a compleatable future of type Node
+    // Creates a node form a given gltf model path or URL. The gltf asset loading in Scenform is asynchronous, so the function returns a compleatable future of type Node
     fun makeNodeFromGltf(context: Context, modelPath: String, worldScale: Vector3, worldPosition: Vector3, worldRotation: Quaternion): CompletableFuture<Node> {
         val completableFutureNode: CompletableFuture<Node> = CompletableFuture<Node>()
 
