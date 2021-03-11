@@ -10,7 +10,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
     let objectManagerChannel: FlutterMethodChannel
     var showPlanes = false
     var customPlaneTexturePath: String? = nil
-    private var trackedPlanes = [UUID: SCNNode]()
+    private var trackedPlanes = [UUID: (SCNNode, SCNNode)]()
     let modelBuilder = ArModelBuilder()
     
     var cancellableCollection = Set<AnyCancellable>() //Used to store all cancellables in (needed for working with Futures)
@@ -101,6 +101,17 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
         // Set plane rendering options
         if let configShowPlanes = arguments["showPlanes"] as? Bool {
             showPlanes = configShowPlanes
+            if (showPlanes){
+                // Visualize currently tracked planes
+                for plane in trackedPlanes.values {
+                    plane.0.addChildNode(plane.1)
+                }
+            } else {
+                // Remove currently visualized planes
+                for plane in trackedPlanes.values {
+                    plane.1.removeFromParentNode()
+                }
+            }
         }
         if let configCustomPlaneTexturePath = arguments["customPlaneTexturePath"] as? String {
             customPlaneTexturePath = configCustomPlaneTexturePath
@@ -126,30 +137,24 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
 
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         
-        if (showPlanes){
-            if let planeAnchor = anchor as? ARPlaneAnchor{
-                //print("Found plane: \(planeAnchor)")
-                let plane = modelBuilder.makePlane(anchor: planeAnchor, flutterAssetFile: customPlaneTexturePath)
-                trackedPlanes[anchor.identifier] = plane
+        if let planeAnchor = anchor as? ARPlaneAnchor{
+            let plane = modelBuilder.makePlane(anchor: planeAnchor, flutterAssetFile: customPlaneTexturePath)
+            trackedPlanes[anchor.identifier] = (node, plane)
+            if (showPlanes) {
                 node.addChildNode(plane)
             }
-        
         }
     }
 
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         
-        if (showPlanes){
-            if let planeAnchor = anchor as? ARPlaneAnchor, let planeNode = trackedPlanes[anchor.identifier] {
-                modelBuilder.updatePlaneNode(planeNode: planeNode, anchor: planeAnchor)
-            }
-        }     
+        if let planeAnchor = anchor as? ARPlaneAnchor, let plane = trackedPlanes[anchor.identifier] {
+            modelBuilder.updatePlaneNode(planeNode: plane.1, anchor: planeAnchor)
+        }
     }
 
     func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
-        if (showPlanes){
-            trackedPlanes.removeValue(forKey: anchor.identifier)
-        } 
+        trackedPlanes.removeValue(forKey: anchor.identifier)
     }
 
     func addObjectAtOrigin(objectPath: String, scale: Float) {

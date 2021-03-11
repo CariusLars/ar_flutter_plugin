@@ -49,6 +49,7 @@ internal class AndroidARView(
     private lateinit var arSceneView: ArSceneView
     private var showFeaturePoints = false
     private var pointCloudNode = Node()
+    private var worldOriginNode = Node()
     // Model builder
     private var modelBuilder = ArModelBuilder()
 
@@ -248,6 +249,13 @@ internal class AndroidARView(
                 true) { // explicit comparison necessary because of nullable type
             arSceneView.scene.addChild(pointCloudNode)
             showFeaturePoints = true
+        } else {
+            showFeaturePoints = false
+            while (pointCloudNode.children?.size
+                    ?: 0 > 0) {
+                pointCloudNode.children?.first()?.setParent(null)
+            }
+            pointCloudNode.setParent(null)
         }
 
         // Configure plane detection
@@ -306,8 +314,10 @@ internal class AndroidARView(
 
         // Configure world origin
         if (argShowWorldOrigin == true) {
-            val worldOriginNode = modelBuilder.makeWorldOriginNode(viewContext)
+            worldOriginNode = modelBuilder.makeWorldOriginNode(viewContext)
             arSceneView.scene.addChild(worldOriginNode)
+        } else {
+            worldOriginNode.setParent(null)
         }
 
         result.success(null)

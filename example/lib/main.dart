@@ -6,6 +6,7 @@ import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 
 import 'package:ar_flutter_plugin_example/examples/cloundanchorexample.dart';
 import 'package:ar_flutter_plugin_example/examples/localandwebobjectsexample.dart';
+import 'package:ar_flutter_plugin_example/examples/debugoptionsexample.dart';
 
 void main() {
   runApp(MyApp());
@@ -70,6 +71,11 @@ class ExampleList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final examples = [
+      Example(
+          'Debug Options',
+          'Visualize feature points, planes and world coordinate system',
+          () => Navigator.push(context,
+              MaterialPageRoute(builder: (context) => DebugOptionsWidget()))),
       Example(
           'Local & Online Objects',
           'Place and retrieve 3D objects from Flutter Assets and the Web',
