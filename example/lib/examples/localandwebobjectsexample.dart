@@ -3,6 +3,10 @@ import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
+import 'package:ar_flutter_plugin/datatypes/node_types.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:flutter/services.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 class LocalAndWebObjectsWidget extends StatefulWidget {
   LocalAndWebObjectsWidget({Key key}) : super(key: key);
@@ -14,8 +18,10 @@ class LocalAndWebObjectsWidget extends StatefulWidget {
 class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
   ARSessionManager arSessionManager;
   ARObjectManager arObjectManager;
-  String localObjectReference;
-  String webObjectReference;
+  //String localObjectReference;
+  ARNode localObjectNode;
+  //String webObjectReference;
+  ARNode webObjectNode;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +65,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
     this.arObjectManager.onInitialize();
   }
 
-  Future<void> onLocalObjectAtOriginButtonPressed() async {
+  /*Future<void> onLocalObjectAtOriginButtonPressed() async {
     if (this.localObjectReference != null) {
       this.arObjectManager.removeTopLevelObject(this.localObjectReference);
       this.localObjectReference = null;
@@ -69,9 +75,22 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
           .addObjectAtOrigin("Models/Chicken_01/Chicken_01.gltf", 0.2);
       this.localObjectReference = id;
     }
+  }*/
+  Future<void> onLocalObjectAtOriginButtonPressed() async {
+    if (this.localObjectNode != null) {
+      this.arObjectManager.removeNode(this.localObjectNode);
+      this.localObjectNode = null;
+    } else {
+      var newNode = ARNode(
+          type: NodeType.localGLTF2,
+          uri: "Models/Chicken_01/Chicken_01.gltf",
+          scale: Vector3(0.2, 0.2, 0.2));
+      bool didAddLocalNode = await this.arObjectManager.addNode(newNode);
+      this.localObjectNode = (didAddLocalNode) ? newNode : null;
+    }
   }
 
-  Future<void> onWebObjectAtOriginButtonPressed() async {
+  /*Future<void> onWebObjectAtOriginButtonPressed() async {
     if (this.webObjectReference != null) {
       this.arObjectManager.removeTopLevelObject(this.webObjectReference);
       this.webObjectReference = null;
@@ -80,6 +99,20 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
           "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
           0.2);
       this.webObjectReference = id;
+    }
+  }*/
+  Future<void> onWebObjectAtOriginButtonPressed() async {
+    if (this.webObjectNode != null) {
+      this.arObjectManager.removeNode(this.webObjectNode);
+      this.webObjectNode = null;
+    } else {
+      var newNode = ARNode(
+          type: NodeType.webGLB,
+          uri:
+              "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
+          scale: Vector3(0.2, 0.2, 0.2));
+      bool didAddWebNode = await this.arObjectManager.addNode(newNode);
+      this.webObjectNode = (didAddWebNode) ? newNode : null;
     }
   }
 }

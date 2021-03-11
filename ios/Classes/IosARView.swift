@@ -62,7 +62,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                 self.objectManagerChannel.invokeMethod("onError", arguments: ["ObjectTEST from iOS"])
                 result(nil)
                 break
-            case "addObjectAtOrigin":
+            /*case "addObjectAtOrigin":
                 if let objectPath = arguments!["objectPath"] as? String, let scale = arguments!["scale"] as? Double {
                     if let id = addObjectAtOrigin(objectPath: objectPath, scale: Float(scale)){
                         result(id.uuidString)
@@ -88,7 +88,17 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                         removeTopLevelNode(objectId: objectUUID)
                     }
                 }
-                result(nil)
+                result(nil)*/
+            case "addNode":
+                addNode(dict: arguments!).sink(receiveCompletion: {completion in }, receiveValue: { val in
+                       result(val)
+                    }).store(in: &self.cancellableCollection)
+                break
+            case "removeNode":
+                if let name = arguments!["name"] as? String {
+                    sceneView.scene.rootNode.childNode(withName: name, recursively: true)?.removeFromParentNode()
+                }
+                break
             default:
                 result(FlutterMethodNotImplemented)
                 break
@@ -175,7 +185,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
         trackedPlanes.removeValue(forKey: anchor.identifier)
     }
 
-    func addObjectAtOrigin(objectPath: String, scale: Float) -> UUID? {
+    /*func addObjectAtOrigin(objectPath: String, scale: Float) -> UUID? {
         // Get path to given Flutter asset
         let key = FlutterDartProject.lookupKey(forAsset: objectPath)
         let id: UUID?
@@ -212,10 +222,49 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                 }
             }).store(in: &self.cancellableCollection)
         }
-    }
+    }*/
     
     func removeTopLevelNode(objectId: UUID) {
         topLevelNodes[objectId]?.removeFromParentNode()
+    }
+
+    func addNode(dict: Dictionary<String, Any>) -> Future<Bool, Never> {
+
+        return Future {promise in
+            
+            switch (dict["type"] as! Int) {
+                case 0: // GLTF2 Model from Flutter asset folder
+                    // Get path to given Flutter asset
+                    let key = FlutterDartProject.lookupKey(forAsset: dict["uri"] as! String)
+                    // Add object to scene
+                    if let node: SCNNode = self.modelBuilder.makeNodeFromGltf(name: dict["name"] as! String, modelPath: key, transformation: dict["transform"] as? Array<NSNumber>) {
+                        self.sceneView.scene.rootNode.addChildNode(node)
+                        promise(.success(true))
+                    } else {
+                        self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(dict["uri"] as! String)"])
+                        promise(.success(false))
+                    }
+                    break
+                case 1: // GLTB Model from the web
+                    // Add object to scene
+                    self.modelBuilder.makeNodeFromWebGlb(name: dict["name"] as! String, modelURL: dict["uri"] as! String, transformation: dict["transform"] as? Array<NSNumber>)
+                    .sink(receiveCompletion: {
+                                    completion in print("Async Model Downloading Task completed: ", completion)
+                    }, receiveValue: { val in
+                        if let node: SCNNode = val {
+                            self.sceneView.scene.rootNode.addChildNode(node)
+                            promise(.success(true))
+                        } else {
+                            self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(dict["name"] as! String)"])
+                            promise(.success(false))
+                        }
+                    }).store(in: &self.cancellableCollection)
+                    break
+                default:
+                    promise(.success(false))
+            }
+            
+        }
     }
         
 }

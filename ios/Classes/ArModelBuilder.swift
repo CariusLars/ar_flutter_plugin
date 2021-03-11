@@ -57,8 +57,8 @@ class ArModelBuilder: NSObject {
        planeNode.position = SCNVector3Make(anchor.center.x, 0, anchor.center.z)
     }
 
-    // Creates a node form a given gltf model path
-    func makeNodeFromGltf(modelPath: String, worldScale: SCNVector3, worldPosition: SCNVector3, worldRotation: SCNQuaternion) -> SCNNode? {
+    // Creates a node form a given gltf2 model path
+    func makeNodeFromGltf(name: String, modelPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
         
         var scene: SCNScene
         let node: SCNNode = SCNNode()
@@ -69,14 +69,18 @@ class ArModelBuilder: NSObject {
 
             for child in scene.rootNode.childNodes {
                 child.scale = SCNVector3(0.01,0.01,0.01) // Compensate for the different model dimension definitions in iOS and Android (meters vs. millimeters)
-                child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
-                child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                //child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                //child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
                 node.addChildNode(child)
             }
 
-            node.scale = worldScale
+            node.name = name
+            if let transform = transformation {
+                node.transform = deserializeMatrix4(transform)
+            }
+            /*node.scale = worldScale
             node.position = worldPosition
-            node.worldOrientation = worldRotation
+            node.worldOrientation = worldRotation*/
 
             return node
         } catch {
@@ -86,7 +90,7 @@ class ArModelBuilder: NSObject {
     }
     
     // Creates a node form a given glb model path
-    func makeNodeFromWebGlb(modelURL: String, worldScale: SCNVector3, worldPosition: SCNVector3, worldRotation: SCNQuaternion) -> Future<SCNNode?, Never> {
+    func makeNodeFromWebGlb(name: String, modelURL: String, transformation: Array<NSNumber>?) -> Future<SCNNode?, Never> {
         
         return Future {promise in
             var node: SCNNode? = SCNNode()
@@ -113,14 +117,18 @@ class ArModelBuilder: NSObject {
 
                             for child in scene.rootNode.childNodes {
                                 child.scale = SCNVector3(0.01,0.01,0.01) // Compensate for the different model dimension definitions in iOS and Android (meters vs. millimeters)
-                                child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
-                                child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                                //child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                                //child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
                                 node?.addChildNode(child)
                             }
 
-                            node?.scale = worldScale
+                            node?.name = name
+                            if let transform = transformation {
+                                node?.transform = deserializeMatrix4(transform)
+                            }
+                            /*node?.scale = worldScale
                             node?.position = worldPosition
-                            node?.worldOrientation = worldRotation
+                            node?.worldOrientation = worldRotation*/
 
                         } catch {
                             print("\(error.localizedDescription)")

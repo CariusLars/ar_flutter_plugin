@@ -1,3 +1,4 @@
+import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:flutter/services.dart';
 
 /// Manages the session configuration, parameters and events of an [ARView]
@@ -48,6 +49,25 @@ class ARObjectManager {
     } on PlatformException catch (e) {
       return null;
     }
+  }
+
+  Future<bool> addNode(ARNode node) async {
+    try {
+      node.transformNotifier.addListener(() {
+        _channel.invokeMethod<void>('transformationChanged', {
+          'name': node.name,
+          'transformation':
+              MatrixValueNotifierConverter().toJson(node.transformNotifier)
+        });
+      });
+      return await _channel.invokeMethod<bool>('addNode', node.toMap());
+    } on PlatformException catch (e) {
+      return false;
+    }
+  }
+
+  removeNode(ARNode node) {
+    _channel.invokeMethod<String>('removeNode', {'name': node.name});
   }
 
   removeTopLevelObject(String id) {

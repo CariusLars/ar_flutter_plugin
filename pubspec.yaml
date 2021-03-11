@@ -12,6 +12,8 @@ dependencies:
   flutter:
     sdk: flutter
   permission_handler: ^5.1.0+2
+  vector_math: ^2.0.8
+  json_annotation: ^3.0.1
 
 dev_dependencies:
   flutter_test:
