@@ -14,6 +14,8 @@ class LocalAndWebObjectsWidget extends StatefulWidget {
 class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
   ARSessionManager arSessionManager;
   ARObjectManager arObjectManager;
+  String localObjectReference;
+  String webObjectReference;
 
   @override
   Widget build(BuildContext context) {
@@ -33,11 +35,11 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                      onPressed: onAddLocalObjectAtOrigin,
-                      child: Text("Add local Object\nat Origin")),
+                      onPressed: onLocalObjectAtOriginButtonPressed,
+                      child: Text("Add/Remove Local\nobject at Origin")),
                   ElevatedButton(
-                      onPressed: onAddWebObjectAtOrigin,
-                      child: Text("Add web Object\nat Origin")),
+                      onPressed: onWebObjectAtOriginButtonPressed,
+                      child: Text("Add/Remove Web\nObject at Origin")),
                 ],
               ))
         ])));
@@ -57,15 +59,27 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
     this.arObjectManager.onInitialize();
   }
 
-  void onAddLocalObjectAtOrigin() {
-    this
-        .arObjectManager
-        .addObjectAtOrigin("Models/Chicken_01/Chicken_01.gltf", 0.2);
+  Future<void> onLocalObjectAtOriginButtonPressed() async {
+    if (this.localObjectReference != null) {
+      this.arObjectManager.removeTopLevelObject(this.localObjectReference);
+      this.localObjectReference = null;
+    } else {
+      var id = await this
+          .arObjectManager
+          .addObjectAtOrigin("Models/Chicken_01/Chicken_01.gltf", 0.2);
+      this.localObjectReference = id;
+    }
   }
 
-  void onAddWebObjectAtOrigin() {
-    this.arObjectManager.addWebObjectAtOrigin(
-        "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
-        0.2);
+  Future<void> onWebObjectAtOriginButtonPressed() async {
+    if (this.webObjectReference != null) {
+      this.arObjectManager.removeTopLevelObject(this.webObjectReference);
+      this.webObjectReference = null;
+    } else {
+      var id = await this.arObjectManager.addWebObjectAtOrigin(
+          "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
+          0.2);
+      this.webObjectReference = id;
+    }
   }
 }

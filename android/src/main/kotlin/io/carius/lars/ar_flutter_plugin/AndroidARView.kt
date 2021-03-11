@@ -28,6 +28,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 import java.nio.FloatBuffer
+import java.util.UUID
+import java.util.concurrent.CompletableFuture
 
 internal class AndroidARView(
         val activity: Activity,
@@ -52,6 +54,8 @@ internal class AndroidARView(
     private var worldOriginNode = Node()
     // Model builder
     private var modelBuilder = ArModelBuilder()
+    // Node managment
+    private var activeTopLevelNodes: HashMap<UUID, Node> = HashMap()
 
     // Method channel handlers
     private val onSessionMethodCall =
@@ -79,14 +83,27 @@ internal class AndroidARView(
                             val objectPath: String? = call.argument<String>("objectPath")
                             val scale: Float = call.argument<Double>("scale")?.toFloat() ?: 1f
 
-                            objectPath?.let{addObjectAtOrigin(objectPath, scale)}
-                            result.success(null)
+                            objectPath?.let{addObjectAtOrigin(objectPath, scale).thenAccept{id ->
+                                result.success(id.toString())
+                            }.exceptionally { throwable ->
+                                result.error(null, throwable.message, throwable.stackTrace)
+                                null
+                            }}
                         }
                         "addWebObjectAtOrigin" -> {
                             val objectURL: String? = call.argument<String>("objectURL")
                             val scale: Float = call.argument<Double>("scale")?.toFloat() ?: 1f
 
-                            objectURL?.let{addWebObjectAtOrigin(objectURL, scale)}
+                            objectURL?.let{addWebObjectAtOrigin(objectURL, scale).thenAccept{id ->
+                                result.success(id.toString())
+                            }.exceptionally { throwable ->
+                                result.error(null, throwable.message, throwable.stackTrace)
+                                null
+                            }}
+                        }
+                        "removeTopLevelObject" -> {
+                            val objectId: String? = call.argument<String>("id")
+                            objectId?.let{removeTopLevelObject(objectId)}
                             result.success(null)
                         }
                         else -> {}
@@ -352,7 +369,8 @@ internal class AndroidARView(
         }
     }
 
-    private fun addObjectAtOrigin(objectPath: String, scale: Float){
+    private fun addObjectAtOrigin(objectPath: String, scale: Float): CompletableFuture<UUID> {
+        val completableFutureId: CompletableFuture<UUID> = CompletableFuture()
         // Get path to given Flutter asset
         val loader: FlutterLoader = FlutterInjector.instance().flutterLoader()
         val key: String = loader.getLookupKeyForAsset(objectPath)
@@ -360,30 +378,49 @@ internal class AndroidARView(
         // Add object to scene
         modelBuilder.makeNodeFromGltf(viewContext, key, Vector3(scale, scale, scale), Vector3(0f,0f,0f), Quaternion.axisAngle(Vector3(1f, 0f, 0f), 0f))
         .thenAccept{node ->
-            arSceneView.scene.addChild(node)}
+            val id = generateUUID()
+            arSceneView.scene.addChild(node)
+            activeTopLevelNodes[id] = node
+            completableFutureId.complete(id)}
         .exceptionally { throwable ->
             // Pass error to session manager (this has to be done on the main thread if this activity)
             val mainHandler = Handler(viewContext.mainLooper)
             val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable $objectPath")) }
             mainHandler.post(runnable)
+            completableFutureId.completeExceptionally(throwable)
             null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
         }
 
+        return completableFutureId
     }
 
-    private fun addWebObjectAtOrigin(objectURL: String, scale: Float){
+    private fun addWebObjectAtOrigin(objectURL: String, scale: Float): CompletableFuture<UUID> {
+        val completableFutureId: CompletableFuture<UUID> = CompletableFuture()
         // Add object to scene
         modelBuilder.makeNodeFromGlb(viewContext, objectURL, Vector3(scale, scale, scale), Vector3(0f,0f,0f), Quaternion.axisAngle(Vector3(1f, 0f, 0f), 0f))
         .thenAccept{node ->
-            arSceneView.scene.addChild(node)}
+            val id = generateUUID()
+            arSceneView.scene.addChild(node)
+            activeTopLevelNodes[id] = node
+            completableFutureId.complete(id)}
         .exceptionally { throwable ->
             // Pass error to session manager (this has to be done on the main thread if this activity)
             val mainHandler = Handler(viewContext.mainLooper)
             val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable $objectURL")) }
             mainHandler.post(runnable)
+            completableFutureId.completeExceptionally(throwable)
             null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
         }
 
+        return completableFutureId
+    }
+
+    private fun removeTopLevelObject(objectId: String) {
+        activeTopLevelNodes[UUID.fromString(objectId)]?.setParent(null)
+    }
+
+    private fun generateUUID(): UUID {
+        return UUID.randomUUID()
     }
 
 }

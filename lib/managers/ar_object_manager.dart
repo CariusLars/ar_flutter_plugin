@@ -40,14 +40,28 @@ class ARObjectManager {
     _channel.invokeMethod<void>('init', {});
   }
 
-  addObjectAtOrigin(String objectPath, double scale) {
-    _channel.invokeMethod<void>(
-        'addObjectAtOrigin', {'objectPath': objectPath, 'scale': scale});
+  Future<String> addObjectAtOrigin(String objectPath, double scale) async {
+    try {
+      final String id = await _channel.invokeMethod<String>(
+          'addObjectAtOrigin', {'objectPath': objectPath, 'scale': scale});
+      return id;
+    } on PlatformException catch (e) {
+      return null;
+    }
+  }
+
+  removeTopLevelObject(String id) {
+    _channel.invokeMethod<String>('removeTopLevelObject', {'id': id});
   }
 
   /// Downloads objects at runtime and places them in the scene. PLEASE NOTE: 1) Only works with stand-alone GLB files 2) apps using this call should check internet connectivity in advance
-  addWebObjectAtOrigin(String objectURL, double scale) {
-    _channel.invokeMethod<void>(
-        'addWebObjectAtOrigin', {'objectURL': objectURL, 'scale': scale});
+  Future<String> addWebObjectAtOrigin(String objectURL, double scale) async {
+    try {
+      final String id = await _channel.invokeMethod<String>(
+          'addWebObjectAtOrigin', {'objectURL': objectURL, 'scale': scale});
+      return id;
+    } on PlatformException catch (e) {
+      return null;
+    }
   }
 }
