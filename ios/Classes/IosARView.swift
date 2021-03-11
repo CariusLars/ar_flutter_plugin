@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import Foundation
 import ARKit
+import Combine
 
 class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
     let sceneView: ARSCNView
@@ -11,6 +12,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
     var customPlaneTexturePath: String? = nil
     private var trackedPlanes = [UUID: SCNNode]()
     let modelBuilder = ArModelBuilder()
+    
+    var cancellableCollection = Set<AnyCancellable>() //Used to store all cancellables in (needed for working with Futures)
 
     init(
         frame: CGRect,
@@ -63,7 +66,11 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                     addObjectAtOrigin(objectPath: objectPath, scale: Float(scale))
                 }
                 result(nil)
-                        
+            case "addWebObjectAtOrigin":
+                if let objectURL = arguments!["objectURL"] as? String, let scale = arguments!["scale"] as? Double {
+                    addWebObjectAtOrigin(objectURL: objectURL, scale: Float(scale))
+                }
+                result(nil)            
             default:
                 result(FlutterMethodNotImplemented)
                 break
@@ -156,5 +163,24 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
         } else {
             self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(objectPath)"])
         }
+    }
+    
+    func addWebObjectAtOrigin(objectURL: String, scale: Float) {
+
+        // Add object to scene
+
+        modelBuilder.makeNodeFromWebGlb(modelURL: objectURL, worldScale: SCNVector3Make(scale, scale, scale), worldPosition: SCNVector3Make(0,0,0), worldRotation: SCNQuaternion(1,0,0,0))
+        .sink(receiveCompletion: {
+                        completion in print("Async Model Downloading Task completed: ", completion)
+        }, receiveValue: { val in
+            if let node: SCNNode = val {
+                self.sceneView.scene.rootNode.addChildNode(node)
+            } else {
+                self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(objectURL)"])
+            }
+        }).store(in: &self.cancellableCollection)
+        
+
+
     }
 }

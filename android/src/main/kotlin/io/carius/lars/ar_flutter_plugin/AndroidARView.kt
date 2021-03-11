@@ -363,7 +363,7 @@ internal class AndroidARView(
 
     private fun addWebObjectAtOrigin(objectURL: String, scale: Float){
         // Add object to scene
-        modelBuilder.makeNodeFromGltf(viewContext, objectURL, Vector3(scale, scale, scale), Vector3(0f,0f,0f), Quaternion.axisAngle(Vector3(1f, 0f, 0f), 0f))
+        modelBuilder.makeNodeFromGlb(viewContext, objectURL, Vector3(scale, scale, scale), Vector3(0f,0f,0f), Quaternion.axisAngle(Vector3(1f, 0f, 0f), 0f))
         .thenAccept{node ->
             arSceneView.scene.addChild(node)}
         .exceptionally { throwable ->

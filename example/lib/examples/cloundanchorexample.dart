@@ -26,9 +26,6 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
             onARViewCreated: onARViewCreated,
             planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
           ),
-          ElevatedButton(
-              onPressed: onAddObjectAtOrigin,
-              child: Text("Add Object at Origin"))
         ])));
   }
 
@@ -44,14 +41,5 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
           showWorldOrigin: true,
         );
     this.arObjectManager.onInitialize();
-  }
-
-  void onAddObjectAtOrigin() {
-    this
-        .arObjectManager
-        //.addObjectAtOrigin("Models/Chicken_01/Chicken_01.gltf", 0.2);
-        .addWebObjectAtOrigin(
-            "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF/Duck.gltf",
-            0.2);
   }
 }
