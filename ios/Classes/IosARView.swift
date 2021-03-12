@@ -11,7 +11,6 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
     var showPlanes = false
     var customPlaneTexturePath: String? = nil
     private var trackedPlanes = [UUID: (SCNNode, SCNNode)]()
-    private var topLevelNodes = [UUID: SCNNode]()
     let modelBuilder = ArModelBuilder()
     
     var cancellableCollection = Set<AnyCancellable>() //Used to store all cancellables in (needed for working with Futures)
@@ -62,33 +61,6 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                 self.objectManagerChannel.invokeMethod("onError", arguments: ["ObjectTEST from iOS"])
                 result(nil)
                 break
-            /*case "addObjectAtOrigin":
-                if let objectPath = arguments!["objectPath"] as? String, let scale = arguments!["scale"] as? Double {
-                    if let id = addObjectAtOrigin(objectPath: objectPath, scale: Float(scale)){
-                        result(id.uuidString)
-                    } else {
-                        result(nil)
-                    }
-                } else {
-                    result(nil)
-                }
-            case "addWebObjectAtOrigin":
-                if let objectURL = arguments!["objectURL"] as? String, let scale = arguments!["scale"] as? Double {
-                    addWebObjectAtOrigin(objectURL: objectURL, scale: Float(scale)).sink(receiveCompletion: {completion in }, receiveValue: { val in
-                        if let id: UUID = val {
-                            result(id.uuidString)
-                        } else {
-                            result(nil)
-                        }
-                        }).store(in: &self.cancellableCollection)
-                }
-            case "removeTopLevelObject":
-                if let objectId = arguments!["id"] as? String {
-                    if let objectUUID = UUID(uuidString: objectId) {
-                        removeTopLevelNode(objectId: objectUUID)
-                    }
-                }
-                result(nil)*/
             case "addNode":
                 addNode(dict: arguments!).sink(receiveCompletion: {completion in }, receiveValue: { val in
                        result(val)
@@ -185,49 +157,6 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
         trackedPlanes.removeValue(forKey: anchor.identifier)
     }
 
-    /*func addObjectAtOrigin(objectPath: String, scale: Float) -> UUID? {
-        // Get path to given Flutter asset
-        let key = FlutterDartProject.lookupKey(forAsset: objectPath)
-        let id: UUID?
-
-        // Add object to scene
-        if let node: SCNNode = modelBuilder.makeNodeFromGltf(modelPath: key, worldScale: SCNVector3Make(scale, scale, scale), worldPosition: SCNVector3Make(0,0,0), worldRotation: SCNQuaternion(1,0,0,0)) {
-            id = UUID()
-            sceneView.scene.rootNode.addChildNode(node)
-            topLevelNodes[id!] = node
-        } else {
-            self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(objectPath)"])
-            id = nil
-        }
-        
-        return id
-    }
-    
-    func addWebObjectAtOrigin(objectURL: String, scale: Float) -> Future<UUID?, Never> {
-
-        return Future {promise in
-        // Add object to scene
-            self.modelBuilder.makeNodeFromWebGlb(modelURL: objectURL, worldScale: SCNVector3Make(scale, scale, scale), worldPosition: SCNVector3Make(0,0,0), worldRotation: SCNQuaternion(1,0,0,0))
-            .sink(receiveCompletion: {
-                            completion in print("Async Model Downloading Task completed: ", completion)
-            }, receiveValue: { val in
-                if let node: SCNNode = val {
-                    let id = UUID()
-                    self.sceneView.scene.rootNode.addChildNode(node)
-                    self.topLevelNodes[id] = node
-                    promise(.success(id))
-                } else {
-                    self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(objectURL)"])
-                    promise(.success(nil))
-                }
-            }).store(in: &self.cancellableCollection)
-        }
-    }*/
-    
-    func removeTopLevelNode(objectId: UUID) {
-        topLevelNodes[objectId]?.removeFromParentNode()
-    }
-
     func addNode(dict: Dictionary<String, Any>) -> Future<Bool, Never> {
 
         return Future {promise in
@@ -245,7 +174,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                         promise(.success(false))
                     }
                     break
-                case 1: // GLTB Model from the web
+                case 1: // GLB Model from the web
                     // Add object to scene
                     self.modelBuilder.makeNodeFromWebGlb(name: dict["name"] as! String, modelURL: dict["uri"] as! String, transformation: dict["transform"] as? Array<NSNumber>)
                     .sink(receiveCompletion: {

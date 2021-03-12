@@ -65,17 +65,6 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
     this.arObjectManager.onInitialize();
   }
 
-  /*Future<void> onLocalObjectAtOriginButtonPressed() async {
-    if (this.localObjectReference != null) {
-      this.arObjectManager.removeTopLevelObject(this.localObjectReference);
-      this.localObjectReference = null;
-    } else {
-      var id = await this
-          .arObjectManager
-          .addObjectAtOrigin("Models/Chicken_01/Chicken_01.gltf", 0.2);
-      this.localObjectReference = id;
-    }
-  }*/
   Future<void> onLocalObjectAtOriginButtonPressed() async {
     if (this.localObjectNode != null) {
       this.arObjectManager.removeNode(this.localObjectNode);
@@ -84,23 +73,14 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
       var newNode = ARNode(
           type: NodeType.localGLTF2,
           uri: "Models/Chicken_01/Chicken_01.gltf",
-          scale: Vector3(0.2, 0.2, 0.2));
+          scale: Vector3(0.2, 0.2, 0.2),
+          position: Vector3(0.0, 0.0, 0.0),
+          rotation: Vector4(1.0, 0.0, 0.0, 0.0));
       bool didAddLocalNode = await this.arObjectManager.addNode(newNode);
       this.localObjectNode = (didAddLocalNode) ? newNode : null;
     }
   }
 
-  /*Future<void> onWebObjectAtOriginButtonPressed() async {
-    if (this.webObjectReference != null) {
-      this.arObjectManager.removeTopLevelObject(this.webObjectReference);
-      this.webObjectReference = null;
-    } else {
-      var id = await this.arObjectManager.addWebObjectAtOrigin(
-          "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
-          0.2);
-      this.webObjectReference = id;
-    }
-  }*/
   Future<void> onWebObjectAtOriginButtonPressed() async {
     if (this.webObjectNode != null) {
       this.arObjectManager.removeNode(this.webObjectNode);
