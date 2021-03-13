@@ -21,6 +21,7 @@ import com.google.ar.sceneform.rendering.PlaneRenderer
 import com.google.ar.sceneform.rendering.Texture
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.math.Quaternion
+import io.carius.lars.ar_flutter_plugin.Serialization.deserializeMatrix4
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.BinaryMessenger
@@ -30,6 +31,7 @@ import io.flutter.plugin.platform.PlatformView
 import java.nio.FloatBuffer
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 internal class AndroidARView(
@@ -96,7 +98,16 @@ internal class AndroidARView(
                                 }
                             }
                         }
-
+                        "transformationChanged" -> {
+                            val nodeName: String? = call.argument<String>("name")
+                            val newTransformation: ArrayList<Double>? = call.argument<ArrayList<Double>>("transformation")
+                            nodeName?.let{ name ->
+                                newTransformation?.let{ transform ->
+                                    transformNode(name, transform)
+                                    result.success(null)
+                                }
+                            }
+                        }
                         else -> {}
                     }
                 }
@@ -407,6 +418,16 @@ internal class AndroidARView(
         }
 
         return completableFutureSuccess
+    }
+
+    private fun transformNode(name: String, transform: ArrayList<Double>) {
+        val node = arSceneView.scene.findByName(name)
+        node?.let {
+            val transformTriple = deserializeMatrix4(transform)
+            it.worldScale = transformTriple.first
+            it.worldPosition = transformTriple.second
+            it.worldRotation = transformTriple.third
+        }
     }
 
 }

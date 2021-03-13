@@ -7,6 +7,7 @@ import 'package:ar_flutter_plugin/datatypes/node_types.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:flutter/services.dart';
 import 'package:vector_math/vector_math_64.dart';
+import 'dart:math';
 
 class LocalAndWebObjectsWidget extends StatefulWidget {
   LocalAndWebObjectsWidget({Key key}) : super(key: key);
@@ -37,17 +38,31 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
           ),
           Align(
               alignment: FractionalOffset.bottomCenter,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                      onPressed: onLocalObjectAtOriginButtonPressed,
-                      child: Text("Add/Remove Local\nobject at Origin")),
-                  ElevatedButton(
-                      onPressed: onWebObjectAtOriginButtonPressed,
-                      child: Text("Add/Remove Web\nObject at Origin")),
-                ],
-              ))
+              child:
+                  Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                        onPressed: onLocalObjectAtOriginButtonPressed,
+                        child: Text("Add/Remove Local\nobject at Origin")),
+                    ElevatedButton(
+                        onPressed: onWebObjectAtOriginButtonPressed,
+                        child: Text("Add/Remove Web\nObject at Origin")),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                        onPressed: onLocalObjectShuffleButtonPressed,
+                        child: Text("Shuffle Local\nobject at Origin")),
+                    ElevatedButton(
+                        onPressed: onWebObjectShuffleButtonPressed,
+                        child: Text("Shuffle Web\nObject at Origin")),
+                  ],
+                )
+              ]))
         ])));
   }
 
@@ -93,6 +108,50 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
           scale: Vector3(0.2, 0.2, 0.2));
       bool didAddWebNode = await this.arObjectManager.addNode(newNode);
       this.webObjectNode = (didAddWebNode) ? newNode : null;
+    }
+  }
+
+  Future<void> onLocalObjectShuffleButtonPressed() async {
+    if (this.localObjectNode != null) {
+      var newScale = Random().nextDouble() / 3;
+      var newTranslationAxis = Random().nextInt(3);
+      var newTranslationAmount = Random().nextDouble() / 3;
+      var newTranslation = Vector3(0, 0, 0);
+      newTranslation[newTranslationAxis] = newTranslationAmount;
+      var newRotationAxisIndex = Random().nextInt(3);
+      var newRotationAmount = Random().nextDouble();
+      var newRotationAxis = Vector3(0, 0, 0);
+      newRotationAxis[newRotationAxisIndex] = 1.0;
+
+      final newTransform = Matrix4.identity();
+
+      newTransform.setTranslation(newTranslation);
+      newTransform.rotate(newRotationAxis, newRotationAmount);
+      newTransform.scale(newScale);
+
+      this.localObjectNode.transform = newTransform;
+    }
+  }
+
+  Future<void> onWebObjectShuffleButtonPressed() async {
+    if (this.webObjectNode != null) {
+      var newScale = Random().nextDouble() / 3;
+      var newTranslationAxis = Random().nextInt(3);
+      var newTranslationAmount = Random().nextDouble() / 3;
+      var newTranslation = Vector3(0, 0, 0);
+      newTranslation[newTranslationAxis] = newTranslationAmount;
+      var newRotationAxisIndex = Random().nextInt(3);
+      var newRotationAmount = Random().nextDouble();
+      var newRotationAxis = Vector3(0, 0, 0);
+      newRotationAxis[newRotationAxisIndex] = 1.0;
+
+      final newTransform = Matrix4.identity();
+
+      newTransform.setTranslation(newTranslation);
+      newTransform.rotate(newRotationAxis, newRotationAmount);
+      newTransform.scale(newScale);
+
+      this.webObjectNode.transform = newTransform;
     }
   }
 }

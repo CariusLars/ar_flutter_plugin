@@ -71,6 +71,12 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
                     sceneView.scene.rootNode.childNode(withName: name, recursively: true)?.removeFromParentNode()
                 }
                 break
+            case "transformationChanged":
+                if let name = arguments!["name"] as? String, let transform = arguments!["transformation"] as? Array<NSNumber> {
+                    transformNode(name: name, transform: transform)
+                    result(nil)
+                }
+                break
             default:
                 result(FlutterMethodNotImplemented)
                 break
@@ -194,6 +200,11 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
             }
             
         }
+    }
+    
+    func transformNode(name: String, transform: Array<NSNumber>) {
+        let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true)
+        node?.transform = deserializeMatrix4(transform)
     }
         
 }
