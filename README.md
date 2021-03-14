@@ -11,7 +11,7 @@ This plugin is still a work in progress. Keep posted for updates or contribute b
 If you still want to use the plugin before it's officially released, add the following to your `pubspec.yaml` file:
 ```yaml
 dependencies:
-  arkit_plugin:
+  ar_flutter_plugin:
     git: git://github.com/CariusLars/ar_flutter_plugin.git
 ```
 
