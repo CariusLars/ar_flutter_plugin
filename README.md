@@ -8,6 +8,23 @@ Many thanks to Oleksandr Leuschenko for the [arkit_flutter_plugin](https://githu
 
 This plugin is still a work in progress. Keep posted for updates or contribute by creating a [pull request](https://github.com/CariusLars/ar_flutter_plugin/compare)!
 
+If you still want to use the plugin before it's officially released, add the following to your `pubspec.yaml` file:
+```yaml
+dependencies:
+  arkit_plugin:
+    git: git://github.com/CariusLars/ar_flutter_plugin.git
+```
+
+To try out the plugin, it is best to have a look at one of the following examples implemented in the `Example` app:
+
+
+| Example Name          | Description                                                                                                                                                                                                                                                                            | Link to Code                                                                                                                                 |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Debug Options         | Simple AR scene with toggles to visualize the world origin, feature points and tracked planes                                                                                                                                                                                          | [Debug Options Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/debugoptionsexample.dart)                |
+| Local & Online Objets | AR scene with buttons to place GLTF objects from the flutter asset folders or GLB objects from the internet at a given position, rotation and scale. Additional buttons allow to modify scale, position and orientation with regard to the world origin after objects have been placed | [Local & Online Objects Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/localandwebobjectsexample.dart) |
+| Cloud Anchors Example | NOT IMPLEMENTED YET. Will allow to place, upload and download objects.                                                                                                                                                                                                                 | [Cloud Anchors Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/cloudanchorexample.dart)                 |
+
+
 ## Roadmap
 
 The first goal of this plugin is to provide collaborative AR functionality through cloud anchors on Android and iOS. The plugin will provide an easy interface for placing custom models (ideally from the web) onto planes and sharing the annotations across devices through app-specific channels (to allow "subscription" of certain annotations). GPS-tagging anchors will be supported to allow efficient querying of anchors by a device's location. A first architecture could look like this: 

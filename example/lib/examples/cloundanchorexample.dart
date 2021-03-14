@@ -38,7 +38,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
           showFeaturePoints: false,
           showPlanes: true,
           customPlaneTexturePath: "Images/triangle.png",
-          showWorldOrigin: true,
+          showWorldOrigin: false,
         );
     this.arObjectManager.onInitialize();
   }

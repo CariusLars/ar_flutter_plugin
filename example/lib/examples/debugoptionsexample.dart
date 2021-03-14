@@ -29,6 +29,7 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
           ARView(
             onARViewCreated: onARViewCreated,
             planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
+            showPlatformType: true,
           ),
           Align(
             alignment: FractionalOffset.bottomRight,
