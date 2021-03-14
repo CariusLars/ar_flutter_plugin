@@ -131,10 +131,14 @@ class ARView extends StatefulWidget {
   /// Configures the type of planes ARCore and ARKit should track. defaults to none
   final PlaneDetectionConfig planeDetectionConfig;
 
+  /// Configures whether or not to display the device's platform type above the AR view. Defaults to false
+  final bool showPlatformType;
+
   ARView(
       {Key key,
       @required this.onARViewCreated,
       this.planeDetectionConfig = PlaneDetectionConfig.none,
+      this.showPlatformType = false,
       this.permissionPromptDescription =
           "Camera permission must be given to the app for AR functions to work",
       this.permissionPromptButtonText = "Grant Permission",
@@ -143,6 +147,7 @@ class ARView extends StatefulWidget {
       : super(key: key);
   @override
   _ARViewState createState() => _ARViewState(
+      showPlatformType: this.showPlatformType,
       permissionPromptDescription: this.permissionPromptDescription,
       permissionPromptButtonText: this.permissionPromptButtonText,
       permissionPromptParentalRestriction:
@@ -151,12 +156,14 @@ class ARView extends StatefulWidget {
 
 class _ARViewState extends State<ARView> {
   PermissionStatus _cameraPermission = PermissionStatus.undetermined;
+  bool showPlatformType;
   String permissionPromptDescription;
   String permissionPromptButtonText;
   String permissionPromptParentalRestriction;
 
   _ARViewState(
-      {@required this.permissionPromptDescription,
+      {@required this.showPlatformType,
+      @required this.permissionPromptDescription,
       @required this.permissionPromptButtonText,
       @required this.permissionPromptParentalRestriction});
 
@@ -195,7 +202,7 @@ class _ARViewState extends State<ARView> {
       case (PermissionStatus.granted):
         {
           return Column(children: [
-            Text(Theme.of(context).platform.toString()),
+            if (showPlatformType) Text(Theme.of(context).platform.toString()),
             Expanded(
                 child: PlatformARView(Theme.of(context).platform).build(
                     context: context,

@@ -4,10 +4,13 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
 import com.google.ar.sceneform.ArSceneView
@@ -16,6 +19,9 @@ import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.rendering.Material
 import com.google.ar.sceneform.rendering.PlaneRenderer
 import com.google.ar.sceneform.rendering.Texture
+import com.google.ar.sceneform.math.Vector3
+import com.google.ar.sceneform.math.Quaternion
+import io.carius.lars.ar_flutter_plugin.Serialization.deserializeMatrix4
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.BinaryMessenger
@@ -23,6 +29,10 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 import java.nio.FloatBuffer
+import java.util.*
+import java.util.concurrent.CompletableFuture
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 internal class AndroidARView(
         val activity: Activity,
@@ -44,6 +54,7 @@ internal class AndroidARView(
     private lateinit var arSceneView: ArSceneView
     private var showFeaturePoints = false
     private var pointCloudNode = Node()
+    private var worldOriginNode = Node()
     // Model builder
     private var modelBuilder = ArModelBuilder()
 
@@ -68,6 +79,34 @@ internal class AndroidARView(
                         "init" -> {
                             // objectManagerChannel.invokeMethod("onError", listOf("ObjectTEST from
                             // Android"))
+                        }
+                        "addNode" -> {
+                            addNode(call.arguments as HashMap<String, Any>).thenAccept{status: Boolean ->
+                                result.success(status)
+                            }.exceptionally { throwable ->
+                                result.error(null, throwable.message, throwable.stackTrace)
+                                null
+                            }
+                        }
+                        "removeNode" -> {
+                            val nodeName: String? = call.argument<String>("name")
+                            nodeName?.let{
+                                val node = arSceneView.scene.findByName(nodeName)
+                                node?.let{
+                                    arSceneView.scene.removeChild(node)
+                                    result.success(null)
+                                }
+                            }
+                        }
+                        "transformationChanged" -> {
+                            val nodeName: String? = call.argument<String>("name")
+                            val newTransformation: ArrayList<Double>? = call.argument<ArrayList<Double>>("transformation")
+                            nodeName?.let{ name ->
+                                newTransformation?.let{ transform ->
+                                    transformNode(name, transform)
+                                    result.success(null)
+                                }
+                            }
                         }
                         else -> {}
                     }
@@ -229,6 +268,13 @@ internal class AndroidARView(
                 true) { // explicit comparison necessary because of nullable type
             arSceneView.scene.addChild(pointCloudNode)
             showFeaturePoints = true
+        } else {
+            showFeaturePoints = false
+            while (pointCloudNode.children?.size
+                    ?: 0 > 0) {
+                pointCloudNode.children?.first()?.setParent(null)
+            }
+            pointCloudNode.setParent(null)
         }
 
         // Configure plane detection
@@ -287,8 +333,10 @@ internal class AndroidARView(
 
         // Configure world origin
         if (argShowWorldOrigin == true) {
-            val worldOriginNode = modelBuilder.makeWorldOriginNode(viewContext)
+            worldOriginNode = modelBuilder.makeWorldOriginNode(viewContext)
             arSceneView.scene.addChild(worldOriginNode)
+        } else {
+            worldOriginNode.setParent(null)
         }
 
         result.success(null)
@@ -322,4 +370,64 @@ internal class AndroidARView(
             pointCloud?.release()
         }
     }
+
+    private fun addNode(dict: HashMap<String, Any>): CompletableFuture<Boolean>{
+        val completableFutureSuccess: CompletableFuture<Boolean> = CompletableFuture()
+
+        try {
+            when (dict["type"] as Int) {
+                0 -> { // GLTF2 Model from Flutter asset folder
+                    // Get path to given Flutter asset
+                    val loader: FlutterLoader = FlutterInjector.instance().flutterLoader()
+                    val key: String = loader.getLookupKeyForAsset(dict["uri"] as String)
+
+                    // Add object to scene
+                    modelBuilder.makeNodeFromGltf(viewContext, dict["name"] as String, key, dict["transform"] as ArrayList<Double>)
+                            .thenAccept{node ->
+                                arSceneView.scene.addChild(node)
+                                completableFutureSuccess.complete(true)}
+                            .exceptionally { throwable ->
+                                // Pass error to session manager (this has to be done on the main thread if this activity)
+                                val mainHandler = Handler(viewContext.mainLooper)
+                                val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable" +  dict["uri"] as String)) }
+                                mainHandler.post(runnable)
+                                completableFutureSuccess.completeExceptionally(throwable)
+                                null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+                            }
+                }
+                1 -> { // GLB Model from the web
+                    modelBuilder.makeNodeFromGlb(viewContext, dict["name"] as String, dict["uri"] as String, dict["transform"] as ArrayList<Double>)
+                            .thenAccept{node ->
+                                arSceneView.scene.addChild(node)
+                                completableFutureSuccess.complete(true)}
+                            .exceptionally { throwable ->
+                                // Pass error to session manager (this has to be done on the main thread if this activity)
+                                val mainHandler = Handler(viewContext.mainLooper)
+                                val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable" +  dict["uri"] as String)) }
+                                mainHandler.post(runnable)
+                                completableFutureSuccess.completeExceptionally(throwable)
+                                null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+                            }
+                }
+                else -> {
+                    completableFutureSuccess.complete(false)
+                }
+            }
+        } catch (e: java.lang.Exception) {
+            completableFutureSuccess.completeExceptionally(e)
+        }
+
+        return completableFutureSuccess
+    }
+
+    private fun transformNode(name: String, transform: ArrayList<Double>) {
+        val node = arSceneView.scene.findByName(name)
+        node?.let {
+            val transformTriple = deserializeMatrix4(transform)
+            it.worldScale = transformTriple.first
+            it.worldPosition = transformTriple.second
+            it.worldRotation = transformTriple.third
+        }
+    }
+
 }

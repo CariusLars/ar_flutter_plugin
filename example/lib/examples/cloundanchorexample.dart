@@ -21,10 +21,12 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
           title: const Text('Cloud Anchors'),
         ),
         body: Container(
-            child: ARView(
-          onARViewCreated: onARViewCreated,
-          planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
-        )));
+            child: Stack(children: [
+          ARView(
+            onARViewCreated: onARViewCreated,
+            planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
+          ),
+        ])));
   }
 
   void onARViewCreated(
@@ -36,7 +38,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
           showFeaturePoints: false,
           showPlanes: true,
           customPlaneTexturePath: "Images/triangle.png",
-          showWorldOrigin: true,
+          showWorldOrigin: false,
         );
     this.arObjectManager.onInitialize();
   }

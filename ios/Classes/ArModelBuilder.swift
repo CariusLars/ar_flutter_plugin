@@ -1,6 +1,8 @@
 import UIKit
 import Foundation
 import ARKit
+import GLTFSceneKit
+import Combine
 
 // Responsible for creating Renderables and Nodes
 class ArModelBuilder: NSObject {
@@ -54,4 +56,104 @@ class ArModelBuilder: NSObject {
         }
        planeNode.position = SCNVector3Make(anchor.center.x, 0, anchor.center.z)
     }
+
+    // Creates a node form a given gltf2 model path
+    func makeNodeFromGltf(name: String, modelPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
+        
+        var scene: SCNScene
+        let node: SCNNode = SCNNode()
+
+        do {
+            let sceneSource = try GLTFSceneSource(named: modelPath)
+            scene = try sceneSource.scene()
+
+            for child in scene.rootNode.childNodes {
+                child.scale = SCNVector3(0.01,0.01,0.01) // Compensate for the different model dimension definitions in iOS and Android (meters vs. millimeters)
+                //child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                //child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                node.addChildNode(child)
+            }
+
+            node.name = name
+            if let transform = transformation {
+                node.transform = deserializeMatrix4(transform)
+            }
+            /*node.scale = worldScale
+            node.position = worldPosition
+            node.worldOrientation = worldRotation*/
+
+            return node
+        } catch {
+            print("\(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    // Creates a node form a given glb model path
+    func makeNodeFromWebGlb(name: String, modelURL: String, transformation: Array<NSNumber>?) -> Future<SCNNode?, Never> {
+        
+        return Future {promise in
+            var node: SCNNode? = SCNNode()
+            
+            let handler: (URL?, URLResponse?, Error?) -> Void = {(url: URL?, urlResponse: URLResponse?, error: Error?) -> Void in
+                // If response code is not 200, link was invalid, so return
+                if ((urlResponse as? HTTPURLResponse)?.statusCode != 200) {
+                    print("makeNodeFromWebGltf received non-200 response code")
+                    node = nil
+                    promise(.success(node))
+                } else {
+                    guard let fileURL = url else { return }
+                    do {
+                        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+                        let documentsDirectory = paths[0]
+                        let targetURL = documentsDirectory.appendingPathComponent(urlResponse!.url!.lastPathComponent)
+                        
+                        try? FileManager.default.removeItem(at: targetURL) //remove item if it's already there
+                        try FileManager.default.copyItem(at: fileURL, to: targetURL)
+
+                        do {
+                            let sceneSource = GLTFSceneSource(url: targetURL)
+                            let scene = try sceneSource.scene()
+
+                            for child in scene.rootNode.childNodes {
+                                child.scale = SCNVector3(0.01,0.01,0.01) // Compensate for the different model dimension definitions in iOS and Android (meters vs. millimeters)
+                                //child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                                //child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                                node?.addChildNode(child)
+                            }
+
+                            node?.name = name
+                            if let transform = transformation {
+                                node?.transform = deserializeMatrix4(transform)
+                            }
+                            /*node?.scale = worldScale
+                            node?.position = worldPosition
+                            node?.worldOrientation = worldRotation*/
+
+                        } catch {
+                            print("\(error.localizedDescription)")
+                            node = nil
+                        }
+                        
+                        // Delete file to avoid cluttering device storage (at some point, caching can be included)
+                        try FileManager.default.removeItem(at: targetURL)
+                        
+                        promise(.success(node))
+                    } catch {
+                        node = nil
+                        promise(.success(node))
+                    }
+                }
+                
+            }
+            
+    
+            let downloadTask = URLSession.shared.downloadTask(with: URL(string: modelURL)!, completionHandler: handler)
+            
+            downloadTask.resume()
+            
+        }
+        
+    }
+    
 }
