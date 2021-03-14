@@ -4,7 +4,7 @@ import Foundation
 import ARKit
 import Combine
 
-class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
+class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureRecognizerDelegate {
     let sceneView: ARSCNView
     let sessionManagerChannel: FlutterMethodChannel
     let objectManagerChannel: FlutterMethodChannel
@@ -136,6 +136,14 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
             }
         }
         self.sceneView.debugOptions = ARSCNDebugOptions(rawValue: debugOptions)
+        
+        if let configHandleTaps = arguments["handleTaps"] as? Bool {
+            if (configHandleTaps){
+                let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+                tapGestureRecognizer.delegate = self
+                self.sceneView.gestureRecognizers?.append(tapGestureRecognizer)
+            }
+        }
     
         // Update session configuration
         self.sceneView.session.run(configuration)
@@ -206,5 +214,32 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate {
         let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true)
         node?.transform = deserializeMatrix4(transform)
     }
+    
+    @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
+        guard let sceneView = recognizer.view as? ARSCNView else {
+            return
+        }
+        let touchLocation = recognizer.location(in: sceneView)
+    
+        let allHitResults = sceneView.hitTest(touchLocation, options: nil)
+        let nodeHitResults: Array<String> = allHitResults.compactMap { $0.node.name }
+        if (nodeHitResults.count != 0) {
+            self.objectManagerChannel.invokeMethod("onNodeTap", arguments: nodeHitResults)
+        }
+            
+        let planeTypes: ARHitTestResult.ResultType
+        if #available(iOS 11.3, *){
+            planeTypes = ARHitTestResult.ResultType([.existingPlaneUsingGeometry, .featurePoint])
+        }else {
+            planeTypes = ARHitTestResult.ResultType([.existingPlaneUsingExtent, .featurePoint])
+        }
+        
+        let planeAndPointHitResults = sceneView.hitTest(touchLocation, types: planeTypes)
+            
+        let serializedPlaneAndPointHitResults = planeAndPointHitResults.map{serializeHitResult($0)}
+            if (serializedPlaneAndPointHitResults.count != 0) {
+                self.sessionManagerChannel.invokeMethod("onPlaneOrPointTap", arguments: serializedPlaneAndPointHitResults)
+            }
+        }
         
 }

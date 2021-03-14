@@ -11,7 +11,7 @@ This plugin is still a work in progress. Keep posted for updates or contribute b
 If you still want to use the plugin before it's officially released, add the following to your `pubspec.yaml` file:
 ```yaml
 dependencies:
-  arkit_plugin:
+  ar_flutter_plugin:
     git: git://github.com/CariusLars/ar_flutter_plugin.git
 ```
 
@@ -22,7 +22,8 @@ To try out the plugin, it is best to have a look at one of the following example
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | Debug Options         | Simple AR scene with toggles to visualize the world origin, feature points and tracked planes                                                                                                                                                                                          | [Debug Options Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/debugoptionsexample.dart)                |
 | Local & Online Objets | AR scene with buttons to place GLTF objects from the flutter asset folders or GLB objects from the internet at a given position, rotation and scale. Additional buttons allow to modify scale, position and orientation with regard to the world origin after objects have been placed | [Local & Online Objects Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/localandwebobjectsexample.dart) |
-| Cloud Anchors Example | NOT IMPLEMENTED YET. Will allow to place, upload and download objects.                                                                                                                                                                                                                 | [Cloud Anchors Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/cloudanchorexample.dart)                 |
+| Objects on Planes     | AR Scene in which tapping on a plane creates an anchor with a 3D model attached to it                                                                                                                                                                                                  | [Objects on Planes Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/objectsonplanesexample.dart)         |
+| Cloud Anchors         | NOT IMPLEMENTED YET. Will allow to place, upload and download objects.                                                                                                                                                                                                                 | [Cloud Anchors Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/cloudanchorexample.dart)                 |
 
 
 ## Roadmap

@@ -1,3 +1,4 @@
+import 'package:ar_flutter_plugin_example/examples/objectsonplanesexample.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -78,11 +79,18 @@ class ExampleList extends StatelessWidget {
               MaterialPageRoute(builder: (context) => DebugOptionsWidget()))),
       Example(
           'Local & Online Objects',
-          'Place and retrieve 3D objects from Flutter Assets and the Web',
+          'Place 3D objects from Flutter assets and the web into the scene',
           () => Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => LocalAndWebObjectsWidget()))),
+      Example(
+          'Objects on Planes',
+          'Place 3D objects on detected planes',
+          () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ObjectsOnPlanesWidget()))),
       Example(
           'Cloud Anchors',
           'Place and retrieve 3D objects using the Google Cloud Anchor API',

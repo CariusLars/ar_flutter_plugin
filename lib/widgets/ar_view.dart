@@ -5,7 +5,7 @@ import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 
-/// Type definitions to enforce a consistent use of the API
+// Type definitions to enforce a consistent use of the API
 typedef ARViewCreatedCallback = void Function(
     ARSessionManager arSessionManager, ARObjectManager arObjectManager);
 

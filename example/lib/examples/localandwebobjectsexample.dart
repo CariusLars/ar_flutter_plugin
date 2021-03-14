@@ -76,6 +76,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
           showPlanes: true,
           customPlaneTexturePath: "Images/triangle.png",
           showWorldOrigin: true,
+          handleTaps: false,
         );
     this.arObjectManager.onInitialize();
   }

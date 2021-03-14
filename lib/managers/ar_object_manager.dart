@@ -1,6 +1,9 @@
 import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:flutter/services.dart';
 
+// Type definitions to enforce a consistent use of the API
+typedef NodeTapResultHandler = void Function(List<String> nodes);
+
 /// Manages the session configuration, parameters and events of an [ARView]
 class ARObjectManager {
   /// Platform channel used for communication from and to [ARObjectManager]
@@ -8,6 +11,8 @@ class ARObjectManager {
 
   /// Debugging status flag. If true, all platform calls are printed. Defaults to false.
   final bool debug;
+
+  NodeTapResultHandler onNodeTap;
 
   ARObjectManager(int id, {this.debug = false}) {
     _channel = MethodChannel('arobjects_$id');
@@ -25,6 +30,14 @@ class ARObjectManager {
       switch (call.method) {
         case 'onError':
           print(call.arguments);
+          break;
+        case 'onNodeTap':
+          if (onNodeTap != null) {
+            final tappedNodes = call.arguments as List<dynamic>;
+            onNodeTap(tappedNodes
+                .map((tappedNode) => tappedNode.toString())
+                .toList());
+          }
           break;
         default:
           if (debug) {
