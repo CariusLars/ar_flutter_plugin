@@ -41,16 +41,7 @@ class ARObjectManager {
     _channel.invokeMethod<void>('init', {});
   }
 
-  Future<String> addObjectAtOrigin(String objectPath, double scale) async {
-    try {
-      final String id = await _channel.invokeMethod<String>(
-          'addObjectAtOrigin', {'objectPath': objectPath, 'scale': scale});
-      return id;
-    } on PlatformException catch (e) {
-      return null;
-    }
-  }
-
+  /// Add given node to the underlying AR scene and listen to any changes made to its transformation
   Future<bool> addNode(ARNode node) async {
     try {
       node.transformNotifier.addListener(() {
@@ -66,12 +57,9 @@ class ARObjectManager {
     }
   }
 
+  /// Remove given node from the AR Scene
   removeNode(ARNode node) {
     _channel.invokeMethod<String>('removeNode', {'name': node.name});
-  }
-
-  removeTopLevelObject(String id) {
-    _channel.invokeMethod<String>('removeTopLevelObject', {'id': id});
   }
 
   /// Downloads objects at runtime and places them in the scene. PLEASE NOTE: 1) Only works with stand-alone GLB files 2) apps using this call should check internet connectivity in advance
