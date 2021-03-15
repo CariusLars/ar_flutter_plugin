@@ -8,6 +8,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -15,6 +17,7 @@ import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
 import com.google.ar.sceneform.ArSceneView
 import com.google.ar.sceneform.FrameTime
+import com.google.ar.sceneform.HitTestResult
 import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.rendering.Material
 import com.google.ar.sceneform.rendering.PlaneRenderer
@@ -22,6 +25,7 @@ import com.google.ar.sceneform.rendering.Texture
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.math.Quaternion
 import io.carius.lars.ar_flutter_plugin.Serialization.deserializeMatrix4
+import io.carius.lars.ar_flutter_plugin.Serialization.serializeHitResult
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.BinaryMessenger
@@ -260,6 +264,7 @@ internal class AndroidARView(
         val argShowPlanes: Boolean? = call.argument<Boolean>("showPlanes")
         val argCustomPlaneTexturePath: String? = call.argument<String>("customPlaneTexturePath")
         val argShowWorldOrigin: Boolean? = call.argument<Boolean>("showWorldOrigin")
+        val argHandleTaps: Boolean? = call.argument<Boolean>("handleTaps")
 
         arSceneView.scene.addOnUpdateListener { frameTime: FrameTime -> onFrame(frameTime) }
 
@@ -337,6 +342,11 @@ internal class AndroidARView(
             arSceneView.scene.addChild(worldOriginNode)
         } else {
             worldOriginNode.setParent(null)
+        }
+
+        // Configure Tap handling
+        if (argHandleTaps == true) { // explicit comparison necessary because of nullable type
+            arSceneView.scene.setOnTouchListener{ hitTestResult: HitTestResult, motionEvent: MotionEvent? -> onTap(hitTestResult, motionEvent) }
         }
 
         result.success(null)
@@ -428,6 +438,22 @@ internal class AndroidARView(
             it.worldPosition = transformTriple.second
             it.worldRotation = transformTriple.third
         }
+    }
+
+    private fun onTap(hitTestResult: HitTestResult, motionEvent: MotionEvent?): Boolean {
+        val frame = arSceneView.arFrame
+        if (hitTestResult.node != null && motionEvent?.action == MotionEvent.ACTION_DOWN) {
+            objectManagerChannel.invokeMethod("onNodeTap", listOf(hitTestResult.node?.name))
+            return true
+        }
+        if (motionEvent != null && motionEvent.action == MotionEvent.ACTION_DOWN) {
+            val allHitResults = frame?.hitTest(motionEvent) ?: listOf<HitResult>()
+            val planeAndPointHitResults = allHitResults.filter { ((it.trackable is Plane) || (it.trackable is Point))  }
+            val serializedPlaneAndPointHitResults: ArrayList<HashMap<String, Any>> = ArrayList(planeAndPointHitResults.map { serializeHitResult(it) })
+            sessionManagerChannel.invokeMethod("onPlaneOrPointTap", serializedPlaneAndPointHitResults)
+            return true
+        }
+        return false
     }
 
 }

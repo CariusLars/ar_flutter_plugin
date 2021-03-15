@@ -225,6 +225,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         let nodeHitResults: Array<String> = allHitResults.compactMap { $0.node.name }
         if (nodeHitResults.count != 0) {
             self.objectManagerChannel.invokeMethod("onNodeTap", arguments: nodeHitResults)
+            return
         }
             
         let planeTypes: ARHitTestResult.ResultType
