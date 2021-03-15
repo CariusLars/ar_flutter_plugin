@@ -221,8 +221,9 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         }
         let touchLocation = recognizer.location(in: sceneView)
     
-        let allHitResults = sceneView.hitTest(touchLocation, options: nil)
-        let nodeHitResults: Array<String> = allHitResults.compactMap { $0.node.name }
+        let allHitResults = sceneView.hitTest(touchLocation, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.closest.rawValue])
+        // Because 3D model loading can lead to composed nodes, we have to traverse through a node's parent until the parent node with the name assigned by the Flutter API is found
+        let nodeHitResults: Array<String> = allHitResults.compactMap { nearestParentWithNameStart(node: $0.node, characters: "[#")?.name }
         if (nodeHitResults.count != 0) {
             self.objectManagerChannel.invokeMethod("onNodeTap", arguments: nodeHitResults)
             return
@@ -242,5 +243,12 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 self.sessionManagerChannel.invokeMethod("onPlaneOrPointTap", arguments: serializedPlaneAndPointHitResults)
             }
         }
+    func nearestParentWithNameStart(node: SCNNode?, characters: String) -> SCNNode? {
+        if let nodeNamePrefix = node?.name?.prefix(characters.count) {
+            if (nodeNamePrefix == characters) { return node }
+        }
+        if let parent = node?.parent { return nearestParentWithNameStart(node: parent, characters: characters) }
+        return nil
+    }
         
 }
