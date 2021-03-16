@@ -1,5 +1,7 @@
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
+import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
@@ -20,8 +22,10 @@ class ObjectsOnPlanesWidget extends StatefulWidget {
 class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
   ARSessionManager arSessionManager;
   ARObjectManager arObjectManager;
+  ARAnchorManager arAnchorManager;
 
   List<ARNode> nodes = [];
+  List<ARAnchor> anchors = [];
 
   @override
   Widget build(BuildContext context) {
@@ -48,10 +52,11 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
         ])));
   }
 
-  void onARViewCreated(
-      ARSessionManager arSessionManager, ARObjectManager arObjectManager) {
+  void onARViewCreated(ARSessionManager arSessionManager,
+      ARObjectManager arObjectManager, ARAnchorManager arAnchorManager) {
     this.arSessionManager = arSessionManager;
     this.arObjectManager = arObjectManager;
+    this.arAnchorManager = arAnchorManager;
 
     this.arSessionManager.onInitialize(
           showFeaturePoints: false,
@@ -66,8 +71,11 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
   }
 
   Future<void> onRemoveEverything() async {
-    nodes.forEach((node) {
+    /*nodes.forEach((node) {
       this.arObjectManager.removeNode(node);
+    });*/
+    anchors.forEach((anchor) {
+      this.arAnchorManager.removeAnchor(anchor);
     });
   }
 
@@ -78,11 +86,32 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
 
   Future<void> onPlaneOrPointTapped(
       List<ARHitTestResult> hitTestResults) async {
-    //TODO: This should create anchor and then attach node, not just place a single node!
     var singleHitTestResult = hitTestResults.firstWhere(
         (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
     if (singleHitTestResult != null) {
-      var newNode = ARNode(
+      var newAnchor =
+          ARPlaneAnchor(transformation: singleHitTestResult.worldTransform);
+      bool didAddAnchor = await this.arAnchorManager.addAnchor(newAnchor);
+      if (didAddAnchor) {
+        this.anchors.add(newAnchor);
+        // Add note to anchor
+        var newNode = ARNode(
+            type: NodeType.localGLTF2,
+            uri: "Models/Chicken_01/Chicken_01.gltf",
+            scale: Vector3(0.2, 0.2, 0.2),
+            position: Vector3(0.0, 0.0, 0.0),
+            rotation: Vector4(1.0, 0.0, 0.0, 0.0));
+        bool didAddNodeToAnchor =
+            await this.arObjectManager.addNode(newNode, planeAnchor: newAnchor);
+        if (didAddNodeToAnchor) {
+          this.nodes.add(newNode);
+        } else {
+          this.arSessionManager.onError("Adding Node to Anchor failed");
+        }
+      } else {
+        this.arSessionManager.onError("Adding Anchor failed");
+      }
+      /*var newNode = ARNode(
           type: NodeType.webGLB,
           uri:
               "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
@@ -91,7 +120,7 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
       bool didAddWebNode = await this.arObjectManager.addNode(newNode);
       if (didAddWebNode) {
         this.nodes.add(newNode);
-      }
+      }*/
     }
   }
 }
