@@ -77,6 +77,7 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
     anchors.forEach((anchor) {
       this.arAnchorManager.removeAnchor(anchor);
     });
+    anchors = [];
   }
 
   Future<void> onNodeTapped(List<String> nodes) async {
