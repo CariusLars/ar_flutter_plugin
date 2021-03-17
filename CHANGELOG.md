@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+* Adds AR Anchor as a common representation of anchors on all platforms
+* Implements AR Plane Anchor as subclass of AR Anchor: Plane Anchors can be created in Flutter, registered on the target platform and then be used to attach nodes to
+* Adds AR Hittest Result as a common representation of hittest results on all platforms. If the setting is activated in the session manager, taps on the platforms are registered and hit test results can be used to trigger callbacks in Flutter (example: hit result world coordinate transforms can be used to place anchors or nodes into the scene)
+* Adds option to trigger callbacks when nodes are tapped
+* Adds example to showcase hittests, creating and placing anchors and attaching nodes to anchors
+
 ## 0.1.0
 
 * Adds AR Node as a common representation of nodes on all platforms
