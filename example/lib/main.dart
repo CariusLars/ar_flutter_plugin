@@ -85,8 +85,8 @@ class ExampleList extends StatelessWidget {
               MaterialPageRoute(
                   builder: (context) => LocalAndWebObjectsWidget()))),
       Example(
-          'Objects on Planes',
-          'Place 3D objects on detected planes',
+          'Anchors & Objects on Planes',
+          'Place 3D objects on detected planes using anchors',
           () => Navigator.push(
               context,
               MaterialPageRoute(
