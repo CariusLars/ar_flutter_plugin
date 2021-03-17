@@ -234,7 +234,6 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                                     if let anchor = self.anchorCollection[anchorName]{
                                         // Attach node to the top-level node of the specified anchor
                                         self.sceneView.node(for: anchor)?.addChildNode(node)
-                                        // 2 PROBLEMS: 1. SOMETIMES self.sceneView.node(for: anchor)? returns 0 here 2. Nodes are not tappable if localGLTF2 model is used
                                     } else {
                                         promise(.success(false))
                                     }
@@ -336,8 +335,11 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         let arAnchor = ARAnchor(transform: simd_float4x4(deserializeMatrix4(transform)))
         anchorCollection[name] = arAnchor
         sceneView.session.add(anchor: arAnchor)
-        //sceneView.sceneTime += 1 //Ensure root node is added to anchor before any other function can run (if this isn't done, addNode could fail because anchor does not have a root node yet)
-        //However this isn't working... need to call the renderer function somehow to attach a child node!
+        // Ensure root node is added to anchor before any other function can run (if this isn't done, addNode could fail because anchor does not have a root node yet).
+        // The root node is added to the anchor as soon as the async rendering loop runs once, more specifically the function "renderer(_:nodeFor:)"
+        while (sceneView.node(for: arAnchor) == nil) {
+            usleep(1) // wait 1 millionth of a second
+        }
     }
     
     func deleteAnchor(anchorName: String) {
