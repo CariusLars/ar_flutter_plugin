@@ -71,16 +71,13 @@ class ArModelBuilder: NSObject {
                 child.scale = SCNVector3(0.01,0.01,0.01) // Compensate for the different model dimension definitions in iOS and Android (meters vs. millimeters)
                 //child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
                 //child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
-                node.addChildNode(child)
+                node.addChildNode(child.flattenedClone())
             }
 
             node.name = name
             if let transform = transformation {
                 node.transform = deserializeMatrix4(transform)
             }
-            /*node.scale = worldScale
-            node.position = worldPosition
-            node.worldOrientation = worldRotation*/
 
             return node
         } catch {

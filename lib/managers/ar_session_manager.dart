@@ -1,6 +1,10 @@
+import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
+
+// Type definitions to enforce a consistent use of the API
+typedef ARHitResultHandler = void Function(List<ARHitTestResult> hits);
 
 /// Manages the session configuration, parameters and events of an [ARView]
 class ARSessionManager {
@@ -15,6 +19,9 @@ class ARSessionManager {
 
   /// Determines the types of planes ARCore and ARKit should show
   final PlaneDetectionConfig planeDetectionConfig;
+
+  /// Receives hit results from user taps with tracked planes or feature points
+  ARHitResultHandler onPlaneOrPointTap;
 
   ARSessionManager(int id, this.buildContext, this.planeDetectionConfig,
       {this.debug = false}) {
@@ -37,6 +44,19 @@ class ARSessionManager {
             print(call.arguments);
           }
           break;
+        case 'onPlaneOrPointTap':
+          if (onPlaneOrPointTap != null) {
+            final rawHitTestResults = call.arguments as List<dynamic>;
+            final serializedHitTestResults = rawHitTestResults
+                .map(
+                    (hitTestResult) => Map<String, dynamic>.from(hitTestResult))
+                .toList();
+            final hitTestResults = serializedHitTestResults.map((e) {
+              return ARHitTestResult.fromJson(e);
+            }).toList();
+            onPlaneOrPointTap(hitTestResults);
+          }
+          break;
         default:
           if (debug) {
             print('Unimplemented method ${call.method} ');
@@ -51,17 +71,20 @@ class ARSessionManager {
   /// Function to initialize the platform-specific AR view. Can be used to initially set or update session settings.
   /// [customPlaneTexturePath] refers to flutter assets from the app that is calling this function, NOT to assets within this plugin. Make sure
   /// the assets are correctly registered in the pubspec.yaml of the parent app (e.g. the ./example app in this plugin's repo)
-  onInitialize(
-      {bool showFeaturePoints = false,
-      bool showPlanes = true,
-      String customPlaneTexturePath,
-      bool showWorldOrigin = false}) {
+  onInitialize({
+    bool showFeaturePoints = false,
+    bool showPlanes = true,
+    String customPlaneTexturePath,
+    bool showWorldOrigin = false,
+    bool handleTaps = true,
+  }) {
     _channel.invokeMethod<void>('init', {
       'showFeaturePoints': showFeaturePoints,
       'planeDetectionConfig': planeDetectionConfig.index,
       'showPlanes': showPlanes,
       'customPlaneTexturePath': customPlaneTexturePath,
       'showWorldOrigin': showWorldOrigin,
+      'handleTaps': handleTaps,
     });
   }
 

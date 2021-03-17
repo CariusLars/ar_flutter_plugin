@@ -1,5 +1,6 @@
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
@@ -17,6 +18,7 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
   bool _showPlanes = false;
   bool _showWorldOrigin = false;
   String _planeTexturePath = "Images/triangle.png";
+  bool _handleTaps = false;
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +79,8 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
         ])));
   }
 
-  void onARViewCreated(
-      ARSessionManager arSessionManager, ARObjectManager arObjectManager) {
+  void onARViewCreated(ARSessionManager arSessionManager,
+      ARObjectManager arObjectManager, ARAnchorManager arAnchorManager) {
     this.arSessionManager = arSessionManager;
     this.arObjectManager = arObjectManager;
 
@@ -87,6 +89,7 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
           showPlanes: _showPlanes,
           customPlaneTexturePath: _planeTexturePath,
           showWorldOrigin: _showWorldOrigin,
+          handleTaps: _handleTaps,
         );
     this.arObjectManager.onInitialize();
   }
