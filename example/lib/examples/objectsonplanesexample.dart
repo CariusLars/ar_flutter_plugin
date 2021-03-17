@@ -31,7 +31,7 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Local & Web Objects'),
+          title: const Text('Anchors & Objects on Planes'),
         ),
         body: Container(
             child: Stack(children: [
@@ -96,8 +96,9 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
         this.anchors.add(newAnchor);
         // Add note to anchor
         var newNode = ARNode(
-            type: NodeType.localGLTF2,
-            uri: "Models/Chicken_01/Chicken_01.gltf",
+            type: NodeType.webGLB,
+            uri:
+                "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
             scale: Vector3(0.2, 0.2, 0.2),
             position: Vector3(0.0, 0.0, 0.0),
             rotation: Vector4(1.0, 0.0, 0.0, 0.0));
@@ -111,10 +112,11 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
       } else {
         this.arSessionManager.onError("Adding Anchor failed");
       }
-      /*var newNode = ARNode(
-          type: NodeType.webGLB,
-          uri:
-              "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
+      /*
+      // To add a node to the tapped position without creating an anchor, use the following code (Please mind: the function onRemoveEverything has to be adapted accordingly!):
+      var newNode = ARNode(
+          type: NodeType.localGLTF2,
+          uri: "Models/Chicken_01/Chicken_01.gltf",
           scale: Vector3(0.2, 0.2, 0.2),
           transformation: singleHitTestResult.worldTransform);
       bool didAddWebNode = await this.arObjectManager.addNode(newNode);

@@ -304,7 +304,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         // Because 3D model loading can lead to composed nodes, we have to traverse through a node's parent until the parent node with the name assigned by the Flutter API is found
         let nodeHitResults: Array<String> = allHitResults.compactMap { nearestParentWithNameStart(node: $0.node, characters: "[#")?.name }
         if (nodeHitResults.count != 0) {
-            self.objectManagerChannel.invokeMethod("onNodeTap", arguments: nodeHitResults)
+            self.objectManagerChannel.invokeMethod("onNodeTap", arguments: Array(Set(nodeHitResults))) // Chaining of Array and Set is used to remove duplicates
             return
         }
             
