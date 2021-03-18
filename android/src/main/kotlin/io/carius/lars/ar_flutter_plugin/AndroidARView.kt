@@ -27,6 +27,7 @@ import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.math.Quaternion
 import io.carius.lars.ar_flutter_plugin.Serialization.deserializeMatrix4
 import io.carius.lars.ar_flutter_plugin.Serialization.serializeHitResult
+import io.carius.lars.ar_flutter_plugin.Serialization.serializePose
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.BinaryMessenger
@@ -72,6 +73,14 @@ internal class AndroidARView(
                     when (call.method) {
                         "init" -> {
                             initializeARView(call, result)
+                        }
+                        "getCameraPose" -> {
+                            val cameraPose = arSceneView.arFrame?.camera?.displayOrientedPose
+                            if (cameraPose != null) {
+                                result.success(serializePose(cameraPose!!))
+                            } else {
+                                result.error(null, "could not get camera pose", null)
+                            }
                         }
                         else -> {}
                     }

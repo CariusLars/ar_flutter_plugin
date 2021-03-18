@@ -51,6 +51,13 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 //result(nil)
                 initializeARView(arguments: arguments!, result: result)
                 break
+            case "getCameraPose":
+                if let cameraPose = sceneView.session.currentFrame?.camera.transform {
+                    result(serializeMatrix(cameraPose))
+                } else {
+                    result(FlutterError())
+                }
+                break
             default:
                 result(FlutterMethodNotImplemented)
                 break

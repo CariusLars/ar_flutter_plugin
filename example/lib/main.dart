@@ -9,6 +9,8 @@ import 'package:ar_flutter_plugin_example/examples/cloundanchorexample.dart';
 import 'package:ar_flutter_plugin_example/examples/localandwebobjectsexample.dart';
 import 'package:ar_flutter_plugin_example/examples/debugoptionsexample.dart';
 
+import 'examples/gpsobjectsexample.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -91,6 +93,11 @@ class ExampleList extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => ObjectsOnPlanesWidget()))),
+      Example(
+          'GPS Objects',
+          'Place 3D objects into the scene using their GPS coordinates',
+          () => Navigator.push(context,
+              MaterialPageRoute(builder: (context) => GpsObjectsWidget()))),
       Example(
           'Cloud Anchors',
           'Place and retrieve 3D objects using the Google Cloud Anchor API',

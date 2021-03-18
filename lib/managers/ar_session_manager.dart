@@ -1,4 +1,5 @@
 import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
+import 'package:ar_flutter_plugin/utils/json_converters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
@@ -96,5 +97,17 @@ class ARSessionManager {
             label: 'HIDE',
             onPressed:
                 ScaffoldMessenger.of(buildContext).hideCurrentSnackBar)));
+  }
+
+  /// Returns the camera pose with respect to the world coordinate system of the [ARView]
+  Future<Matrix4> getCameraPose() async {
+    try {
+      final serializedCameraPose =
+          await _channel.invokeMethod<List<dynamic>>('getCameraPose', {});
+      return MatrixConverter().fromJson(serializedCameraPose);
+    } catch (e) {
+      print('Error caught: ' + e);
+      return null;
+    }
   }
 }
