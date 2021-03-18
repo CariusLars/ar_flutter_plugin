@@ -1,5 +1,6 @@
 // The code in this file is adapted from Oleksandr Leuschenko' ARKit Flutter Plugin (https://github.com/olexale/arkit_flutter_plugin)
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -201,4 +202,46 @@ class MatrixValueNotifierConverter
     matrix.value.copyIntoArray(list);
     return list;
   }
+}
+
+/// Subtype of [ARNode] representing an image rendered onto a plane object which can be placed into the [ARView]
+/// NOTE: THE PLATFORM-SPECIFIC HANDLERS OF THIS TYPE ARE NOT IMPLEMENTED YET
+class ARImage extends ARNode {
+  ARImage({
+    NodeType type,
+    String uri,
+    String name,
+    Vector3 position,
+    Vector3 scale,
+    Vector4 rotation,
+    Vector3 eulerAngles,
+    Matrix4 transformation,
+    ByteData imageData,
+    Vector2 dimensions,
+  }) : super(
+            type: type,
+            uri: uri,
+            name: name,
+            position: position,
+            scale: scale,
+            rotation: rotation,
+            eulerAngles: eulerAngles,
+            transformation: transformation);
+
+  /// Image that should be rendered onto the plane object
+  ByteData imageData;
+
+  /// Dimensions of the image in meters
+  Vector2 dimensions;
+
+  @override
+  Map<String, dynamic> toMap() => <String, dynamic>{
+        'type': type.index,
+        'uri': uri,
+        'transform':
+            ARNode._matrixValueNotifierConverter.toJson(transformNotifier),
+        'name': name,
+        'imageData': '', //TODO: write image data serializer
+        'dimensions': '', //TODO: write dimensions serializer
+      }..removeWhere((String k, dynamic v) => v == null);
 }
