@@ -27,10 +27,39 @@ fun deserializeMatrix4(transform: ArrayList<Double>): Triple<Vector3, Vector3, Q
 
     // Calculate the quaternion from the rotation matrix
     // See https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/ for a mathematical explanation
-    val w = Math.sqrt(1.0 + rowWiseMatrix[0] + rowWiseMatrix[4] + rowWiseMatrix[8]) / 2.0
-    val x = (rowWiseMatrix[7] - rowWiseMatrix[5]) / (4.0 * w)
-    val y = (rowWiseMatrix[2] - rowWiseMatrix[6]) / (4.0 * w)
-    val z = (rowWiseMatrix[3] - rowWiseMatrix[1]) / (4.0 * w)
+    val trace = rowWiseMatrix[0] + rowWiseMatrix[4] + rowWiseMatrix[8]
+
+    val w = 0f
+    val x = 0f
+    val y = 0f
+    val z = 0f
+
+    if (trace > 0) { 
+      val scalefactor = Math.sqrt(tr+1.0) * 2
+      w = 0.25 * scalefactor
+      x = (rowWiseMatrix[7] - rowWiseMatrix[5]) / scalefactor
+      y = (rowWiseMatrix[2] - rowWiseMatrix[6]) / scalefactor
+      z = (rowWiseMatrix[3] - rowWiseMatrix[1]) / scalefactor
+    } else if ((rowWiseMatrix[0] > rowWiseMatrix[4])&(rowWiseMatrix[0] > rowWiseMatrix[8])) { 
+      val scalefactor = Math.sqrt(1.0 + rowWiseMatrix[0] - rowWiseMatrix[4] - rowWiseMatrix[8]) * 2
+      w = (rowWiseMatrix[7] - rowWiseMatrix[5]) / scalefactor
+      x = 0.25 * scalefactor
+      y = (rowWiseMatrix[1] + rowWiseMatrix[3]) / scalefactor
+      z = (rowWiseMatrix[2] + rowWiseMatrix[6]) / scalefactor
+    } else if (rowWiseMatrix[4] > rowWiseMatrix[8]) { 
+      val scalefactor = Math.sqrt(1.0 + rowWiseMatrix[4] - rowWiseMatrix[0] - rowWiseMatrix[8]) * 2
+      w = (rowWiseMatrix[2] - rowWiseMatrix[6]) / scalefactor
+      x = (rowWiseMatrix[1] + rowWiseMatrix[3]) / scalefactor
+      y = 0.25 * scalefactor
+      z = (rowWiseMatrix[5] + rowWiseMatrix[7]) / scalefactor
+    } else { 
+      val scalefactor = Math.sqrt(1.0 + rowWiseMatrix[8] - rowWiseMatrix[0] - rowWiseMatrix[4]) * 2
+      w = (rowWiseMatrix[3] - rowWiseMatrix[1]) / scalefactor
+      x = (rowWiseMatrix[2] + rowWiseMatrix[6]) / scalefactor
+      y = (rowWiseMatrix[5] + rowWiseMatrix[7]) / scalefactor
+      z = 0.25 * scalefactor
+    }
+
     val inputRotation = Quaternion(x.toFloat(),y.toFloat(),z.toFloat(),w.toFloat())
 
     // Rotate by an additional 180 degrees around z and y to compensate for the different model coordinate system definition used in Sceneform (in comparison to Scenekit and the definition used for the Flutter API of this plugin)
