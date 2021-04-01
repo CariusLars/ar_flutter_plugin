@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+* Bugfix: Handles singularities in affine transformation matrix deserialization on Android
+
 ## 0.2.0
 
 * Adds AR Anchor as a common representation of anchors on all platforms
