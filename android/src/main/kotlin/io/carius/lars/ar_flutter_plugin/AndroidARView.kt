@@ -1,30 +1,28 @@
 package io.carius.lars.ar_flutter_plugin
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
-import androidx.annotation.RequiresApi
+//import androidx.core.app.ActivityCompat.startActivityForResult
+//import com.google.android.gms.auth.GoogleAuthUtil
+//import com.google.android.gms.auth.api.signin.GoogleSignIn
+//import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+//import com.google.android.gms.common.Scopes
+//import com.google.android.gms.common.api.Scope
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
-import com.google.ar.sceneform.ArSceneView
-import com.google.ar.sceneform.FrameTime
-import com.google.ar.sceneform.HitTestResult
-import com.google.ar.sceneform.Node
-import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.*
 import com.google.ar.sceneform.rendering.Material
 import com.google.ar.sceneform.rendering.PlaneRenderer
 import com.google.ar.sceneform.rendering.Texture
-import com.google.ar.sceneform.math.Vector3
-import com.google.ar.sceneform.math.Quaternion
 import io.carius.lars.ar_flutter_plugin.Serialization.deserializeMatrix4
 import io.carius.lars.ar_flutter_plugin.Serialization.serializeHitResult
 import io.flutter.FlutterInjector
@@ -34,10 +32,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 import java.nio.FloatBuffer
-import java.util.*
 import java.util.concurrent.CompletableFuture
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 internal class AndroidARView(
         val activity: Activity,
@@ -142,8 +137,8 @@ internal class AndroidARView(
                     when (call.method) {
                         "addAnchor" -> {
                             val anchorType: Int? = call.argument<Int>("type")
-                            anchorType?.let{
-                                when(it) {
+                            if (anchorType != null){
+                                when(anchorType) {
                                     0 -> { // Plane Anchor
                                         val transform: ArrayList<Double>? = call.argument<ArrayList<Double>>("transformation")
                                         val name: String? = call.argument<String>("name")
@@ -156,15 +151,103 @@ internal class AndroidARView(
                                     }
                                     else -> result.success(false)
                                 }
-
+                            } else {
+                                result.success(false)
                             }
-                            result.success(false)
                         }
                         "removeAnchor" -> {
                             val anchorName: String? = call.argument<String>("name")
                             anchorName?.let{ name ->
                                 removeAnchor(name)
                             }
+                        }
+                        "initGoogleCloudAnchorMode" -> {
+                            val config = Config(arSceneView.session)
+                            config.cloudAnchorMode = Config.CloudAnchorMode.ENABLED
+                            config.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
+                            config.focusMode = Config.FocusMode.AUTO
+                            arSceneView.session?.configure(config)
+
+                            /*val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                    .requestIdToken("<PUT CLIENT ID HERE>")
+                                    //.requestScopes(Scope(Scopes.CLOUD_SAVE))
+                                    .build()
+
+                            val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                            val signInIntent = googleSignInClient.signInIntent
+
+                            startActivityForResult(activity, signInIntent, 9001, null)*/
+
+                            //val token: String = GoogleAuthUtil.getToken(context, "PUT EMAIL HERE", "oauth2:https://www.googleapis.com/auth/arcore")
+
+                        }
+                        "uploadAnchor" ->  {
+                            /*val anchorName: String? = call.argument<String>("name")
+                            anchorName?.let {
+                                val anchorNode = arSceneView.scene.findByName(anchorName) as AnchorNode?
+                                val newAnchor = arSceneView.session!!.hostCloudAnchorWithTtl(anchorNode!!.anchor, 2)
+                                Log.d(TAG, "---------------- HOSTEDING INITIATED ------------------")
+                            }*/
+
+
+                            /*val am: AccountManager = AccountManager.get(context)
+                            val options = Bundle()
+
+                            am.getAuthToken(
+                                    myAccount_,                     // Account retrieved using getAccountsByType()
+                                    "Manage your tasks",            // Auth scope
+                                    options,                        // Authenticator-specific options
+                                    activity,                           // Your activity
+                                    {val anchorName: String? = call.argument<String>("name")
+                                        anchorName?.let{
+                                            val anchorNode = arSceneView.scene.findByName(anchorName) as AnchorNode?
+                                            val newAnchor = arSceneView.session!!.hostCloudAnchorWithTtl(anchorNode!!.anchor, 2)
+                                            Log.d(TAG, "---------------- HOSTEDING INITIATED ------------------")
+
+                                        }},              // Callback called when a token is successfully acquired
+                                    Handler({Log.d(TAG, "getting Token failed")})              // Callback called if an error occurs
+                            )*/
+
+                            /*val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                    .requestServerAuthCode("PUT CLIENT ID HERE")
+                                    .build()
+                            Log.d(TAG, "Logged in as: " + gso.account.name)*/
+
+
+                            // Configure Google Sign In
+                            /*val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                    .requestIdToken("PUT CLIENT ID HERE")
+                                    //.requestScopes(Scope(Scopes.CLOUD_SAVE))
+                                    .build()
+
+                            val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                            val signInIntent = googleSignInClient.signInIntent
+
+                            startActivityForResult(activity, signInIntent, 9001, null)*/
+
+                            val anchorName: String? = call.argument<String>("name")
+                            anchorName?.let {
+                                val anchorNode = arSceneView.scene.findByName(anchorName) as AnchorNode?
+                                val newAnchor = arSceneView.session!!.hostCloudAnchorWithTtl(anchorNode!!.anchor, 2)
+                                val oldAnchor = anchorNode.anchor
+                                anchorNode.anchor = newAnchor
+                                oldAnchor?.detach()
+                                Log.d(TAG, "---------------- HOSTING INITIATED ------------------")
+                                result.success(true)
+                            }
+
+                        }
+                        "downloadAnchor" -> {
+                            val anchorId: String? = call.argument<String>("cloudanchorid")
+                            anchorId?.let{
+                                val newAnchor = arSceneView.session!!.resolveCloudAnchor(anchorId)
+                                val newAnchorNode = AnchorNode(newAnchor)
+                                newAnchorNode.name = "testanchornode"
+                                newAnchorNode.setParent(arSceneView.scene)
+                                //For debugging purposes: add node to new anchor
+                                val debugTransformation: ArrayList<Double> = arrayListOf(0.2,0.0,0.0,0.0,0.0,0.2,0.0,0.0,0.0,0.0,0.2,0.0,0.0,0.0,0.0,1.0)
+                                modelBuilder.makeNodeFromGlb(context, "testnode", "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb", debugTransformation)
+                                        .thenAccept{node -> newAnchorNode.addChild(node)}}
                         }
                         else -> {}
                     }
@@ -434,6 +517,22 @@ internal class AndroidARView(
             // Release resources
             pointCloud?.release()
         }
+        val updatedAnchors = arSceneView.arFrame!!.updatedAnchors
+        for (anchor in updatedAnchors){
+            val cloudState = anchor!!.cloudAnchorState
+            if (cloudState == Anchor.CloudAnchorState.SUCCESS){
+                val args = HashMap<String, String>()
+                args["name"] = arSceneView.scene.findInHierarchy { node -> (node is AnchorNode) && node.anchor == anchor }?.name ?: ""
+                args["cloudanchorid"] = anchor.cloudAnchorId
+                anchorManagerChannel.invokeMethod("onCloudAnchorUploaded", args)
+            }
+            if (cloudState.isError) {
+                Log.e(TAG, "Error hosting a cloud anchor, state $cloudState")
+            } else{
+                Log.d(TAG, "CLOUDANCHORSTATE: " + cloudState.toString() + ", ID: " + anchor.cloudAnchorId)
+            }
+        }
+
     }
 
     private fun addNode(dict_node: HashMap<String, Any>, dict_anchor: HashMap<String, Any>? = null): CompletableFuture<Boolean>{

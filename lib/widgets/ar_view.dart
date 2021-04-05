@@ -19,7 +19,7 @@ abstract class PlatformARView {
       case TargetPlatform.iOS:
         return IosARView();
       default:
-        return null;
+        throw FlutterError;
     }
   }
 
@@ -34,10 +34,12 @@ abstract class PlatformARView {
 /// Instantiates [ARSessionManager], [ARObjectManager] and returns them to the widget instantiating the [ARView] using the [arViewCreatedCallback]
 createManagers(
     int id,
-    BuildContext context,
-    ARViewCreatedCallback arViewCreatedCallback,
-    PlaneDetectionConfig planeDetectionConfig) {
-  if (arViewCreatedCallback == null) {
+    BuildContext? context,
+    ARViewCreatedCallback? arViewCreatedCallback,
+    PlaneDetectionConfig? planeDetectionConfig) {
+  if (context == null ||
+      arViewCreatedCallback == null ||
+      planeDetectionConfig == null) {
     return;
   }
   arViewCreatedCallback(ARSessionManager(id, context, planeDetectionConfig),
@@ -47,9 +49,9 @@ createManagers(
 /// Android-specific implementation of [PlatformARView]
 /// Uses Hybrid Composition to increase peformance on Android 9 and below (https://flutter.dev/docs/development/platform-integration/platform-views)
 class AndroidARView implements PlatformARView {
-  BuildContext _context;
-  ARViewCreatedCallback _arViewCreatedCallback;
-  PlaneDetectionConfig _planeDetectionConfig;
+  late BuildContext? _context;
+  late ARViewCreatedCallback? _arViewCreatedCallback;
+  late PlaneDetectionConfig? _planeDetectionConfig;
 
   @override
   void onPlatformViewCreated(int id) {
@@ -59,9 +61,9 @@ class AndroidARView implements PlatformARView {
 
   @override
   Widget build(
-      {@required BuildContext context,
-      @required ARViewCreatedCallback arViewCreatedCallback,
-      @required PlaneDetectionConfig planeDetectionConfig}) {
+      {BuildContext? context,
+      ARViewCreatedCallback? arViewCreatedCallback,
+      PlaneDetectionConfig? planeDetectionConfig}) {
     _context = context;
     _arViewCreatedCallback = arViewCreatedCallback;
     _planeDetectionConfig = planeDetectionConfig;
@@ -82,9 +84,9 @@ class AndroidARView implements PlatformARView {
 
 /// iOS-specific implementation of [PlatformARView]
 class IosARView implements PlatformARView {
-  BuildContext _context;
-  ARViewCreatedCallback _arViewCreatedCallback;
-  PlaneDetectionConfig _planeDetectionConfig;
+  BuildContext? _context;
+  ARViewCreatedCallback? _arViewCreatedCallback;
+  PlaneDetectionConfig? _planeDetectionConfig;
 
   @override
   void onPlatformViewCreated(int id) {
@@ -94,9 +96,9 @@ class IosARView implements PlatformARView {
 
   @override
   Widget build(
-      {@required BuildContext context,
-      @required ARViewCreatedCallback arViewCreatedCallback,
-      @required PlaneDetectionConfig planeDetectionConfig}) {
+      {BuildContext? context,
+      ARViewCreatedCallback? arViewCreatedCallback,
+      PlaneDetectionConfig? planeDetectionConfig}) {
     _context = context;
     _arViewCreatedCallback = arViewCreatedCallback;
     _planeDetectionConfig = planeDetectionConfig;
@@ -136,8 +138,8 @@ class ARView extends StatefulWidget {
   final bool showPlatformType;
 
   ARView(
-      {Key key,
-      @required this.onARViewCreated,
+      {Key? key,
+      required this.onARViewCreated,
       this.planeDetectionConfig = PlaneDetectionConfig.none,
       this.showPlatformType = false,
       this.permissionPromptDescription =
@@ -163,10 +165,10 @@ class _ARViewState extends State<ARView> {
   String permissionPromptParentalRestriction;
 
   _ARViewState(
-      {@required this.showPlatformType,
-      @required this.permissionPromptDescription,
-      @required this.permissionPromptButtonText,
-      @required this.permissionPromptParentalRestriction});
+      {required this.showPlatformType,
+      required this.permissionPromptDescription,
+      required this.permissionPromptButtonText,
+      required this.permissionPromptParentalRestriction});
 
   @override
   void initState() {

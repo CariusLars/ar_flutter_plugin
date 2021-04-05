@@ -8,12 +8,12 @@ typedef NodeTapResultHandler = void Function(List<String> nodes);
 /// Manages the all actions related to 3D objects (=Nodes) of an [ARView]
 class ARObjectManager {
   /// Platform channel used for communication from and to [ARObjectManager]
-  MethodChannel _channel;
+  late MethodChannel _channel;
 
   /// Debugging status flag. If true, all platform calls are printed. Defaults to false.
   final bool debug;
 
-  NodeTapResultHandler onNodeTap;
+  NodeTapResultHandler? onNodeTap;
 
   ARObjectManager(int id, {this.debug = false}) {
     _channel = MethodChannel('arobjects_$id');
@@ -35,7 +35,7 @@ class ARObjectManager {
         case 'onNodeTap':
           if (onNodeTap != null) {
             final tappedNodes = call.arguments as List<dynamic>;
-            onNodeTap(tappedNodes
+            onNodeTap!(tappedNodes
                 .map((tappedNode) => tappedNode.toString())
                 .toList());
           }
@@ -46,7 +46,7 @@ class ARObjectManager {
           }
       }
     } catch (e) {
-      print('Error caught: ' + e);
+      print('Error caught: ' + e.toString());
     }
     return Future.value();
   }
@@ -56,7 +56,7 @@ class ARObjectManager {
   }
 
   /// Add given node to the given anchor of the underlying AR scene (or to its top-level if no anchor is given) and listen to any changes made to its transformation
-  Future<bool> addNode(ARNode node, {ARPlaneAnchor planeAnchor}) async {
+  Future<bool?> addNode(ARNode node, {ARPlaneAnchor? planeAnchor}) async {
     try {
       node.transformNotifier.addListener(() {
         _channel.invokeMethod<void>('transformationChanged', {

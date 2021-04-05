@@ -11,14 +11,14 @@ import 'package:ar_flutter_plugin/datatypes/node_types.dart';
 /// The coordinate systems of all the sub-nodes are relative to the one of their parent node.
 class ARNode {
   ARNode({
-    this.type,
-    this.uri,
-    String name,
-    Vector3 position,
-    Vector3 scale,
-    Vector4 rotation,
-    Vector3 eulerAngles,
-    Matrix4 transformation,
+    required this.type,
+    required this.uri,
+    String? name,
+    Vector3? position,
+    Vector3? scale,
+    Vector4? rotation,
+    Vector3? eulerAngles,
+    Matrix4? transformation,
   })  : name = name ?? UniqueKey().toString(),
         transformNotifier = ValueNotifier(createTransformMatrix(
             transformation, position, scale, rotation, eulerAngles));
@@ -96,8 +96,8 @@ class ARNode {
 
 // Helper functions
 
-Matrix4 createTransformMatrix(Matrix4 origin, Vector3 position, Vector3 scale,
-    Vector4 rotation, Vector3 eulerAngles) {
+Matrix4 createTransformMatrix(Matrix4? origin, Vector3? position,
+    Vector3? scale, Vector4? rotation, Vector3? eulerAngles) {
   final transform = origin ?? Matrix4.identity();
 
   if (position != null) {
@@ -193,11 +193,11 @@ class MatrixValueNotifierConverter
   }
 
   @override
-  List<dynamic> toJson(ValueNotifier<Matrix4> matrix) {
+  List<dynamic>? toJson(ValueNotifier<Matrix4>? matrix) {
     if (matrix == null || matrix.value == null) {
       return null;
     }
-    final list = List<double>(16);
+    final list = List<double>.filled(16, 0.0);
     matrix.value.copyIntoArray(list);
     return list;
   }

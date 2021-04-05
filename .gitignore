@@ -1,3 +1,6 @@
+# Credential files
+/example/Credentials/*
+
 # Gitignore entries taken from https://github.com/flutter/flutter/blob/master/.gitignore :
 
 # Miscellaneous

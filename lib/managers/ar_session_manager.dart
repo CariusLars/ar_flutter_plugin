@@ -9,7 +9,7 @@ typedef ARHitResultHandler = void Function(List<ARHitTestResult> hits);
 /// Manages the session configuration, parameters and events of an [ARView]
 class ARSessionManager {
   /// Platform channel used for communication from and to [ARSessionManager]
-  MethodChannel _channel;
+  late MethodChannel _channel;
 
   /// Debugging status flag. If true, all platform calls are printed. Defaults to false.
   final bool debug;
@@ -21,7 +21,7 @@ class ARSessionManager {
   final PlaneDetectionConfig planeDetectionConfig;
 
   /// Receives hit results from user taps with tracked planes or feature points
-  ARHitResultHandler onPlaneOrPointTap;
+  late ARHitResultHandler onPlaneOrPointTap;
 
   ARSessionManager(int id, this.buildContext, this.planeDetectionConfig,
       {this.debug = false}) {
@@ -63,7 +63,7 @@ class ARSessionManager {
           }
       }
     } catch (e) {
-      print('Error caught: ' + e);
+      print('Error caught: ' + e.toString());
     }
     return Future.value();
   }
@@ -74,7 +74,7 @@ class ARSessionManager {
   onInitialize({
     bool showFeaturePoints = false,
     bool showPlanes = true,
-    String customPlaneTexturePath,
+    String? customPlaneTexturePath,
     bool showWorldOrigin = false,
     bool handleTaps = true,
   }) {

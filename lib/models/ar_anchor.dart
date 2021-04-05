@@ -7,9 +7,9 @@ import 'package:flutter/widgets.dart';
 /// Object specifying a position and rotation in the AR environment
 abstract class ARAnchor {
   ARAnchor({
-    this.type,
-    this.transformation,
-    String name,
+    required this.type,
+    required this.transformation,
+    String? name,
   }) : name = name ?? UniqueKey().toString();
 
   /// Specifies the [AnchorType] of this [ARAnchor]
@@ -36,14 +36,21 @@ abstract class ARAnchor {
 
 /// An [ARAnchor] fixed to a tracked plane
 class ARPlaneAnchor extends ARAnchor {
-  ARPlaneAnchor(
-      {@required Matrix4 transformation, String name, List<String> childNodes})
-      : childNodes = childNodes ?? [],
+  ARPlaneAnchor({
+    required Matrix4 transformation,
+    String? name,
+    List<String>? childNodes,
+    String? cloudanchorid,
+  })  : childNodes = childNodes ?? [],
+        cloudanchorid = cloudanchorid ?? null,
         super(
             type: AnchorType.plane, transformation: transformation, name: name);
 
   /// Names of ARNodes attached to this [APlaneRAnchor]
   List<String> childNodes;
+
+  /// ID associated with the anchor after uploading it to the google cloud anchor API
+  String? cloudanchorid;
 
   static ARPlaneAnchor fromJson(Map<String, dynamic> json) =>
       aRPlaneAnchorFromJson(json);
@@ -71,7 +78,8 @@ Map<String, dynamic> aRPlaneAnchorToJson(ARPlaneAnchor instance) {
 
 /// An [ARAnchor] type that is not supported yet
 class ARUnkownAnchor extends ARAnchor {
-  ARUnkownAnchor({AnchorType type, Matrix4 transformation, String name})
+  ARUnkownAnchor(
+      {required AnchorType type, required Matrix4 transformation, String? name})
       : super(type: type, transformation: transformation, name: name);
 
   static ARUnkownAnchor fromJson(Map<String, dynamic> json) =>

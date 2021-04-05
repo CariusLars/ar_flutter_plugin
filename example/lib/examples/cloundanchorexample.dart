@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
@@ -24,8 +26,10 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
 
   List<ARNode> nodes = [];
   List<ARAnchor> anchors = [];
+  String lastUploadedAnchor = "";
 
   bool readyToUpload = false;
+  bool readyToDownload = false;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +63,11 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
                       child: ElevatedButton(
                           onPressed: onUploadButtonPressed,
                           child: Text("Upload"))),
+                  Visibility(
+                      visible: readyToDownload,
+                      child: ElevatedButton(
+                          onPressed: onDownloadButtonPressed,
+                          child: Text("Download"))),
                 ]),
           )
         ])));
@@ -77,9 +86,28 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
           showWorldOrigin: true,
         );
     this.arObjectManager.onInitialize();
+    initCloudAnchorMode();
 
     this.arSessionManager.onPlaneOrPointTap = onPlaneOrPointTapped;
     this.arObjectManager.onNodeTap = onNodeTapped;
+    this.arAnchorManager.onAnchorUploaded = onAnchorUploaded;
+  }
+
+  initCloudAnchorMode() async {
+    final cloudAnchorCredentialsFile =
+        "Credentials/cloudanchorcredentials.json";
+    try {
+      DefaultAssetBundle.of(context)
+          .loadString(cloudAnchorCredentialsFile)
+          .then((value) => this
+              .arAnchorManager
+              .initGoogleCloudAnchorMode(json.decode(value)["clientID"]));
+    } catch (e) {
+      this.arSessionManager.onError("Error loading credential file " +
+          cloudAnchorCredentialsFile +
+          ": " +
+          e.toString());
+    }
   }
 
   Future<void> onRemoveEverything() async {
@@ -128,5 +156,19 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     }
   }
 
-  Future<void> onUploadButtonPressed() async {}
+  Future<void> onUploadButtonPressed() async {
+    this.arAnchorManager.uploadAnchor(this.anchors.last);
+  }
+
+  onAnchorUploaded(ARAnchor anchor) {
+    lastUploadedAnchor = (anchor as ARPlaneAnchor).cloudanchorid;
+    setState(() {
+      readyToDownload = true;
+      readyToUpload = false;
+    });
+  }
+
+  Future<void> onDownloadButtonPressed() async {
+    this.arAnchorManager.downloadAnchor(lastUploadedAnchor);
+  }
 }
