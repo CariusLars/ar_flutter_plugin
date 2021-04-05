@@ -91,6 +91,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     this.arSessionManager.onPlaneOrPointTap = onPlaneOrPointTapped;
     this.arObjectManager.onNodeTap = onNodeTapped;
     this.arAnchorManager.onAnchorUploaded = onAnchorUploaded;
+    this.arAnchorManager.onAnchorDownloaded = onAnchorDownloaded;
   }
 
   initCloudAnchorMode() async {
@@ -115,6 +116,17 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
       this.arAnchorManager.removeAnchor(anchor);
     });
     anchors = [];
+    if (lastUploadedAnchor != "") {
+      setState(() {
+        readyToDownload = true;
+        readyToUpload = false;
+      });
+    } else {
+      setState(() {
+        readyToDownload = false;
+        readyToUpload = false;
+      });
+    }
   }
 
   Future<void> onNodeTapped(List<String> nodes) async {
@@ -127,8 +139,8 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     var singleHitTestResult = hitTestResults.firstWhere(
         (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
     if (singleHitTestResult != null) {
-      var newAnchor =
-          ARPlaneAnchor(transformation: singleHitTestResult.worldTransform);
+      var newAnchor = ARPlaneAnchor(
+          transformation: singleHitTestResult.worldTransform, ttl: 2);
       bool didAddAnchor = await this.arAnchorManager.addAnchor(newAnchor);
       if (didAddAnchor) {
         this.anchors.add(newAnchor);
@@ -158,6 +170,9 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
 
   Future<void> onUploadButtonPressed() async {
     this.arAnchorManager.uploadAnchor(this.anchors.last);
+    setState(() {
+      readyToUpload = false;
+    });
   }
 
   onAnchorUploaded(ARAnchor anchor) {
@@ -168,7 +183,34 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     });
   }
 
+  onAnchorDownloaded(ARAnchor anchor) async {
+    this.anchors.add(anchor);
+    // The following is for debugging and should be substituted with a call to firebase or some other cloud so check which objects belong to this anchor
+    var newNode = ARNode(
+        type: NodeType.webGLB,
+        uri:
+            "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
+        scale: Vector3(0.2, 0.2, 0.2),
+        position: Vector3(0.0, 0.0, 0.0),
+        rotation: Vector4(1.0, 0.0, 0.0, 0.0));
+    bool didAddNodeToAnchor = await this
+        .arObjectManager
+        .addNode(newNode, planeAnchor: anchor as ARPlaneAnchor);
+    if (didAddNodeToAnchor) {
+      this.nodes.add(newNode);
+      setState(() {
+        readyToDownload = false;
+        readyToUpload = false;
+      });
+    } else {
+      this.arSessionManager.onError("Adding Node to Anchor failed");
+    }
+  }
+
   Future<void> onDownloadButtonPressed() async {
     this.arAnchorManager.downloadAnchor(lastUploadedAnchor);
+    setState(() {
+      readyToDownload = false;
+    });
   }
 }

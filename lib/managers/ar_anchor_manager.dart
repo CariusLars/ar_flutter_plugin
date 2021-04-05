@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef AnchorUploadedHandler = void Function(ARAnchor arAnchor);
+typedef AnchorDownloadedHandler = void Function(ARAnchor arAnchor);
 
 /// Manages the session configuration, parameters and events of an [ARView]
 class ARAnchorManager {
@@ -19,6 +20,9 @@ class ARAnchorManager {
   /// Callback that is triggered once an anchor has successfully been uploaded to the google cloud anchor API
   AnchorUploadedHandler? onAnchorUploaded;
 
+  /// Callback that is triggered once an anchor has successfully been downloaded from the google cloud anchor API and resolved within the current scene
+  AnchorDownloadedHandler? onAnchorDownloaded;
+
   ARAnchorManager(int id, {this.debug = false}) {
     _channel = MethodChannel('aranchors_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
@@ -31,30 +35,18 @@ class ARAnchorManager {
     _channel.invokeMethod<bool>('initGoogleCloudAnchorMode', {});
     GoogleSignIn _googleSignIn = GoogleSignIn(
       clientId: clientID,
-      //scopes: [
-      //'https://www.googleapis.com/auth/arcore',
-      //'https://www.googleapis.com/auth/arcore.management',
-      //'https://www.googleapis.com/auth/drive.appdata',
-      //'https://www.googleapis.com/auth/drive.file',
-      //],
+      //scopes: [],
     );
     GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
 
     GoogleSignInAuthentication? googleSignInAuthentication =
         await googleSignInAccount?.authentication;
 
-    String? accessToken = googleSignInAuthentication?.accessToken;
-    String? idToken = googleSignInAuthentication?.idToken;
-
-    //if (accessToken != null) {
-    //  print("ACCESS TOKEN: " + accessToken);
-    //} else {
-    //  print("ACCESS TOKEN IS NULL");
-    //}
-    //print("ID TOKEN: " + idToken);
+    //String? accessToken = googleSignInAuthentication?.accessToken;
+    //String? idToken = googleSignInAuthentication?.idToken;
   }
 
-  Future<void> _platformCallHandler(MethodCall call) {
+  Future<dynamic> _platformCallHandler(MethodCall call) async {
     if (debug) {
       print('_platformCallHandler call ${call.method} ${call.arguments}');
     }
@@ -79,6 +71,16 @@ class ARAnchorManager {
             onAnchorUploaded!(currentAnchor);
           }
           break;
+        case "onAnchorDownloadSuccess":
+          final serializedAnchor = call.arguments;
+          // Reset name so the following function assigns a new uniquely identifying name
+          serializedAnchor["name"] = null;
+          final anchor =
+              ARAnchor.fromJson(Map<String, dynamic>.from(serializedAnchor));
+          if (onAnchorDownloaded != null) {
+            onAnchorDownloaded!(anchor);
+          }
+          return anchor.name;
         default:
           if (debug) {
             print('Unimplemented method ${call.method} ');
@@ -117,7 +119,7 @@ class ARAnchorManager {
   }
 
   Future<bool?> downloadAnchor(String cloudanchorid) async {
-    print("TRYING TO RESOLVE ANCHOR WITH ID " + cloudanchorid);
+    print("TRYING TO DOWNLOAD ANCHOR WITH ID " + cloudanchorid);
     _channel
         .invokeMethod<bool>('downloadAnchor', {"cloudanchorid": cloudanchorid});
   }

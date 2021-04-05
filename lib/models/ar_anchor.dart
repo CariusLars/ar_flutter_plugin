@@ -22,7 +22,7 @@ abstract class ARAnchor {
   factory ARAnchor.fromJson(Map<String, dynamic> arguments) {
     final type = arguments['type'];
     switch (type) {
-      case AnchorType.plane:
+      case 0: //(= AnchorType.plane)
         return ARPlaneAnchor.fromJson(arguments);
     }
     return ARUnkownAnchor.fromJson(arguments);
@@ -41,8 +41,10 @@ class ARPlaneAnchor extends ARAnchor {
     String? name,
     List<String>? childNodes,
     String? cloudanchorid,
+    int? ttl,
   })  : childNodes = childNodes ?? [],
         cloudanchorid = cloudanchorid ?? null,
+        ttl = ttl ?? 1,
         super(
             type: AnchorType.plane, transformation: transformation, name: name);
 
@@ -51,6 +53,9 @@ class ARPlaneAnchor extends ARAnchor {
 
   /// ID associated with the anchor after uploading it to the google cloud anchor API
   String? cloudanchorid;
+
+  /// Time to live of the anchor: Determines how long the anchor is stored once it is uploaded to the google cloud anchor API (optional, defaults to 1 day (24hours))
+  int? ttl;
 
   static ARPlaneAnchor fromJson(Map<String, dynamic> json) =>
       aRPlaneAnchorFromJson(json);
@@ -63,7 +68,12 @@ ARPlaneAnchor aRPlaneAnchorFromJson(Map<String, dynamic> json) {
   return ARPlaneAnchor(
     transformation: const MatrixConverter().fromJson(json['transform'] as List),
     name: json['name'] as String,
-    childNodes: json['childNodes'] as List<String>,
+    childNodes: json['childNodes']
+        .map((child) => child.toString())
+        .toList()
+        .cast<String>(),
+    cloudanchorid: json['cloudanchorid'] as String,
+    ttl: json['ttl'] as int,
   );
 }
 
@@ -73,6 +83,8 @@ Map<String, dynamic> aRPlaneAnchorToJson(ARPlaneAnchor instance) {
     'transformation': MatrixConverter().toJson(instance.transformation),
     'name': instance.name,
     'childNodes': instance.childNodes,
+    'cloudanchorid': instance.cloudanchorid,
+    'ttl': instance.ttl,
   };
 }
 

@@ -1,9 +1,7 @@
 package io.carius.lars.ar_flutter_plugin.Serialization
 
-import com.google.ar.core.HitResult
-import com.google.ar.core.Plane
-import com.google.ar.core.Point
-import com.google.ar.core.Pose
+import com.google.ar.core.*
+import com.google.ar.sceneform.AnchorNode
 
 fun serializeHitResult(hitResult: HitResult): HashMap<String, Any> {
     val serializedHitResult = HashMap<String,Any>()
@@ -32,4 +30,15 @@ fun serializePose(pose: Pose): DoubleArray {
         serializedPoseDouble[i] = serializedPose[i].toDouble()
     }
     return serializedPoseDouble
+}
+
+fun serializeAnchor(anchorNode: AnchorNode, anchor: Anchor?): HashMap<String, Any?> {
+    val serializedAnchor = HashMap<String, Any?>()
+    serializedAnchor["type"] = 0 // index for plane anchors
+    serializedAnchor["name"] = anchorNode.name
+    serializedAnchor["cloudanchorid"] = anchor?.cloudAnchorId
+    serializedAnchor["transform"] = if (anchor != null) serializePose(anchor.pose) else null
+    serializedAnchor["childNodes"] = anchorNode.children.map { child -> child.name }
+
+    return serializedAnchor
 }
