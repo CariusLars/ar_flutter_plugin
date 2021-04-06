@@ -14,6 +14,8 @@ dependencies:
   permission_handler: ^5.1.0+2
   vector_math: ^2.0.8
   json_annotation: ^3.0.1
+  google_maps_flutter: ^2.0.2
+  proj4dart: ^2.0.0
 
 dev_dependencies:
   flutter_test:

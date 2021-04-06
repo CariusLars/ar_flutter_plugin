@@ -3,6 +3,7 @@ import 'package:ar_flutter_plugin/utils/json_converters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
+import 'package:vector_math/vector_math_64.dart' as vect;
 
 // Type definitions to enforce a consistent use of the API
 typedef ARHitResultHandler = void Function(List<ARHitTestResult> hits);
@@ -109,5 +110,34 @@ class ARSessionManager {
       print('Error caught: ' + e);
       return null;
     }
+  }
+
+  dynamic getLookRotationAsVector(
+      vect.Vector3 cameraPose, vect.Vector3 positionObject,
+      {bool asQuaternion = false}) {
+    vect.Vector3 direction = cameraPose - positionObject;
+    vect.Quaternion lookRotation =
+        getLookRotation(direction, vect.Vector3(0, 1, 0));
+    if (asQuaternion) return lookRotation;
+    return vect.Vector4(
+        lookRotation[0], lookRotation[1], lookRotation[2], lookRotation[3]);
+  }
+
+  vect.Quaternion getLookRotation(
+      vect.Vector3 forwardInWorld, vect.Vector3 desiredUpInWorld) {
+    // Find the rotation between the world forward and the forward to look at.
+    vect.Quaternion rotateForwardToDesiredForward =
+        vect.Quaternion.fromTwoVectors(vect.Vector3(0, 0, -1), forwardInWorld);
+    // Recompute upwards so that it's perpendicular to the direction
+    vect.Vector3 rightInWorld = forwardInWorld.cross(desiredUpInWorld);
+    desiredUpInWorld = rightInWorld.cross(forwardInWorld);
+    // Find the rotation between the "up" of the rotated object, and the desired up
+    vect.Vector3 newUp =
+        rotateForwardToDesiredForward.rotate(vect.Vector3(0, 1, 0));
+
+    vect.Quaternion rotateNewUpToUpwards =
+        vect.Quaternion.fromTwoVectors(newUp, desiredUpInWorld);
+
+    return rotateNewUpToUpwards * rotateForwardToDesiredForward;
   }
 }
