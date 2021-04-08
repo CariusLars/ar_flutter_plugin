@@ -100,9 +100,10 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     try {
       DefaultAssetBundle.of(context)
           .loadString(cloudAnchorCredentialsFile)
-          .then((value) => this
-              .arAnchorManager
-              .initGoogleCloudAnchorMode(json.decode(value)["clientID"]));
+          .then((value) => this.arAnchorManager.initGoogleCloudAnchorMode(
+              json.decode(value)["clientID_Android"],
+              json.decode(value)["clientID_iOS"],
+              context));
     } catch (e) {
       this.arSessionManager.onError("Error loading credential file " +
           cloudAnchorCredentialsFile +

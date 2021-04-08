@@ -1,5 +1,6 @@
 # Credential files
 /example/Credentials/*
+/example/ios/Runner/GoogleService-Info.plist
 
 # Gitignore entries taken from https://github.com/flutter/flutter/blob/master/.gitignore :
 

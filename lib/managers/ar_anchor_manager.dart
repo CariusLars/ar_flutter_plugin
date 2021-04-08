@@ -1,6 +1,7 @@
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/material.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef AnchorUploadedHandler = void Function(ARAnchor arAnchor);
@@ -31,8 +32,15 @@ class ARAnchorManager {
     }
   }
 
-  initGoogleCloudAnchorMode(String clientID) async {
-    _channel.invokeMethod<bool>('initGoogleCloudAnchorMode', {});
+  initGoogleCloudAnchorMode(
+      String clientIdAndroid, String clientIdIos, BuildContext context) async {
+    
+    String clientID = "";
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      clientID = clientIdAndroid;
+    } else if (Theme.of(context).platform == TargetPlatform.iOS) {
+      clientID = clientIdIos;
+    }
     GoogleSignIn _googleSignIn = GoogleSignIn(
       clientId: clientID,
       //scopes: [],
@@ -41,6 +49,8 @@ class ARAnchorManager {
 
     GoogleSignInAuthentication? googleSignInAuthentication =
         await googleSignInAccount?.authentication;
+
+    _channel.invokeMethod<bool>('initGoogleCloudAnchorMode', {"token" : googleSignInAuthentication?.accessToken});
 
     //String? accessToken = googleSignInAuthentication?.accessToken;
     //String? idToken = googleSignInAuthentication?.idToken;

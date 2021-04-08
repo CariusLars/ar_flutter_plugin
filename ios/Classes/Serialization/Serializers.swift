@@ -1,5 +1,6 @@
 import Foundation
 import ARKit
+import ARCoreCloudAnchors
 
 func serializeHitResult(_ result: ARHitTestResult) -> Dictionary<String, Any> {
     
@@ -24,4 +25,16 @@ func serializeMatrix(_ matrix: simd_float4x4) -> Array<Float> {
 
 func serializeArray(_ array: simd_float4) -> Array<Float> {
     return [array[0], array[1], array[2], array[3]]
+}
+
+func serializeAnchor(anchor: ARAnchor, anchorNode: SCNNode?, ganchor: GARAnchor, name: String?) -> Dictionary<String, Any?> {
+    var serializedAnchor = Dictionary<String, Any?>()
+    
+    serializedAnchor["type"] = 0 // index for plane anchors
+    serializedAnchor["name"] = name
+    serializedAnchor["cloudanchorid"] = ganchor.cloudIdentifier
+    serializedAnchor["transform"] = serializeMatrix(anchor.transform)
+    serializedAnchor["childNodes"] = anchorNode?.childNodes.map{$0.name}
+
+    return serializedAnchor
 }
