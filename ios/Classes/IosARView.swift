@@ -136,13 +136,18 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     arcoreSession = try! GARSession.session()
 
                     if (arcoreSession != nil){
-                        arcoreSession!.setAuthToken(token)
-                        
-                        cloudAnchorHandler = CloudAnchorHandler(session: arcoreSession!)
-                        arcoreSession!.delegate = cloudAnchorHandler
-                        arcoreSession!.delegateQueue = DispatchQueue.main
-                        
-                        arcoreMode = true
+                        if let experimentalToken = JWTGenerator().generateWebToken(){
+                            //arcoreSession!.setAuthToken(token)
+                            arcoreSession!.setAuthToken(experimentalToken)
+                            
+                            cloudAnchorHandler = CloudAnchorHandler(session: arcoreSession!)
+                            arcoreSession!.delegate = cloudAnchorHandler
+                            arcoreSession!.delegateQueue = DispatchQueue.main
+                            
+                            arcoreMode = true
+                        } else {
+                            sessionManagerChannel.invokeMethod("onError", arguments: ["Error generating JWT, have you added cloudAnchorKey.json into the example/ios/Runner directory?"])
+                        }
                     } else {
                         sessionManagerChannel.invokeMethod("onError", arguments: ["Error initializing Google AR Session"])
                     }
@@ -158,6 +163,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                         cloudAnchorHandler?.hostCloudAnchor(anchorName: anchorName, anchor: anchor, listener: cloudAnchorUploadedListener(parent: self))
                     }
                 }
+                result(true)
                 break
             case "downloadAnchor":
                 if let anchorId = arguments!["cloudanchorid"] as? String {
@@ -421,8 +427,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     args["cloudanchorid"] = anchor?.cloudIdentifier
                     parent.anchorManagerChannel.invokeMethod("onCloudAnchorUploaded", arguments: args)
                 } else {
-                    print("Error uploading anchor, state \(cloudState.rawValue)")
-                    parent.sessionManagerChannel.invokeMethod("onError", arguments: ["Error uploading anchor, state \(cloudState.rawValue)"])
+                    print("Error uploading anchor, state: \(parent.decodeCloudAnchorState(state: cloudState))")
+                    parent.sessionManagerChannel.invokeMethod("onError", arguments: ["Error uploading anchor, state: \(parent.decodeCloudAnchorState(state: cloudState))"])
                     return
                 }
             }
@@ -457,6 +463,40 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 }
             }
         }
+    }
+    
+    func decodeCloudAnchorState(state: GARCloudAnchorState) -> String {
+        switch state {
+        case .errorCloudIdNotFound:
+            return "Cloud anchor id not found"
+        case .errorHostingDatasetProcessingFailed:
+            return "Dataset processing failed, feature map insufficient"
+        case .errorHostingServiceUnavailable:
+            return "Hosting service unavailable"
+        case .errorInternal:
+            return "Internal error"
+        case .errorNotAuthorized:
+            return "Authentication failed: Not Authorized"
+        case .errorResolvingSdkVersionTooNew:
+            return "Resolving Sdk version too new"
+        case .errorResolvingSdkVersionTooOld:
+            return "Resolving Sdk version too old"
+        case .errorResourceExhausted:
+            return " Resource exhausted"
+        case .none:
+            return "Empty state"
+        case .taskInProgress:
+            return "Task in progress"
+        case .success:
+            return "Success"
+        case .errorServiceUnavailable:
+            return "Cloud Anchor Service unavailable"
+        case .errorResolvingLocalizationNoMatch:
+            return "No match"
+        @unknown default:
+            return "Unknown"
+        }
+        
     }
         
 }

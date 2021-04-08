@@ -32,7 +32,12 @@ Follow these steps to create a Google Service account and signing key:
 * On the Grant users access to this service account page, click Done. This takes you back to APIs & Services > Credentials.
 * On the Credentials page, scroll down to the Service Accounts section and click the name of the account you just created.
 * On the Service account details page, scroll down to the Keys section and select Add Key > Create new key.
-* Select JSON as the key type and click Create. This downloads a JSON file containing the private key to your machine. Store the downloaded JSON key file in a secure location.
+* Select JSON as the key type and click Create. This downloads a JSON file containing the private key to your machine.
+* Rename this file to ```cloudAnchorKey.json```
+* Move or copy ```cloudAnchorKey.json``` into the example/ios/Runner directory.
+* Open Xcode, then right-click on Runner directory and select Add Files to "Runner".
+* Select ```cloudAnchorKey.json```  from the file manager.
+* A dialog will show up and ask you to select the targets, select the Runner target.
 
 ## Set up your app
 

@@ -69,11 +69,11 @@ ARPlaneAnchor aRPlaneAnchorFromJson(Map<String, dynamic> json) {
     transformation: const MatrixConverter().fromJson(json['transform'] as List),
     name: json['name'] as String,
     childNodes: json['childNodes']
-        .map((child) => child.toString())
-        .toList()
-        .cast<String>(),
-    cloudanchorid: json['cloudanchorid'] as String,
-    ttl: json['ttl'] as int,
+        ?.map((child) => child.toString())
+        ?.toList()
+        ?.cast<String>(),
+    cloudanchorid: json['cloudanchorid'] as String?,
+    ttl: json['ttl'] as int?,
   );
 }
 
