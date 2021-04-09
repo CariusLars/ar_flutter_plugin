@@ -8,7 +8,7 @@ Follow the steps below to set up your application.
 The Google Cloud Anchor API is used by the plugin to upload, store and download AR anchors. If your app uses the plugin's shared AR experience features, the following setup steps are required:
 
 1. Activate the [Cloud Anchor API](https://console.cloud.google.com/apis/api/arcorecloudanchor.googleapis.com) in your [Google Cloud Console](https://console.cloud.google.com) for the respective project
-3. Register the Android part of your Flutter Application
+2. Register the Android part of your Flutter Application
    * Perform the following steps to create a (based on the [Android Cloud Anchors Developer Guide](https://developers.google.com/ar/develop/java/cloud-anchors/developer-guide-android?hl=en) and the [Guide for setting up OAuth 2.0](https://support.google.com/cloud/answer/6158849#zippy=)):
      * Go to the [Google Cloud Platform Console](https://console.cloud.google.com).
      * If the APIs & services page isn't already open, open the console left side menu and select APIs & services.
@@ -45,7 +45,7 @@ The Google Cloud Anchor API is used by the plugin to upload, store and download 
         -keep class com.google.android.gms.tasks.** { *; }
         ```
 
-1. Register the iOS part of your Flutter Application
+3. Register the iOS part of your Flutter Application
    * Perform the following steps to create a Google Service account and signing key (based on the [iOS Cloud Anchor Developer Guide](https://developers.google.com/ar/develop/ios/cloud-anchors/developer-guide?hl=en)):
      * In the navigation menu of the Google Cloud Platform console, go to APIs & Services > Credentials.
      * Select the desired project, then click Create Credentials > Service account.
@@ -66,14 +66,14 @@ The Google Cloud Anchor API is used by the plugin to upload, store and download 
 
 Google's Firebase cloud platform is used by the plugin's sample app to distribute and manage shared anchors and related content. If you want to use the included examples with shared AR experience features (e.g. the ```Cloud Anchors```example), the following setup steps are required (in your own apps, you can implement any method you like to distribute and manage the cloud anchor IDs that the plugin returns after uploading an anchor):
 
-* Create a new project in the Firebase console
-* Register 2 apps in this project: One for [Android](https://developers.google.com/mobile/add?platform=android) and one for [iOS](https://developers.google.com/mobile/add?platform=ios) 
-  * In the iOS registration process, proceed as follows:
-    * Download the file ```GoogleService-Info.plist``` 
-    * Move or copy ``` GoogleService-Info.plist``` into the example/ios/Runner directory.
-    * Open Xcode, then right-click on Runner directory and select Add Files to "Runner".
-    * Select ``` GoogleService-Info.plist```  from the file manager.
-    * A dialog will show up and ask you to select the targets, select the Runner target.
-    * Go to ```example/iOS/Runner/Info.plist```and exchange the value for ```CFBundleURLSchemes```with your own Google Cloud OAUTH2 iOS client ID in reverse notation
-  * In the Android registration process, proceed as follows:
-    * TODO: Add explanations here
+1. Create a new project in the [Firebase console](https://console.firebase.google.com/project/_/overview)
+2. Register the Android part of your Flutter Application
+   * [Add Android app](https://developers.google.com/mobile/add?platform=android)
+3. Register the iOS part of your Flutter Application (based on the [FlutterFire iOS Installation Guide](https://firebase.flutter.dev/docs/installation/ios/))
+   * Add a new iOS app to your project and make sure the ```iOS bundle ID``` matches your local project bundle ID which can be found within the "General" tab when opening ```ios/Runner.xcworkspace``` with Xcode.
+   * Download the file ```GoogleService-Info.plist``` 
+   * Move or copy ``` GoogleService-Info.plist``` into the example/ios/Runner directory.
+   * Open Xcode, then right-click on Runner directory and select Add Files to "Runner".
+   * Select ``` GoogleService-Info.plist```  from the file manager.
+   * A dialog will show up and ask you to select the targets, select the Runner target.
+   
