@@ -16,7 +16,7 @@ The Google Cloud Anchor API is used by the plugin to upload, store and download 
      * Click New Credentials, then select OAuth client ID.
      * Select "Android" as the Application type
      * Fill in an arbitrary name and make sure the field "Package name" matches the package name in the ```AndroidManifest.xml``` of the Android part of your Flutter application
-     * Fill in the SHA-1 certificate fingerprint. If you're still in development, you can get the debug keystore key for the Android app, by executing ```keytool -keystore ~/.android/debug.keystore -list -v``` in your terminal
+     * Fill in the SHA-1 certificate fingerprint. If you're still in development, you can get the debug keystore key for the Android app by executing ```keytool -keystore ~/.android/debug.keystore -list -v``` in your terminal
      * Click Create client ID
      * If this is your first time creating a client ID, you have to configure your consent screen by clicking Consent Screen. The following procedure explains how to set up the Consent screen. You won't be prompted to configure the consent screen after you do it the first time.
        * Go to the Google API Console [OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) page.
@@ -67,8 +67,10 @@ The Google Cloud Anchor API is used by the plugin to upload, store and download 
 Google's Firebase cloud platform is used by the plugin's sample app to distribute and manage shared anchors and related content. If you want to use the included examples with shared AR experience features (e.g. the ```Cloud Anchors```example), the following setup steps are required (in your own apps, you can implement any method you like to distribute and manage the cloud anchor IDs that the plugin returns after uploading an anchor):
 
 1. Create a new project in the [Firebase console](https://console.firebase.google.com/project/_/overview)
-2. Register the Android part of your Flutter Application
-   * [Add Android app](https://developers.google.com/mobile/add?platform=android)
+2. Register the Android part of your Flutter Application based on the [FlutterFire Android Installation Guide](https://firebase.flutter.dev/docs/installation/android/))
+   * Add a new Android app to your project and make sure the ```Android package name``` matches your local project's package name which can be found within the ```AndroidManifest.xml```
+   * Fill in the debug signing certificate SHA-1 field. If you're still in development, you can get the debug keystore key for the Android app by executing ```keytool -keystore ~/.android/debug.keystore -list -v``` in your terminal
+   * Once your Android app has been registered, download the configuration file from the Firebase Console (the file is called ```google-services.json```). Add this file into the ```android/app``` directory within your Flutter project
 3. Register the iOS part of your Flutter Application (based on the [FlutterFire iOS Installation Guide](https://firebase.flutter.dev/docs/installation/ios/))
    * Add a new iOS app to your project and make sure the ```iOS bundle ID``` matches your local project bundle ID which can be found within the "General" tab when opening ```ios/Runner.xcworkspace``` with Xcode.
    * Download the file ```GoogleService-Info.plist``` 
