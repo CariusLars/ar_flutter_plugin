@@ -42,6 +42,7 @@ dependencies {
     implementation 'com.google.ar.sceneform:core:1.15.0'
     implementation 'com.google.ar.sceneform:assets:1.15.0'
 
+    implementation 'com.google.android.gms:play-services-auth:16+'
 }
 
 afterEvaluate {

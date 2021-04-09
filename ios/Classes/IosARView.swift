@@ -132,27 +132,24 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 }
                 break
             case "initGoogleCloudAnchorMode":
-                if let token = arguments!["token"] as? String {
-                    arcoreSession = try! GARSession.session()
+                arcoreSession = try! GARSession.session()
 
-                    if (arcoreSession != nil){
-                        if let experimentalToken = JWTGenerator().generateWebToken(){
-                            //arcoreSession!.setAuthToken(token)
-                            arcoreSession!.setAuthToken(experimentalToken)
-                            
-                            cloudAnchorHandler = CloudAnchorHandler(session: arcoreSession!)
-                            arcoreSession!.delegate = cloudAnchorHandler
-                            arcoreSession!.delegateQueue = DispatchQueue.main
-                            
-                            arcoreMode = true
-                        } else {
-                            sessionManagerChannel.invokeMethod("onError", arguments: ["Error generating JWT, have you added cloudAnchorKey.json into the example/ios/Runner directory?"])
-                        }
+                if (arcoreSession != nil){
+                    if let token = JWTGenerator().generateWebToken(){
+                        arcoreSession!.setAuthToken(token)
+                        
+                        cloudAnchorHandler = CloudAnchorHandler(session: arcoreSession!)
+                        arcoreSession!.delegate = cloudAnchorHandler
+                        arcoreSession!.delegateQueue = DispatchQueue.main
+                        
+                        arcoreMode = true
                     } else {
-                        sessionManagerChannel.invokeMethod("onError", arguments: ["Error initializing Google AR Session"])
+                        sessionManagerChannel.invokeMethod("onError", arguments: ["Error generating JWT, have you added cloudAnchorKey.json into the example/ios/Runner directory?"])
                     }
-                    
+                } else {
+                    sessionManagerChannel.invokeMethod("onError", arguments: ["Error initializing Google AR Session"])
                 }
+                    
                 break
             case "uploadAnchor":
                 if let anchorName = arguments!["name"] as? String, let anchor = anchorCollection[anchorName] {

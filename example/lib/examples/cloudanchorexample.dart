@@ -86,30 +86,12 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
           showWorldOrigin: true,
         );
     this.arObjectManager.onInitialize();
-    initCloudAnchorMode();
+    this.arAnchorManager.initGoogleCloudAnchorMode();
 
     this.arSessionManager.onPlaneOrPointTap = onPlaneOrPointTapped;
     this.arObjectManager.onNodeTap = onNodeTapped;
     this.arAnchorManager.onAnchorUploaded = onAnchorUploaded;
     this.arAnchorManager.onAnchorDownloaded = onAnchorDownloaded;
-  }
-
-  initCloudAnchorMode() async {
-    final cloudAnchorCredentialsFile =
-        "Credentials/cloudanchorcredentials.json";
-    try {
-      DefaultAssetBundle.of(context)
-          .loadString(cloudAnchorCredentialsFile)
-          .then((value) => this.arAnchorManager.initGoogleCloudAnchorMode(
-              json.decode(value)["clientID_Android"],
-              json.decode(value)["clientID_iOS"],
-              context));
-    } catch (e) {
-      this.arSessionManager.onError("Error loading credential file " +
-          cloudAnchorCredentialsFile +
-          ": " +
-          e.toString());
-    }
   }
 
   Future<void> onRemoveEverything() async {

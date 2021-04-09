@@ -1,5 +1,4 @@
 # Credential files
-/example/Credentials/*
 /example/ios/Runner/GoogleService-Info.plist
 /example/ios/Runner/cloudAnchorKey.json
 
