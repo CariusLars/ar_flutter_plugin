@@ -37,7 +37,7 @@ fun serializeAnchor(anchorNode: AnchorNode, anchor: Anchor?): HashMap<String, An
     serializedAnchor["type"] = 0 // index for plane anchors
     serializedAnchor["name"] = anchorNode.name
     serializedAnchor["cloudanchorid"] = anchor?.cloudAnchorId
-    serializedAnchor["transform"] = if (anchor != null) serializePose(anchor.pose) else null
+    serializedAnchor["transformation"] = if (anchor != null) serializePose(anchor.pose) else null
     serializedAnchor["childNodes"] = anchorNode.children.map { child -> child.name }
 
     return serializedAnchor

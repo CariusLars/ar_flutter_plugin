@@ -33,7 +33,7 @@ func serializeAnchor(anchor: ARAnchor, anchorNode: SCNNode?, ganchor: GARAnchor,
     serializedAnchor["type"] = 0 // index for plane anchors
     serializedAnchor["name"] = name
     serializedAnchor["cloudanchorid"] = ganchor.cloudIdentifier
-    serializedAnchor["transform"] = serializeMatrix(anchor.transform)
+    serializedAnchor["transformation"] = serializeMatrix(anchor.transform)
     serializedAnchor["childNodes"] = anchorNode?.childNodes.map{$0.name}
 
     return serializedAnchor

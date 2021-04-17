@@ -78,4 +78,5 @@ Google's Firebase cloud platform is used by the plugin's sample app to distribut
    * Open Xcode, then right-click on Runner directory and select Add Files to "Runner".
    * Select ``` GoogleService-Info.plist```  from the file manager.
    * A dialog will show up and ask you to select the targets, select the Runner target.
+4. Enable Cloud Firestore for the project you created in step 1 (head to https://console.firebase.google.com/project/<YOUR FIREBASE PROJECT NAME>/firestore)
    

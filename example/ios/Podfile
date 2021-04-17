@@ -31,6 +31,7 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
+  pod 'FirebaseFirestore', :git => 'https://github.com/invertase/firestore-ios-sdk-frameworks.git', :tag => '7.3.0' # This line improves build times (see https://firebase.flutter.dev/docs/overview/)
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 

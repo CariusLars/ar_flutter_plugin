@@ -10,6 +10,7 @@ import 'package:ar_flutter_plugin_example/examples/localandwebobjectsexample.dar
 import 'package:ar_flutter_plugin_example/examples/debugoptionsexample.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 

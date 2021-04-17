@@ -281,7 +281,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     // Get path to given Flutter asset
                     let key = FlutterDartProject.lookupKey(forAsset: dict_node["uri"] as! String)
                     // Add object to scene
-                    if let node: SCNNode = self.modelBuilder.makeNodeFromGltf(name: dict_node["name"] as! String, modelPath: key, transformation: dict_node["transform"] as? Array<NSNumber>) {
+                    if let node: SCNNode = self.modelBuilder.makeNodeFromGltf(name: dict_node["name"] as! String, modelPath: key, transformation: dict_node["transformation"] as? Array<NSNumber>) {
                         if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
                             switch anchorType{
                                 case 0: //PlaneAnchor
@@ -307,7 +307,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     break
                 case 1: // GLB Model from the web
                     // Add object to scene
-                    self.modelBuilder.makeNodeFromWebGlb(name: dict_node["name"] as! String, modelURL: dict_node["uri"] as! String, transformation: dict_node["transform"] as? Array<NSNumber>)
+                    self.modelBuilder.makeNodeFromWebGlb(name: dict_node["name"] as! String, modelURL: dict_node["uri"] as! String, transformation: dict_node["transformation"] as? Array<NSNumber>)
                     .sink(receiveCompletion: {
                                     completion in print("Async Model Downloading Task completed: ", completion)
                     }, receiveValue: { val in

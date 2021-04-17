@@ -158,7 +158,7 @@ class ARView extends StatefulWidget {
 }
 
 class _ARViewState extends State<ARView> {
-  PermissionStatus _cameraPermission = PermissionStatus.undetermined;
+  PermissionStatus _cameraPermission = PermissionStatus.denied;
   bool showPlatformType;
   String permissionPromptDescription;
   String permissionPromptButtonText;
@@ -243,10 +243,6 @@ class _ARViewState extends State<ARView> {
         {
           //iOS only
           return Center(child: Text(permissionPromptParentalRestriction));
-        }
-      case (PermissionStatus.undetermined):
-        {
-          return Text(permissionPromptDescription);
         }
       default:
         return Text('something went wrong');

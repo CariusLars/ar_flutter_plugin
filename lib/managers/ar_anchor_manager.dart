@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef AnchorUploadedHandler = void Function(ARAnchor arAnchor);
-typedef AnchorDownloadedHandler = void Function(ARAnchor arAnchor);
+typedef AnchorDownloadedHandler = ARAnchor Function(
+    Map<String, dynamic> serializedAnchor);
 
 /// Manages the session configuration, parameters and events of an [ARView]
 class ARAnchorManager {
@@ -62,14 +63,13 @@ class ARAnchorManager {
           break;
         case "onAnchorDownloadSuccess":
           final serializedAnchor = call.arguments;
-          // Reset name so the following function assigns a new uniquely identifying name
-          serializedAnchor["name"] = null;
-          final anchor =
-              ARAnchor.fromJson(Map<String, dynamic>.from(serializedAnchor));
           if (onAnchorDownloaded != null) {
-            onAnchorDownloaded!(anchor);
+            ARAnchor anchor = onAnchorDownloaded!(
+                Map<String, dynamic>.from(serializedAnchor));
+            return anchor.name;
+          } else {
+            return serializedAnchor["name"];
           }
-          return anchor.name;
         default:
           if (debug) {
             print('Unimplemented method ${call.method} ');

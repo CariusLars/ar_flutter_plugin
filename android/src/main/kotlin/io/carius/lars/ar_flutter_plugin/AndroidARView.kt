@@ -477,7 +477,7 @@ internal class AndroidARView(
                     val key: String = loader.getLookupKeyForAsset(dict_node["uri"] as String)
 
                     // Add object to scene
-                    modelBuilder.makeNodeFromGltf(viewContext, dict_node["name"] as String, key, dict_node["transform"] as ArrayList<Double>)
+                    modelBuilder.makeNodeFromGltf(viewContext, dict_node["name"] as String, key, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
@@ -503,7 +503,7 @@ internal class AndroidARView(
                             }
                 }
                 1 -> { // GLB Model from the web
-                    modelBuilder.makeNodeFromGlb(viewContext, dict_node["name"] as String, dict_node["uri"] as String, dict_node["transform"] as ArrayList<Double>)
+                    modelBuilder.makeNodeFromGlb(viewContext, dict_node["name"] as String, dict_node["uri"] as String, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int

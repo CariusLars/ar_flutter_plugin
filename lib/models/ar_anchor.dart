@@ -66,7 +66,8 @@ class ARPlaneAnchor extends ARAnchor {
 
 ARPlaneAnchor aRPlaneAnchorFromJson(Map<String, dynamic> json) {
   return ARPlaneAnchor(
-    transformation: const MatrixConverter().fromJson(json['transform'] as List),
+    transformation:
+        const MatrixConverter().fromJson(json['transformation'] as List),
     name: json['name'] as String,
     childNodes: json['childNodes']
         ?.map((child) => child.toString())
@@ -104,7 +105,8 @@ class ARUnkownAnchor extends ARAnchor {
 ARUnkownAnchor aRUnkownAnchorFromJson(Map<String, dynamic> json) {
   return ARUnkownAnchor(
     type: json['type'],
-    transformation: const MatrixConverter().fromJson(json['transform'] as List),
+    transformation:
+        const MatrixConverter().fromJson(json['transformation'] as List),
     name: json['name'] as String,
   );
 }
