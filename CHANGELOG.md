@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+* Adds location manager which can be used to query the device's location (including permission and update handling)
+* Adds geoflutterfire to support uploading GPS coordinates alongside anchors and downloading anchors and objects by their location
+* Modifies cloud anchor example: Download button now queries and downloads all anchors along with the corresponding objects within a 100m radius of the device's current location
+* Bugfix: fixes bug on Android causing some examples to crash because the cloud anchor manager wasn't initialized
+
 ## 0.3.0
 
 * BREAKING CHANGE: Converts plugin to adhere to Flutter null safety

@@ -1,3 +1,4 @@
+import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
@@ -79,8 +80,11 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
         ])));
   }
 
-  void onARViewCreated(ARSessionManager arSessionManager,
-      ARObjectManager arObjectManager, ARAnchorManager arAnchorManager) {
+  void onARViewCreated(
+      ARSessionManager arSessionManager,
+      ARObjectManager arObjectManager,
+      ARAnchorManager arAnchorManager,
+      ARLocationManager arLocationManager) {
     this.arSessionManager = arSessionManager;
     this.arObjectManager = arObjectManager;
 
