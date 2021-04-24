@@ -9,7 +9,7 @@ The Google Cloud Anchor API is used by the plugin to upload, store and download 
 
 1. Activate the [Cloud Anchor API](https://console.cloud.google.com/apis/api/arcorecloudanchor.googleapis.com) in your [Google Cloud Console](https://console.cloud.google.com) for the respective project
 2. Register the Android part of your Flutter Application
-   * Perform the following steps to create a (based on the [Android Cloud Anchors Developer Guide](https://developers.google.com/ar/develop/java/cloud-anchors/developer-guide-android?hl=en) and the [Guide for setting up OAuth 2.0](https://support.google.com/cloud/answer/6158849#zippy=)):
+   * Perform the following steps to create a OAuth2 project (based on the [Android Cloud Anchors Developer Guide](https://developers.google.com/ar/develop/java/cloud-anchors/developer-guide-android?hl=en) and the [Guide for setting up OAuth 2.0](https://support.google.com/cloud/answer/6158849#zippy=)):
      * Go to the [Google Cloud Platform Console](https://console.cloud.google.com).
      * If the APIs & services page isn't already open, open the console left side menu and select APIs & services.
      * On the left, click Credentials.
@@ -22,7 +22,7 @@ The Google Cloud Anchor API is used by the plugin to upload, store and download 
        * Go to the Google API Console [OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) page.
        * Add required information like a product name and support email address.
        * Click Add Scope.
-       * On the dialog that appears, select the ``ÀRCore Cloud Anchor API```scopes and any additional ones your project uses. Sensitive scopes display a lock icon next to the API name. (To select scopes for registration, you need to enable the API, like Drive or Gmail, from APIs & Services > API Library. You must select all scopes used by the project.)
+       * On the dialog that appears, select the ```ARCore Cloud Anchor API```scopes and any additional ones your project uses. Sensitive scopes display a lock icon next to the API name. (To select scopes for registration, you need to enable the API, like Drive or Gmail, from APIs & Services > API Library. You must select all scopes used by the project.)
        * Finish the remaining steps of the OAuth consent screen setup.
    * Enable keyless authentication in the Android part of your Flutter app (if you use the sample app of this plugin as a starting point, these steps are already done; the following steps are based on the [Android Cloud Anchors Developer Guide](https://developers.google.com/ar/develop/java/cloud-anchors/developer-guide-android?hl=en)):
      * Add the dependency ```implementation 'com.google.android.gms:play-services-auth:16+'``` to the ```build.gradle``` file
@@ -67,16 +67,16 @@ The Google Cloud Anchor API is used by the plugin to upload, store and download 
 Google's Firebase cloud platform is used by the plugin's sample app to distribute and manage shared anchors and related content. If you want to use the included examples with shared AR experience features (e.g. the ```Cloud Anchors```example), the following setup steps are required (in your own apps, you can implement any method you like to distribute and manage the cloud anchor IDs that the plugin returns after uploading an anchor):
 
 1. Create a new project in the [Firebase console](https://console.firebase.google.com/project/_/overview)
-2. Register the Android part of your Flutter Application based on the [FlutterFire Android Installation Guide](https://firebase.flutter.dev/docs/installation/android/))
+2. Register the Android part of your Flutter Application (based on the [FlutterFire Android Installation Guide](https://firebase.flutter.dev/docs/installation/android/)):
    * Add a new Android app to your project and make sure the ```Android package name``` matches your local project's package name which can be found within the ```AndroidManifest.xml```
    * Fill in the debug signing certificate SHA-1 field. If you're still in development, you can get the debug keystore key for the Android app by executing ```keytool -keystore ~/.android/debug.keystore -list -v``` in your terminal
    * Once your Android app has been registered, download the configuration file from the Firebase Console (the file is called ```google-services.json```). Add this file into the ```android/app``` directory within your Flutter project
-3. Register the iOS part of your Flutter Application (based on the [FlutterFire iOS Installation Guide](https://firebase.flutter.dev/docs/installation/ios/))
+3. Register the iOS part of your Flutter Application (based on the [FlutterFire iOS Installation Guide](https://firebase.flutter.dev/docs/installation/ios/)):
    * Add a new iOS app to your project and make sure the ```iOS bundle ID``` matches your local project bundle ID which can be found within the "General" tab when opening ```ios/Runner.xcworkspace``` with Xcode.
    * Download the file ```GoogleService-Info.plist``` 
    * Move or copy ``` GoogleService-Info.plist``` into the example/ios/Runner directory.
    * Open Xcode, then right-click on Runner directory and select Add Files to "Runner".
    * Select ``` GoogleService-Info.plist```  from the file manager.
    * A dialog will show up and ask you to select the targets, select the Runner target.
-4. Enable Cloud Firestore for the project you created in step 1 (head to https://console.firebase.google.com/project/<YOUR FIREBASE PROJECT NAME>/firestore)
+4. Enable Cloud Firestore for the project you created in step 1 (head to https://console.firebase.google.com/project/INSERT_YOUR_FIREBASE_PROJECT_NAME_HERE/firestore)
    

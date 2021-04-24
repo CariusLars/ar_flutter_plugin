@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+* BREAKING CHANGE: Converts plugin to adhere to Flutter null safety
+* Adds Cloud Anchor functionality (uploading and downloading anchors to/from the Google Cloud Anchor API), including keyless authentication
+* Adds Cloud Anchor example demonstrating how to use Firebase to manage cloud anchor IDs and corresponding data (e.g. on-tap texts)
+* Adds ```data``` member variable to ```ARNode``` as a flexible variable to hold any information associated with the node
+
 ## 0.2.1
 
 * Bugfix: Handles singularities in affine transformation matrix deserialization on Android
