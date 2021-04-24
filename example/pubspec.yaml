@@ -24,6 +24,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
+  # Firebase dependencies to shared and manage cloud anchor IDs and related content
+  firebase_core: "^1.0.3"
+  cloud_firestore: "^1.0.4"
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

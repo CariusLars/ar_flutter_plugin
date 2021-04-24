@@ -12,7 +12,7 @@ class MatrixConverter implements JsonConverter<Matrix4, List<dynamic>> {
 
   @override
   List<dynamic> toJson(Matrix4 matrix) {
-    final list = List<double>(16);
+    final list = List<double>.filled(16, 0.0);
     matrix.copyIntoArray(list);
     return list;
   }
