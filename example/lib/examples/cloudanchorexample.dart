@@ -15,6 +15,8 @@ import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
+import 'package:geolocator/geolocator.dart';
 
 class CloudAnchorWidget extends StatefulWidget {
   CloudAnchorWidget({Key key}) : super(key: key);
@@ -268,7 +270,8 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
 
   onAnchorUploaded(ARAnchor anchor) {
     // Upload anchor information to firebase
-    firebaseManager.uploadAnchor(anchor);
+    firebaseManager.uploadAnchor(anchor,
+        currentLocation: this.arLocationManager.currentLocation);
     // Upload child nodes to firebase
     if (anchor is ARPlaneAnchor) {
       anchor.childNodes.forEach((nodeName) => firebaseManager.uploadObject(
@@ -278,6 +281,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
       readyToDownload = true;
       readyToUpload = false;
     });
+    this.arSessionManager.onError("Upload successful");
   }
 
   ARAnchor onAnchorDownloaded(Map<String, dynamic> serializedAnchor) {
@@ -300,14 +304,27 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
 
   Future<void> onDownloadButtonPressed() async {
     //this.arAnchorManager.downloadAnchor(lastUploadedAnchor);
-    firebaseManager.downloadLatestAnchor((snapshot) {
-      final cloudAnchorId = snapshot.docs.first.get("cloudanchorid");
-      anchorsInDownloadProgress[cloudAnchorId] = snapshot.docs.first.data();
-      arAnchorManager.downloadAnchor(cloudAnchorId);
-    });
-    setState(() {
-      readyToDownload = false;
-    });
+    //firebaseManager.downloadLatestAnchor((snapshot) {
+    //  final cloudAnchorId = snapshot.docs.first.get("cloudanchorid");
+    //  anchorsInDownloadProgress[cloudAnchorId] = snapshot.docs.first.data();
+    //  arAnchorManager.downloadAnchor(cloudAnchorId);
+    //});
+
+    // Get anchors within a radius of 100m of the current device's location
+    if (this.arLocationManager.currentLocation != null) {
+      firebaseManager.downloadAnchorsByLocation((snapshot) {
+        final cloudAnchorId = snapshot.get("cloudanchorid");
+        anchorsInDownloadProgress[cloudAnchorId] = snapshot.data();
+        arAnchorManager.downloadAnchor(cloudAnchorId);
+      }, this.arLocationManager.currentLocation, 0.1);
+      setState(() {
+        readyToDownload = false;
+      });
+    } else {
+      this
+          .arSessionManager
+          .onError("Location updates not running, can't download anchors");
+    }
   }
 
   void showAlertDialog(BuildContext context, String title, String content,
@@ -349,9 +366,12 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
 
 // Class for managing interaction with Firebase (in your own app, this can be put in a separate file to keep everything clean and tidy)
 typedef FirebaseListener = void Function(QuerySnapshot snapshot);
+typedef FirebaseDocumentStreamListener = void Function(
+    DocumentSnapshot snapshot);
 
 class FirebaseManager {
   FirebaseFirestore firestore;
+  Geoflutterfire geo;
   CollectionReference anchorCollection;
   CollectionReference objectCollection;
 
@@ -360,6 +380,7 @@ class FirebaseManager {
     try {
       // Wait for Firebase to initialize
       await Firebase.initializeApp();
+      geo = Geoflutterfire();
       firestore = FirebaseFirestore.instance;
       anchorCollection = FirebaseFirestore.instance.collection('anchors');
       objectCollection = FirebaseFirestore.instance.collection('objects');
@@ -369,21 +390,26 @@ class FirebaseManager {
     }
   }
 
-  void uploadAnchor(ARAnchor anchor) {
+  void uploadAnchor(ARAnchor anchor, {Position currentLocation}) {
     if (firestore == null) return;
 
     var serializedAnchor = anchor.toJson();
     var expirationTime = DateTime.now().millisecondsSinceEpoch / 1000 +
         serializedAnchor["ttl"] * 24 * 60 * 60;
     serializedAnchor["expirationTime"] = expirationTime;
+    // Add location
+    if (currentLocation != null) {
+      GeoFirePoint myLocation = geo.point(
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude);
+      serializedAnchor["position"] = myLocation.data;
+    }
 
     anchorCollection
         .add(serializedAnchor)
         .then((value) =>
             print("Successfully added anchor: " + serializedAnchor["name"]))
         .catchError((error) => print("Failed to add anchor: $error"));
-
-    // ToDo: Store GPS location of anchor
   }
 
   void uploadObject(ARNode node) {
@@ -408,7 +434,21 @@ class FirebaseManager {
             (error) => (error) => print("Failed to download anchor: $error"));
   }
 
-  void downloadAnchorsByLocation() {}
+  void downloadAnchorsByLocation(FirebaseDocumentStreamListener listener,
+      Position location, double radius) {
+    GeoFirePoint center =
+        geo.point(latitude: location.latitude, longitude: location.longitude);
+
+    Stream<List<DocumentSnapshot>> stream = geo
+        .collection(collectionRef: anchorCollection)
+        .within(center: center, radius: radius, field: 'position');
+
+    stream.listen((List<DocumentSnapshot> documentList) {
+      documentList.forEach((element) {
+        listener(element);
+      });
+    });
+  }
 
   void downloadAnchorsByChannel() {}
 

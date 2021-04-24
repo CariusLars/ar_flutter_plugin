@@ -27,6 +27,7 @@ dependencies:
   # Firebase dependencies to shared and manage cloud anchor IDs and related content
   firebase_core: "^1.0.3"
   cloud_firestore: "^1.0.4"
+  geoflutterfire: "^3.0.0-nullsafety.1"
 
 dev_dependencies:
   flutter_test:
