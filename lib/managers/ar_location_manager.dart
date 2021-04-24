@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 
+/// Can be used to get the current location of the device, update it and handle location permissions
 class ARLocationManager {
   late Position currentLocation;
   late StreamSubscription<Position> locationStream;
 
+  /// Returns the last known location of the device or an error, if permissions don't suffice. Automatically queries user permission if possible
   Future<Position?> getLastKnownPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -41,6 +43,7 @@ class ARLocationManager {
     return await Geolocator.getLastKnownPosition();
   }
 
+  /// Starts high precision location updates to keep track of the device's position. Returns true or an error, if permissions don't suffice. Automatically queries user permission if possible
   Future<bool> startLocationUpdates() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -84,19 +87,22 @@ class ARLocationManager {
     return true;
   }
 
+  /// Stops the high-precision location updates
   void stopLocationUpdates() {
     locationStream.cancel();
   }
 
+  /// Opens the settings of the current application
   void openAppPermissionSettings() async {
     await Geolocator.openAppSettings();
   }
 
+  /// Opens the device settings where location services can be enabled
   void openLocationServicesSettings() async {
     await Geolocator.openLocationSettings();
   }
 
-  /// Determine the current position of the device.
+  /// Determines the current position of the device.
   ///
   /// When the location services are not enabled or permissions
   /// are denied the `Future` will return an error.
