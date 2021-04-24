@@ -155,7 +155,7 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
       });
     } else {
       setState(() {
-        readyToDownload = false;
+        readyToDownload = true;
         readyToUpload = false;
       });
     }
