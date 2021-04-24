@@ -79,4 +79,14 @@ Google's Firebase cloud platform is used by the plugin's sample app to distribut
    * Select ``` GoogleService-Info.plist```  from the file manager.
    * A dialog will show up and ask you to select the targets, select the Runner target.
 4. Enable Cloud Firestore for the project you created in step 1 (head to https://console.firebase.google.com/project/INSERT_YOUR_FIREBASE_PROJECT_NAME_HERE/firestore)
+
+## Set up Location Services
+
+* On the iOS part of your app, add the following to your Info.plist file (located under ios/Runner) in order to access the device's location:
+  ```
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>This app needs access to location when open.</string>
+  <key>NSLocationAlwaysUsageDescription</key>
+  <string>This app needs access to location when in the background.</string>
+  ```
    

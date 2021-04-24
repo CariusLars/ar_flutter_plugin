@@ -14,6 +14,7 @@ dependencies:
   permission_handler: ^6.1.1
   vector_math: ^2.0.8
   json_annotation: ^3.0.1
+  geolocator: ^7.0.3
 
 dev_dependencies:
   flutter_test:

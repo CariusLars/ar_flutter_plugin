@@ -462,7 +462,7 @@ internal class AndroidARView(
         }
         val updatedAnchors = arSceneView.arFrame!!.updatedAnchors
         // Notify the cloudManager of all the updates.
-        cloudAnchorHandler.onUpdate(updatedAnchors)
+        if (this::cloudAnchorHandler.isInitialized) {cloudAnchorHandler.onUpdate(updatedAnchors)}
 
     }
 
