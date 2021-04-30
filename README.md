@@ -29,7 +29,7 @@ To try out the plugin, it is best to have a look at one of the following example
 ## Roadmap
 
 The next development steps are:
-* GPS-tagging anchors to allow efficient querying of anchors by a device's location.
+* Preparing the plugin for release on pub.dev
 
 This is a rough sketch of the architecture the plugin will eventually implement:
 
