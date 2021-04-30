@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+* Adds External Model Management Example: A firebase database is used to store a list of 3D models (name, preview image, URI of the file location in a github repo). These models can be scrolled through and selected from in the example and can then be placed into the scene, uploaded through the Google Cloud Anchor API and downloaded on any other device with the app installed. The downloading user does not need to have the model "pre-installed", it is downloaded on the first occasion.
+
 ## 0.4.0
 
 * Adds location manager which can be used to query the device's location (including permission and update handling)
