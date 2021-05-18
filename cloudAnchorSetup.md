@@ -71,6 +71,8 @@ Google's Firebase cloud platform is used by the plugin's sample app to distribut
    * Add a new Android app to your project and make sure the ```Android package name``` matches your local project's package name which can be found within the ```AndroidManifest.xml```
    * Fill in the debug signing certificate SHA-1 field. If you're still in development, you can get the debug keystore key for the Android app by executing ```keytool -keystore ~/.android/debug.keystore -list -v``` in your terminal
    * Once your Android app has been registered, download the configuration file from the Firebase Console (the file is called ```google-services.json```). Add this file into the ```android/app``` directory within your Flutter project
+   * Add the dependency ```classpath 'com.google.gms:google-services:4.3.3'``` to the top-level ```build.gradle```file of the Android part of your Flutter application
+   * Add ```apply plugin: 'com.google.gms.google-services'``` to the app-level ```build.gradle```file of the Android part of your Flutter application
 3. Register the iOS part of your Flutter Application (based on the [FlutterFire iOS Installation Guide](https://firebase.flutter.dev/docs/installation/ios/)):
    * Add a new iOS app to your project and make sure the ```iOS bundle ID``` matches your local project bundle ID which can be found within the "General" tab when opening ```ios/Runner.xcworkspace``` with Xcode.
    * Download the file ```GoogleService-Info.plist``` 
