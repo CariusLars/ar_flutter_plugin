@@ -1,5 +1,6 @@
 import 'package:ar_flutter_plugin_example/examples/externalmodelmanagementexample.dart';
 import 'package:ar_flutter_plugin_example/examples/objectsonplanesexample.dart';
+import 'package:ar_flutter_plugin_example/examples/performancetestexample.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -104,7 +105,14 @@ class ExampleList extends StatelessWidget {
           () => Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => ExternalModelManagementWidget())))
+                  builder: (context) => ExternalModelManagementWidget()))),
+      Example(
+          'Performance Test',
+          'Track feature point and plane detection performance (works on Android only)',
+          () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => PerformanceTestWidget()))),
     ];
     return ListView(
       children:

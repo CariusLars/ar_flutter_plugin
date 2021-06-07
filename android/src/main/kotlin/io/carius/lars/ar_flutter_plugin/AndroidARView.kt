@@ -7,8 +7,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
@@ -25,8 +29,10 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
+import java.lang.Float.NaN
 import java.nio.FloatBuffer
 import java.util.concurrent.CompletableFuture
+
 
 internal class AndroidARView(
         val activity: Activity,
@@ -55,6 +61,28 @@ internal class AndroidARView(
     // Cloud anchor handler
     private lateinit var cloudAnchorHandler: CloudAnchorHandler
 
+    //Performance analysis UI elements
+    var lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+    val layout = LinearLayout(context)
+
+    private var recordTrackingData = false
+    private var currentPlaneArea = 0.0
+    private var numARFrames = 0
+    private var numFeaturePoints = 0
+    private var avgFeaturePoints = 0.0
+    private lateinit var text_featurepoints_heading: TextView
+    private lateinit var text_arframes_heading: TextView
+    private lateinit var text_plane_headings: TextView
+    private lateinit var text_avg_featurepoints_heading: TextView
+    private lateinit var text_featurepoints: TextView
+    private lateinit var text_arframes: TextView
+    private lateinit var text_planes: TextView
+    private lateinit var text_avg_featurepoints: TextView
+    private lateinit var startStopButton: Button
+    private lateinit var resetButton: Button
+
+
     // Method channel handlers
     private val onSessionMethodCall =
             object : MethodChannel.MethodCallHandler {
@@ -63,6 +91,127 @@ internal class AndroidARView(
                     when (call.method) {
                         "init" -> {
                             initializeARView(call, result)
+                        }
+                        "enableProfilingMode" -> {
+                            // Set up performance analysis UI
+                            layout.orientation = LinearLayout.VERTICAL;
+
+                            val linearLayoutARFrames = LinearLayout(context)
+                            val linearLayoutARFramesParams = LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                            linearLayoutARFrames.orientation = LinearLayout.HORIZONTAL
+
+                            val linearLayoutFeaturePoints = LinearLayout(context)
+                            val linearLayoutFeaturePointsParams = LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                            linearLayoutARFrames.orientation = LinearLayout.HORIZONTAL
+
+                            val linearLayoutFeaturePointsPerFrame = LinearLayout(context)
+                            val linearLayoutFeaturePointsPerFrameParams = LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                            linearLayoutARFrames.orientation = LinearLayout.HORIZONTAL
+
+                            val linearLayoutPlanes = LinearLayout(context)
+                            val linearLayoutPlanesParams = LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                            linearLayoutARFrames.orientation = LinearLayout.HORIZONTAL
+
+
+                            text_arframes_heading = TextView(context)
+                            lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT)
+                            text_arframes_heading.setText("AR Frames:")
+                            text_arframes_heading.setTextSize(18.0f)
+                            linearLayoutARFrames.addView(text_arframes_heading, lp)
+
+                            text_avg_featurepoints_heading = TextView(context)
+                            lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT)
+                            text_avg_featurepoints_heading.setText("Feature Points per Frame:")
+                            text_avg_featurepoints_heading.setTextSize(18.0f)
+                            linearLayoutFeaturePointsPerFrame.addView(text_avg_featurepoints_heading, lp)
+
+                            text_featurepoints_heading = TextView(context)
+                            lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT)
+                            text_featurepoints_heading.setText("Feature Points:")
+                            text_featurepoints_heading.setTextSize(18.0f)
+                            linearLayoutFeaturePoints.addView(text_featurepoints_heading, lp)
+
+                            text_plane_headings = TextView(context)
+                            lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT)
+                            text_plane_headings.setText("Detected Plane Area:")
+                            text_plane_headings.setTextSize(18.0f)
+                            linearLayoutPlanes.addView(text_plane_headings, lp)
+
+                            text_arframes = TextView(context)
+                            lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT)
+                            text_arframes.setTextSize(18.0f)
+                            linearLayoutARFrames.addView(text_arframes, lp)
+
+                            text_avg_featurepoints = TextView(context)
+                            lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT)
+                            text_avg_featurepoints.setTextSize(18.0f)
+                            linearLayoutFeaturePointsPerFrame.addView(text_avg_featurepoints, lp)
+
+                            text_featurepoints = TextView(context)
+                            lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT)
+                            text_featurepoints.setTextSize(18.0f)
+                            linearLayoutFeaturePoints.addView(text_featurepoints, lp)
+
+                            text_planes = TextView(context)
+                            lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT)
+                            text_planes.setTextSize(18.0f)
+                            linearLayoutPlanes.addView(text_planes, lp)
+
+
+                            layout.addView(linearLayoutARFrames, linearLayoutARFramesParams)
+                            layout.addView(linearLayoutFeaturePoints, linearLayoutFeaturePointsParams)
+                            layout.addView(linearLayoutFeaturePointsPerFrame, linearLayoutFeaturePointsPerFrameParams)
+                            layout.addView(linearLayoutPlanes, linearLayoutPlanesParams)
+
+                            //Add buttons
+                            val linearLayoutButtons = LinearLayout(context)
+                            val linearLayoutButtonsParams = LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                            linearLayoutButtons.orientation = LinearLayout.HORIZONTAL
+                            linearLayoutButtons.gravity = Gravity.BOTTOM
+
+                            startStopButton = Button(context)
+                            startStopButton.text = "Start/Stop"
+                            startStopButton.setOnClickListener { _ ->
+                                recordTrackingData = !recordTrackingData
+                            }
+                            linearLayoutButtons.addView(startStopButton,lp)
+
+                            resetButton = Button(context)
+                            resetButton.text = "Reset"
+                            resetButton.setOnClickListener { _ ->
+                                currentPlaneArea=0.0;
+                                numARFrames=0;
+                                numFeaturePoints=0;
+                                avgFeaturePoints=0.0;
+
+                                text_arframes.setText(numARFrames.toString());
+                                text_featurepoints.setText(numFeaturePoints.toString());
+                                text_avg_featurepoints.setText(avgFeaturePoints.toString());
+                                text_planes.setText(currentPlaneArea.toString());
+                            }
+                            linearLayoutButtons.addView(resetButton,lp)
+
+                            layout.addView(linearLayoutButtons, linearLayoutButtonsParams)
+
+                            // An elements to activity
+                            lp = LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+                            lp.setMargins(0,70,0,0)
+                            activity.addContentView(layout, lp);
+
                         }
                         else -> {}
                     }
@@ -434,6 +583,83 @@ internal class AndroidARView(
     }
 
     private fun onFrame(frameTime: FrameTime) {
+        if (recordTrackingData){
+            numARFrames += 1
+
+            val frame: Frame = arSceneView.arFrame!!
+
+            // Get feature points
+
+            // Get feature points
+            val pointCloud = frame.acquirePointCloud()
+            // Point clouds are 4 values x,y,z and a confidence value.
+            // Point clouds are 4 values x,y,z and a confidence value.
+            val featurePointsInThisFrame = pointCloud.points.limit() / 4
+            numFeaturePoints += featurePointsInThisFrame
+            avgFeaturePoints = (numFeaturePoints / numARFrames).toDouble()
+
+            // Application is responsible for releasing the point cloud resources after using it.
+
+            // Application is responsible for releasing the point cloud resources after using it.
+            pointCloud.release()
+
+            // Get area of currently tracked planes
+
+            // Get area of currently tracked planes
+            currentPlaneArea = 0.0 //reset count
+
+            val currentPlanes: Collection<Plane> = arSceneView.session!!.getAllTrackables(Plane::class.java)
+            println("PLANES: $currentPlanes")
+            for (singlePlane in currentPlanes) {
+                if (singlePlane.trackingState === TrackingState.TRACKING) {
+                    println("PLANE: $singlePlane")
+                    val vertices = singlePlane.polygon.array() //Returns the 2D vertices of a convex polygon approximating the detected plane, in the form [x1, z1, x2, z2, ...]
+                    //double[] xValues = Arrays.stream(convertFloatsToDoubles(vertices)).filter((index, value) -> index%2 == 0).toArray();
+                    // //double[] yValues = Arrays.stream(convertFloatsToDoubles(vertices)).filter(x -> x%2 > 0).toArray();
+                    //Object[] xValues = IntStream.range(0, vertices.length).filter(n -> n%2 == 0).mapToObj(Arrays.asList(vertices)::get).toArray();
+                    val xValuesList = ArrayList<Float>()
+                    val yValuesList = ArrayList<Float>()
+                    for (i in vertices.indices) {
+                        if (i % 2 == 0) {
+                            xValuesList.add(vertices[i])
+                        } else {
+                            yValuesList.add(vertices[i])
+                        }
+                    }
+                    val xValues: FloatArray = convertFloatArrayListToFloatArray(xValuesList)
+                    val yValues: FloatArray = convertFloatArrayListToFloatArray(yValuesList)
+
+                    // Calculate area of polygon (https://stackoverflow.com/questions/25987465/computing-area-of-a-polygon-in-java, answer by Evan Knowles)
+                    var sum = 0.0
+                    for (i in xValues.indices) {
+                        sum += if (i == 0) {
+                            //System.out.println(vertices[i].x + "x" + (vertices[i + 1].y + "-" + vertices[vertices.length - 1].y));
+                            (xValues[i] * (yValues[i + 1] - yValues[xValues.size - 1])).toDouble()
+                        } else if (i == xValues.size - 1) {
+                            //System.out.println(vertices[i].x + "x" + (vertices[0].y + "-" + vertices[i - 1].y));
+                            (xValues[i] * (yValues[0] - yValues[i - 1])).toDouble()
+                        } else {
+                            //System.out.println(vertices[i].x + "x" + (vertices[i + 1].y + "-" + vertices[i - 1].y));
+                            (xValues[i] * (yValues[i + 1] - yValues[i - 1])).toDouble()
+                        }
+                    }
+                    val area = 0.5 * Math.abs(sum)
+                    println("PLANE AREA: $area")
+                    currentPlaneArea += area
+
+                    // alternative: approximate with rectangles
+                    //currentPlaneArea += singlePlane.getExtentX() * singlePlane.getExtentZ();
+                }
+            }
+
+            //Update quality measure displays
+
+            //Update quality measure displays
+            text_arframes.text = numARFrames.toString()
+            text_featurepoints.text = numFeaturePoints.toString()
+            text_avg_featurepoints.text = avgFeaturePoints.toString()
+            text_planes.text = currentPlaneArea.toString()
+        }
         if (showFeaturePoints) {
             // remove points from last frame
             while (pointCloudNode.children?.size
@@ -464,6 +690,15 @@ internal class AndroidARView(
         // Notify the cloudManager of all the updates.
         if (this::cloudAnchorHandler.isInitialized) {cloudAnchorHandler.onUpdate(updatedAnchors)}
 
+    }
+
+    fun convertFloatArrayListToFloatArray(input: ArrayList<Float>): FloatArray {
+        val floatArray = FloatArray(input.size)
+        var i = 0
+        for (f in input) {
+            floatArray[i++] = f ?: NaN // Or whatever default you want.
+        }
+        return floatArray
     }
 
     private fun addNode(dict_node: HashMap<String, Any>, dict_anchor: HashMap<String, Any>? = null): CompletableFuture<Boolean>{

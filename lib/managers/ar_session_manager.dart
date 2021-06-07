@@ -97,4 +97,8 @@ class ARSessionManager {
             onPressed:
                 ScaffoldMessenger.of(buildContext).hideCurrentSnackBar)));
   }
+
+  enableProfilingMode() {
+    _channel.invokeMethod<void>('enableProfilingMode', {});
+  }
 }
