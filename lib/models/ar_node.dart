@@ -209,10 +209,7 @@ class MatrixValueNotifierConverter
   }
 
   @override
-  List<dynamic>? toJson(ValueNotifier<Matrix4>? matrix) {
-    if (matrix == null || matrix.value == null) {
-      return null;
-    }
+  List<dynamic> toJson(ValueNotifier<Matrix4> matrix) {
     final list = List<double>.filled(16, 0.0);
     matrix.value.copyIntoArray(list);
     return list;

@@ -1,8 +1,8 @@
 name: ar_flutter_plugin
-description: A new flutter plugin project.
-version: 0.0.1
-author:
-homepage:
+description: Flutter Plugin for creating (collaborative) Augmented Reality experiences - Supports ARKit for iOS and ARCore for Android devices.
+version: 0.4.2
+homepage: https://lars.carius.io
+repository: https://github.com/CariusLars/ar_flutter_plugin
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
   permission_handler: ^6.1.1
   vector_math: ^2.0.8
-  json_annotation: ^3.0.1
+  json_annotation: ^4.0.1
   geolocator: ^7.0.3
 
 dev_dependencies:
@@ -36,33 +36,3 @@ flutter:
         pluginClass: ArFlutterPlugin
       ios:
         pluginClass: ArFlutterPlugin
-
-  # To add assets to your plugin package, add an assets section, like this:
-  #assets:
-  #  - assetPath
-  #
-  # For details regarding assets in packages, see
-  # https://flutter.dev/assets-and-images/#from-packages
-  #
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware.
-
-  # To add custom fonts to your plugin package, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts in packages, see
-  # https://flutter.dev/custom-fonts/#from-packages
