@@ -32,6 +32,7 @@ abstract class PlatformARView {
       @required ARViewCreatedCallback arViewCreatedCallback,
       @required PlaneDetectionConfig planeDetectionConfig});
 
+  /// Callback function that is executed once the view is established
   void onPlatformViewCreated(int id);
 }
 

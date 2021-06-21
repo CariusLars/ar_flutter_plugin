@@ -111,8 +111,7 @@ class ARNode {
   }
 }
 
-// Helper functions
-
+/// Helper function to create a Matrix4 from either a given matrix or from position, scale and rotation relative to the origin
 Matrix4 createTransformMatrix(Matrix4? origin, Vector3? position,
     Vector3? scale, Vector4? rotation, Vector3? eulerAngles) {
   final transform = origin ?? Matrix4.identity();

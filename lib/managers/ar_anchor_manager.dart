@@ -7,7 +7,7 @@ typedef AnchorUploadedHandler = void Function(ARAnchor arAnchor);
 typedef AnchorDownloadedHandler = ARAnchor Function(
     Map<String, dynamic> serializedAnchor);
 
-/// Manages the session configuration, parameters and events of an [ARView]
+/// Handles all anchor-related functionality of an [ARView], including configuration and usage of collaborative sessions
 class ARAnchorManager {
   /// Platform channel used for communication from and to [ARAnchorManager]
   late MethodChannel _channel;
@@ -32,6 +32,7 @@ class ARAnchorManager {
     }
   }
 
+  /// Activates collaborative AR mode (using Google Cloud Anchors)
   initGoogleCloudAnchorMode() async {
     _channel.invokeMethod<bool>('initGoogleCloudAnchorMode', {});
   }
@@ -107,6 +108,7 @@ class ARAnchorManager {
     }
   }
 
+  /// Try to download anchor with the given ID from the Google Cloud Anchor API and add it to the scene
   Future<bool?> downloadAnchor(String cloudanchorid) async {
     print("TRYING TO DOWNLOAD ANCHOR WITH ID " + cloudanchorid);
     _channel
