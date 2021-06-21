@@ -26,17 +26,17 @@ To try out the plugin, it is best to have a look at one of the following example
 | Cloud Anchors               | AR Scene in which objects can be placed, uploaded and downloaded, thus creating an interactive AR experience that can be shared between multiple devices. Currently, the example allows to upload the last placed object along with its anchor and download all anchors within a radius of 100m along with all the attached objects (independent of which device originally placed the objects). As sharing the objects is done by using the Google Cloud Anchor Service and Firebase, this requires some additional setup, please read [Getting Started with cloud anchors](cloudAnchorSetup.md)        | [Cloud Anchors Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/cloudanchorexample.dart)                         |
 | External Object Management  | Similar to the Cloud Anchors example, but contains UI to choose between different models. Rather than being hard-coded, an external database (Firestore) is used to manage the available models. As sharing the objects is done by using the Google Cloud Anchor Service and Firebase, this requires some additional setup, please read [Getting Started with cloud anchors](cloudAnchorSetup.md). Also make sure that in your Firestore database, the collection "models" contains some entries with the fields "name", "image", and "uri", where "uri" points to the raw file of a model in GLB format | [External Model Management Code](https://github.com/CariusLars/ar_flutter_plugin/blob/main/example/lib/examples/externalmodelmanagementexample.dart) |
 
+## Contributing
+
+Contributions to this plugin are very welcome. To contribute code and discuss ideas, [create a pull request](https://github.com/CariusLars/ar_flutter_plugin/compare) or [open an issue](https://github.com/CariusLars/ar_flutter_plugin/issues/new).
+
+## Plugin Architecture
+
+This is a rough sketch of the architecture the plugin implements:
+
+![ar_plugin_architecture](./AR_Plugin_Architecture_highlevel.svg)
+
 ## Roadmap
 
 The next development steps are:
 * Preparing the plugin for release on pub.dev
-
-This is a rough sketch of the architecture the plugin will eventually implement:
-
-![ar_plugin_architecture](./AR_Plugin_Architecture_lowlevel.svg)
-
-The cloud backends shown above are only exemplary, the plugin will allow the user to attach their own backend, an example utilizing Firebase will be added to the /example folder.
-
-## Contributing
-
-Contributions to this plugin are very welcome. To contribute code and discuss ideas, [create a pull request](https://github.com/CariusLars/ar_flutter_plugin/compare) or [open an issue](https://github.com/CariusLars/ar_flutter_plugin/issues/new).
