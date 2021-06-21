@@ -5,7 +5,7 @@ import 'package:ar_flutter_plugin/utils/json_converters.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-/// A result of an intersection found during a hit-test.
+/// A result (type, distance from the camera, world transformation) of an intersection found during a hit-test.
 class ARHitTestResult {
   ARHitTestResult(
     this.type,
@@ -23,12 +23,15 @@ class ARHitTestResult {
   /// relative to the world.
   final Matrix4 worldTransform;
 
+  /// Instantiates am [ARHitTestResult] from a serialized ARHitTestResult
   static ARHitTestResult fromJson(Map<String, dynamic> json) =>
       _$ARHitTestResultFromJson(json);
 
+  /// Serializes the [ARHitTestResult]
   Map<String, dynamic> toJson() => _$ARHitTestResultToJson(this);
 }
 
+/// Instantiates am [ARHitTestResult] from a serialized ARHitTestResult
 ARHitTestResult _$ARHitTestResultFromJson(Map<String, dynamic> json) {
   return ARHitTestResult(
     const ARHitTestResultTypeConverter().fromJson(json['type'] as int),
@@ -37,6 +40,7 @@ ARHitTestResult _$ARHitTestResultFromJson(Map<String, dynamic> json) {
   );
 }
 
+/// Serializes the [ARHitTestResult]
 Map<String, dynamic> _$ARHitTestResultToJson(ARHitTestResult instance) {
   final val = <String, dynamic>{};
 
@@ -54,10 +58,12 @@ Map<String, dynamic> _$ARHitTestResultToJson(ARHitTestResult instance) {
   return val;
 }
 
+/// Helper class to convert the type of an [ARHitTestResult] from its integer representation to the [ARHitTestResultType] and vice versa
 class ARHitTestResultTypeConverter
     implements JsonConverter<ARHitTestResultType, int> {
   const ARHitTestResultTypeConverter();
 
+  /// Converts the type of an [ARHitTestResult] from its integer representation to the [ARHitTestResultType]
   @override
   ARHitTestResultType fromJson(int json) {
     switch (json) {
@@ -70,6 +76,7 @@ class ARHitTestResultTypeConverter
     }
   }
 
+  /// Converts the type of an [ARHitTestResult] from its [ARHitTestResultType] to an integer representation
   @override
   int toJson(ARHitTestResultType object) {
     switch (object) {

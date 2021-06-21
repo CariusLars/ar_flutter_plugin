@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 // Type definitions to enforce a consistent use of the API
 typedef NodeTapResultHandler = void Function(List<String> nodes);
 
-/// Manages the all actions related to 3D objects (=Nodes) of an [ARView]
+/// Manages the all node-related actions of an [ARView]
 class ARObjectManager {
   /// Platform channel used for communication from and to [ARObjectManager]
   late MethodChannel _channel;
@@ -13,6 +13,7 @@ class ARObjectManager {
   /// Debugging status flag. If true, all platform calls are printed. Defaults to false.
   final bool debug;
 
+  /// Callback function that is invoked when the platform detects a tap on a node
   NodeTapResultHandler? onNodeTap;
 
   ARObjectManager(int id, {this.debug = false}) {
@@ -51,6 +52,7 @@ class ARObjectManager {
     return Future.value();
   }
 
+  /// Sets up the AR Object Manager
   onInitialize() {
     _channel.invokeMethod<void>('init', {});
   }
