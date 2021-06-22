@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3
+
+* Updates documentation after publishing to [pub.dev](https://pub.dev)
+
 ## 0.4.2
 
 * Updates documentation

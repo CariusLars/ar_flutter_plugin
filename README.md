@@ -1,19 +1,34 @@
 # ar_flutter_plugin
 
-Flutter Plugin for AR (Augmented Reality) - Supports ARKit for iOS and ARCore for Android devices.
+Flutter Plugin for (collaborative) Augmented Reality - Supports ARKit for iOS and ARCore for Android devices.
 
 Many thanks to Oleksandr Leuschenko for the [arkit_flutter_plugin](https://github.com/olexale/arkit_flutter_plugin) and to Gian Marco Di Francesco for the [arcore_flutter_plugin](https://github.com/giandifra/arcore_flutter_plugin) which both served as a great basis and starting point for this project.
 
 ## Getting Started
 
-This plugin is still a work in progress. Keep posted for updates or contribute by creating a [pull request](https://github.com/CariusLars/ar_flutter_plugin/compare)!
+### Installing
 
-If you want to use the plugin before it's officially released, add the following to your `pubspec.yaml` file:
+Add the Flutter package to your project by running:
+
+```bash
+flutter pub add ar_flutter_plugin
+```
+
+Or manually add this to your `pubspec.yaml` file (and run `flutter pub get`):
+
 ```yaml
 dependencies:
-  ar_flutter_plugin:
-    git: git://github.com/CariusLars/ar_flutter_plugin.git
+  ar_flutter_plugin: ^0.4.3
 ```
+
+### Importing
+
+Add this to your code:
+
+```dart
+import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+```
+### Example Applications
 
 To try out the plugin, it is best to have a look at one of the following examples implemented in the `Example` app:
 
@@ -28,15 +43,10 @@ To try out the plugin, it is best to have a look at one of the following example
 
 ## Contributing
 
-Contributions to this plugin are very welcome. To contribute code and discuss ideas, [create a pull request](https://github.com/CariusLars/ar_flutter_plugin/compare) or [open an issue](https://github.com/CariusLars/ar_flutter_plugin/issues/new).
+Contributions to this plugin are very welcome. To contribute code and discuss ideas, [create a pull request](https://github.com/CariusLars/ar_flutter_plugin/compare), [open an issue](https://github.com/CariusLars/ar_flutter_plugin/issues/new), or [start a discussion](https://github.com/CariusLars/ar_flutter_plugin/discussions).
 
 ## Plugin Architecture
 
 This is a rough sketch of the architecture the plugin implements:
 
 ![ar_plugin_architecture](./AR_Plugin_Architecture_highlevel.svg)
-
-## Roadmap
-
-The next development steps are:
-* Preparing the plugin for release on pub.dev
