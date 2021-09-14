@@ -154,7 +154,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
       this.fileSystemNode = null;
     } else {
       var newNode = ARNode(
-          type: NodeType.fileSystemGLB,
+          type: NodeType.fileSystemAppFolderGLB,
           uri: "LocalDuck.glb",
           scale: Vector3(0.2, 0.2, 0.2));
       bool didAddFileSystemNode = await this.arObjectManager.addNode(newNode);
