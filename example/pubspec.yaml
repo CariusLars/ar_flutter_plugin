@@ -28,6 +28,7 @@ dependencies:
   firebase_core: "^1.0.3"
   cloud_firestore: "^1.0.4"
   geoflutterfire: "^3.0.0-nullsafety.1"
+  path_provider: ^2.0.3
 
 dev_dependencies:
   flutter_test:
