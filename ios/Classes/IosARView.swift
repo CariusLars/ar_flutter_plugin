@@ -58,6 +58,15 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 //result(nil)
                 initializeARView(arguments: arguments!, result: result)
                 break
+            case "snapshot":
+                // call the SCNView Snapshot method and return the Image
+                let snapshotImage = sceneView.snapshot()
+                if let bytes = snapshotImage.pngData() {
+                    let data = FlutterStandardTypedData(bytes:bytes)
+                    result(data)
+                } else {
+                    result(nil)
+                }
             default:
                 result(FlutterMethodNotImplemented)
                 break

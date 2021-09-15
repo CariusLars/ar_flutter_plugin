@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -96,5 +97,10 @@ class ARSessionManager {
             label: 'HIDE',
             onPressed:
                 ScaffoldMessenger.of(buildContext).hideCurrentSnackBar)));
+  }
+
+  Future<ImageProvider> snapshot() async {
+    final result = await _channel.invokeMethod<Uint8List>('snapshot');
+    return MemoryImage(result!);
   }
 }
