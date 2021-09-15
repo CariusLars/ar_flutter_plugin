@@ -64,6 +64,9 @@ internal class AndroidARView(
                         "init" -> {
                             initializeARView(call, result)
                         }
+                        "snapshot" -> {
+                            // TODO: snapshot implementation here
+                        }
                         else -> {}
                     }
                 }
