@@ -10,6 +10,8 @@ import 'package:ar_flutter_plugin_example/examples/cloudanchorexample.dart';
 import 'package:ar_flutter_plugin_example/examples/localandwebobjectsexample.dart';
 import 'package:ar_flutter_plugin_example/examples/debugoptionsexample.dart';
 
+import 'examples/screenshotexample.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
@@ -93,6 +95,11 @@ class ExampleList extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => ObjectsOnPlanesWidget()))),
+      Example(
+          'Screenshots',
+          'Place 3D objects on planes and take screenshots',
+          () => Navigator.push(context,
+              MaterialPageRoute(builder: (context) => ScreenshotWidget()))),
       Example(
           'Cloud Anchors',
           'Place and retrieve 3D objects using the Google Cloud Anchor API',
