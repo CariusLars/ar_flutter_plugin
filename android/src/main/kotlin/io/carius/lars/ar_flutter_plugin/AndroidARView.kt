@@ -3,11 +3,14 @@ package io.carius.lars.ar_flutter_plugin
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.os.HandlerThread
 import android.util.Log
 import android.view.MotionEvent
+import android.view.PixelCopy
 import android.view.View
 import android.widget.Toast
 import com.google.ar.core.*
@@ -25,6 +28,8 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.nio.FloatBuffer
 import java.util.concurrent.CompletableFuture
 
@@ -63,6 +68,36 @@ internal class AndroidARView(
                     when (call.method) {
                         "init" -> {
                             initializeARView(call, result)
+                        }
+                        "snapshot" -> {
+                            var bitmap = Bitmap.createBitmap(arSceneView.width, arSceneView.height,
+                                    Bitmap.Config.ARGB_8888);
+
+
+                            // Create a handler thread to offload the processing of the image.
+                            var handlerThread = HandlerThread("PixelCopier");
+                            handlerThread.start();
+                            // Make the request to copy.
+                            PixelCopy.request(arSceneView, bitmap, { copyResult:Int ->
+                                Log.d(TAG, "PIXELCOPY DONE")
+                                if (copyResult == PixelCopy.SUCCESS) {
+                                    try {
+                                        val mainHandler = Handler(context.mainLooper)
+                                        val runnable = Runnable {
+                                            val stream = ByteArrayOutputStream()
+                                            bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+                                            val data = stream.toByteArray()
+                                            result.success(data)
+                                        }
+                                        mainHandler.post(runnable)
+                                    } catch (e: IOException) {
+                                        result.error(null, e.message, e.stackTrace);
+                                    }
+                                } else {
+                                    result.error(null, "failed to take screenshot", null);
+                                }
+                                handlerThread.quitSafely();
+                            }, Handler(handlerThread.looper));
                         }
                         else -> {}
                     }
