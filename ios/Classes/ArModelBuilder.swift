@@ -85,6 +85,35 @@ class ArModelBuilder: NSObject {
             return nil
         }
     }
+
+    // Creates a node from a given gltf2 (.gltf) model in the Flutter assets folder
+    func makeNodeFromFileSystemGltf(name: String, modelPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
+        
+        var scene: SCNScene
+        let node: SCNNode = SCNNode()
+
+        do {
+            let sceneSource = try GLTFSceneSource(path: modelPath)
+            scene = try sceneSource.scene()
+
+            for child in scene.rootNode.childNodes {
+                child.scale = SCNVector3(0.01,0.01,0.01) // Compensate for the different model dimension definitions in iOS and Android (meters vs. millimeters)
+                //child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                //child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
+                node.addChildNode(child.flattenedClone())
+            }
+
+            node.name = name
+            if let transform = transformation {
+                node.transform = deserializeMatrix4(transform)
+            }
+
+            return node
+        } catch {
+            print("\(error.localizedDescription)")
+            return nil
+        }
+    }
     
     // Creates a node from a given glb model in the app's documents directory
     func makeNodeFromFileSystemGLB(name: String, modelPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
