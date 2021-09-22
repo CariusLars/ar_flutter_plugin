@@ -2,7 +2,7 @@
 # platform :ios, '9.0'
 
 # Override firebase SDK version for compatibility reasons
-$FirebaseSDKVersion = '7.3.0'
+$FirebaseSDKVersion = '8.7.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
@@ -33,7 +33,7 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  pod 'FirebaseFirestore', :git => 'https://github.com/invertase/firestore-ios-sdk-frameworks.git', :tag => '7.3.0' # This line improves build times (see https://firebase.flutter.dev/docs/overview/)
+  pod 'FirebaseFirestore', :git => 'https://github.com/invertase/firestore-ios-sdk-frameworks.git', :tag => '8.7.0' # This line improves build times (see https://firebase.flutter.dev/docs/overview/)
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
@@ -42,6 +42,26 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+
+        ## dart: PermissionGroup.camera
+        'PERMISSION_CAMERA=1',
+
+        ## dart: PermissionGroup.photos
+        'PERMISSION_PHOTOS=1',
+
+        ## dart: [PermissionGroup.location, PermissionGroup.locationAlways, PermissionGroup.locationWhenInUse]
+        'PERMISSION_LOCATION=1',
+
+        ## dart: PermissionGroup.sensors
+        'PERMISSION_SENSORS=1',
+
+        ## dart: PermissionGroup.bluetooth
+        'PERMISSION_BLUETOOTH=1',
+
+      ]
     end
   end
 end

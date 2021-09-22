@@ -29,7 +29,7 @@ class ARNode {
   /// Specifies the receiver's [NodeType]
   NodeType type;
 
-  /// Specifies the path to the 3D model used for the [ARNode]. Depending on the [type], this is either a relative path to a Flutter asset or an URL to an online asset
+  /// Specifies the path to the 3D model used for the [ARNode]. Depending on the [type], this is either a relative path or an URL to an online asset
   String uri;
 
   /// Determines the receiver's transform.

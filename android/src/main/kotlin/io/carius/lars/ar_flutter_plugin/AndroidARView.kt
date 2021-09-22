@@ -3,11 +3,14 @@ package io.carius.lars.ar_flutter_plugin
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.os.HandlerThread
 import android.util.Log
 import android.view.MotionEvent
+import android.view.PixelCopy
 import android.view.View
 import android.widget.Toast
 import com.google.ar.core.*
@@ -25,6 +28,8 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.nio.FloatBuffer
 import java.util.concurrent.CompletableFuture
 
@@ -63,6 +68,36 @@ internal class AndroidARView(
                     when (call.method) {
                         "init" -> {
                             initializeARView(call, result)
+                        }
+                        "snapshot" -> {
+                            var bitmap = Bitmap.createBitmap(arSceneView.width, arSceneView.height,
+                                    Bitmap.Config.ARGB_8888);
+
+
+                            // Create a handler thread to offload the processing of the image.
+                            var handlerThread = HandlerThread("PixelCopier");
+                            handlerThread.start();
+                            // Make the request to copy.
+                            PixelCopy.request(arSceneView, bitmap, { copyResult:Int ->
+                                Log.d(TAG, "PIXELCOPY DONE")
+                                if (copyResult == PixelCopy.SUCCESS) {
+                                    try {
+                                        val mainHandler = Handler(context.mainLooper)
+                                        val runnable = Runnable {
+                                            val stream = ByteArrayOutputStream()
+                                            bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+                                            val data = stream.toByteArray()
+                                            result.success(data)
+                                        }
+                                        mainHandler.post(runnable)
+                                    } catch (e: IOException) {
+                                        result.error(null, e.message, e.stackTrace);
+                                    }
+                                } else {
+                                    result.error(null, "failed to take screenshot", null);
+                                }
+                                handlerThread.quitSafely();
+                            }, Handler(handlerThread.looper));
                         }
                         else -> {}
                     }
@@ -504,6 +539,66 @@ internal class AndroidARView(
                 }
                 1 -> { // GLB Model from the web
                     modelBuilder.makeNodeFromGlb(viewContext, dict_node["name"] as String, dict_node["uri"] as String, dict_node["transformation"] as ArrayList<Double>)
+                            .thenAccept{node ->
+                                val anchorName: String? = dict_anchor?.get("name") as? String
+                                val anchorType: Int? = dict_anchor?.get("type") as? Int
+                                if (anchorName != null && anchorType != null) {
+                                    val anchorNode = arSceneView.scene.findByName(anchorName) as AnchorNode?
+                                    if (anchorNode != null) {
+                                        anchorNode.addChild(node)
+                                    } else {
+                                        completableFutureSuccess.complete(false)
+                                    }
+                                } else {
+                                    arSceneView.scene.addChild(node)
+                                }
+                                completableFutureSuccess.complete(true)
+                            }
+                            .exceptionally { throwable ->
+                                // Pass error to session manager (this has to be done on the main thread if this activity)
+                                val mainHandler = Handler(viewContext.mainLooper)
+                                val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable" +  dict_node["uri"] as String)) }
+                                mainHandler.post(runnable)
+                                completableFutureSuccess.completeExceptionally(throwable)
+                                null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+                            }
+                }
+                2 -> { // fileSystemAppFolderGLB
+                    val documentsPath = viewContext.getApplicationInfo().dataDir
+                    val assetPath = documentsPath + "/app_flutter/" + dict_node["uri"] as String
+
+                    modelBuilder.makeNodeFromGlb(viewContext, dict_node["name"] as String, assetPath as String, dict_node["transformation"] as ArrayList<Double>) //
+                    .thenAccept{node ->
+                        val anchorName: String? = dict_anchor?.get("name") as? String
+                        val anchorType: Int? = dict_anchor?.get("type") as? Int
+                        if (anchorName != null && anchorType != null) {
+                            val anchorNode = arSceneView.scene.findByName(anchorName) as AnchorNode?
+                            if (anchorNode != null) {
+                                anchorNode.addChild(node)
+                            } else {
+                                completableFutureSuccess.complete(false)
+                            }
+                        } else {
+                            arSceneView.scene.addChild(node)
+                        }
+                        completableFutureSuccess.complete(true)
+                    }
+                    .exceptionally { throwable ->
+                        // Pass error to session manager (this has to be done on the main thread if this activity)
+                        val mainHandler = Handler(viewContext.mainLooper)
+                        val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable " +  dict_node["uri"] as String)) }
+                        mainHandler.post(runnable)
+                        completableFutureSuccess.completeExceptionally(throwable)
+                        null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+                    }
+                }
+                3 -> { //fileSystemAppFolderGLTF2
+                    // Get path to given Flutter asset
+                    val documentsPath = viewContext.getApplicationInfo().dataDir
+                    val assetPath = documentsPath + "/app_flutter/" + dict_node["uri"] as String
+
+                    // Add object to scene
+                    modelBuilder.makeNodeFromGltf(viewContext, dict_node["name"] as String, assetPath, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
