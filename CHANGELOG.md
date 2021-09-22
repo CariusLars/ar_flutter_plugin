@@ -1,5 +1,15 @@
 # Changelog
 
+
+## 0.5.0
+
+* Adds new nodetypes ```fileSystemAppFolderGLB``` and ```fileSystemAppFolderGLTF2``` to load renderables from the device's local storage assigned to the current app
+* Extends the ```localandwebobjectsexample``` of the example app to showcase the new form of model loading
+* Adds snapshot functionality to the session manager to take screenshots of the ARView
+* Adds ```screenshotexample``` to the example app to showcase the snapshot functionality
+* Updates package versions of Flutter packages ```geolocator```, ```permission_handler```, ```vector_math```, and iOS package ```ARCore/CloudAnchors``` in the plugin
+* Updates package versions of Flutter packages ```firebase_core```, ```cloud_firestore```, ```geoflutterfire```, and ```FirebaseSDKVersion ``` on iOS in the example application
+
 ## 0.4.3
 
 * Updates documentation after publishing to [pub.dev](https://pub.dev)
