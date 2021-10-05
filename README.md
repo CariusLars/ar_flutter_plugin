@@ -19,7 +19,7 @@ Or manually add this to your `pubspec.yaml` file (and run `flutter pub get`):
 
 ```yaml
 dependencies:
-  ar_flutter_plugin: ^0.5.0
+  ar_flutter_plugin: ^0.5.1
 ```
 
 ### Importing
