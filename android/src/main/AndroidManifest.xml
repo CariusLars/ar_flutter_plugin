@@ -1,9 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="io.carius.lars.ar_flutter_plugin">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="io.carius.lars.ar_flutter_plugin">
 
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
   <!-- Sceneform requires OpenGL ES 3.0 or later. -->
   <uses-feature android:glEsVersion="0x00030000" android:required="true" />
@@ -12,6 +10,6 @@
     <!-- "AR Optional" app, contains non-AR features that can be used when
          "Google Play Services for AR" (ARCore) is not available. -->
     <meta-data android:name="com.google.ar.core" android:value="optional" />
-</application>
+  </application>
 
 </manifest>
