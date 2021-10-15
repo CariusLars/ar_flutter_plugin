@@ -22,6 +22,12 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     private var arcoreSession: GARSession? = nil
     private var arcoreMode: Bool = false
 
+    private var panStartLocation: CGPoint?
+    private var panCurrentLocation: CGPoint?
+    private var panCurrentVelocity: CGPoint?
+    private var panCurrentTranslation: CGPoint?
+    private var panningNode: SCNNode?
+
     init(
         frame: CGRect,
         viewIdentifier viewId: Int64,
@@ -244,6 +250,15 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 self.sceneView.gestureRecognizers?.append(tapGestureRecognizer)
             }
         }
+
+        if let configHandlePans = arguments["handlePans"] as? Bool {
+            if (configHandlePans){
+                let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+                panGestureRecognizer.maximumNumberOfTouches = 1
+                panGestureRecognizer.delegate = self
+                self.sceneView.gestureRecognizers?.append(panGestureRecognizer)
+            }
+        }
     
         // Update session configuration
         self.sceneView.session.run(configuration)
@@ -443,10 +458,72 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         let planeAndPointHitResults = sceneView.hitTest(touchLocation, types: planeTypes)
             
         let serializedPlaneAndPointHitResults = planeAndPointHitResults.map{serializeHitResult($0)}
-            if (serializedPlaneAndPointHitResults.count != 0) {
-                self.sessionManagerChannel.invokeMethod("onPlaneOrPointTap", arguments: serializedPlaneAndPointHitResults)
+        if (serializedPlaneAndPointHitResults.count != 0) {
+            self.sessionManagerChannel.invokeMethod("onPlaneOrPointTap", arguments: serializedPlaneAndPointHitResults)
+        }
+    }
+
+    @objc func handlePan(_ recognizer: UIPanGestureRecognizer) {
+        guard let sceneView = recognizer.view as? ARSCNView else {
+            return
+        }
+
+        // State Begins
+        if recognizer.state == UIGestureRecognizer.State.began
+        {
+            panStartLocation = recognizer.location(in: sceneView)
+            if let startLocation = panStartLocation {
+                let allHitResults = sceneView.hitTest(startLocation, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.closest.rawValue])
+                // Because 3D model loading can lead to composed nodes, we have to traverse through a node's parent until the parent node with the name assigned by the Flutter API is found
+                let nodeHitResults: Array<String> = allHitResults.compactMap {
+                    if let nearestNode = nearestParentWithNameStart(node: $0.node, characters: "[#") {
+                        panningNode = nearestNode
+                        return nearestNode.name
+                    }else{
+                        return nil
+                    }
+                }
+                if (nodeHitResults.count != 0 && panningNode != nil) {
+                    // TODO: send the node name and the position back to Flutter controller callback
+                    self.objectManagerChannel.invokeMethod("onPanStart", arguments: panningNode!.name) // Chaining of Array and Set is used to remove duplicates
+                    return
+                }
             }
         }
+        // State Changes
+        if(recognizer.state == UIGestureRecognizer.State.changed)
+        {
+            // the velocity of the gesture is how fast it is moving. This can be used to translate the position of the node.
+            panCurrentVelocity = recognizer.velocity(in: sceneView)
+            panCurrentLocation = recognizer.location(in: sceneView)
+            panCurrentTranslation = recognizer.translation(in: sceneView)
+
+            if let panT = panCurrentTranslation, let panNode = panningNode {
+                // TODO: is this node on a vertical or horizontal plane? Maybe just use the tracking mode for now and don't support both simultaneously?
+                // TODO: use sceneView.unprojectPoint to convert the screen position to world coordinates
+                let translation: SCNVector3 = SCNVector3(panT.x/100000, 0, panT.y/100000) // quickest way to convert screen into world positions (meters)
+                panNode.localTranslate(by: translation);
+                // TODO: pass the velocity details back to Flutter controller callback
+                self.objectManagerChannel.invokeMethod("onPanChange", arguments: panNode.name)
+            }
+
+            // update position of panning node if it has been created
+            // panningNode.position + the gesture delta
+            // TODO: send the node name and the position back to Flutter
+        }
+        // State Ended
+        if(recognizer.state == UIGestureRecognizer.State.ended)
+        {
+            // kill variables
+            panStartLocation = nil
+            panCurrentLocation = nil
+            // TODO: send the node name and the final position back to Flutter
+            self.objectManagerChannel.invokeMethod("onPanEnd", arguments: panningNode?.name)
+            panningNode = nil
+        }
+    
+    }
+
     // Recursive helper function to traverse a node's parents until a node with a name starting with the specified characters is found
     func nearestParentWithNameStart(node: SCNNode?, characters: String) -> SCNNode? {
         if let nodeNamePrefix = node?.name?.prefix(characters.count) {

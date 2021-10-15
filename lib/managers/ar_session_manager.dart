@@ -78,6 +78,7 @@ class ARSessionManager {
     String? customPlaneTexturePath,
     bool showWorldOrigin = false,
     bool handleTaps = true,
+    bool handlePans = false, // nodes are not draggable by default
   }) {
     _channel.invokeMethod<void>('init', {
       'showFeaturePoints': showFeaturePoints,
@@ -86,6 +87,7 @@ class ARSessionManager {
       'customPlaneTexturePath': customPlaneTexturePath,
       'showWorldOrigin': showWorldOrigin,
       'handleTaps': handleTaps,
+      'handlePans': handlePans,
     });
   }
 
