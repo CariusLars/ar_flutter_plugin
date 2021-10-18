@@ -22,6 +22,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     private var cloudAnchorHandler: CloudAnchorHandler? = nil
     private var arcoreSession: GARSession? = nil
     private var arcoreMode: Bool = false
+    private var configuration: ARWorldTrackingConfiguration!
+    private var tappedPlaneAnchorAlignment = ARPlaneAnchor.Alignment.horizontal // default alignment
     
     private var panStartLocation: CGPoint?
     private var panCurrentLocation: CGPoint?
@@ -198,7 +200,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
 
     func initializeARView(arguments: Dictionary<String,Any>, result: FlutterResult){
         // Set plane detection configuration
-        let configuration = ARWorldTrackingConfiguration()
+        self.configuration = ARWorldTrackingConfiguration()
         if let planeDetectionConfig = arguments["planeDetectionConfig"] as? Int {
             switch planeDetectionConfig {
                 case 1: 
@@ -493,6 +495,11 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         }
         
         let planeAndPointHitResults = sceneView.hitTest(touchLocation, types: planeTypes)
+        
+        // store the alignment of the tapped plane anchor so we can refer to is later when transforming the node
+        if planeAndPointHitResults.count > 0, let hitAnchor = planeAndPointHitResults.first?.anchor as? ARPlaneAnchor {
+            self.tappedPlaneAnchorAlignment = hitAnchor.alignment
+        }
             
         let serializedPlaneAndPointHitResults = planeAndPointHitResults.map{serializeHitResult($0)}
         if (serializedPlaneAndPointHitResults.count != 0) {
@@ -537,7 +544,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
             panCurrentTranslation = recognizer.translation(in: sceneView)
 
             if let panLoc = panCurrentLocation, let panNode = panningNode {
-                if let query = sceneView.raycastQuery(from: panLoc, allowing: .estimatedPlane, alignment: .horizontal) {
+                if let query = sceneView.raycastQuery(from: panLoc, allowing: .estimatedPlane, alignment: .any) {
                     guard let result = self.sceneView.session.raycast(query).first else {
                         return
                     }
@@ -599,7 +606,13 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 // velocity needs to be reduced substantially otherwise the rotation change seems too fast as radians; also needs inverting to match the movement of the fingers as they rotate on the screen
                 let r2 = (r*0.01) * -1
                 let nodeRotation = panNode.rotation
-                let rotation: SCNQuaternion = SCNQuaternion(x: 0, y: 1, z: 0, w: nodeRotation.w+Float(r2)) // quickest way to convert screen into world positions (meters)
+                let rotation: SCNQuaternion!
+                let planeAlignment = self.tappedPlaneAnchorAlignment
+                if planeAlignment == .horizontal {
+                    rotation = SCNQuaternion(x: 0, y: 1, z: 0, w: nodeRotation.w+Float(r2)) // quickest way to convert screen into world positions (meters)
+                }else{
+                    rotation = SCNQuaternion(x: 0, y: 0, z: 1, w: nodeRotation.w+Float(r2)) // quickest way to convert screen into world positions (meters)
+                }
                 panNode.rotation = rotation
                 // TODO: pass the velocity details back to Flutter controller callback
                 self.objectManagerChannel.invokeMethod("onRotationChange", arguments: panNode.name)
@@ -742,9 +755,16 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     }
 }
 
+// ---------------------- ARCoachingOverlayViewDelegate ---------------------------------------
+
 extension IosARView: ARCoachingOverlayViewDelegate {
     
     func coachingOverlayViewWillActivate(_ coachingOverlayView: ARCoachingOverlayView){
-        
+        // use this delegate method to hide anything in the UI that could cover the coaching overlay view
+    }
+    
+    func coachingOverlayViewDidRequestSessionReset(_ coachingOverlayView: ARCoachingOverlayView) {
+        // Reset the session.
+        self.sceneView.session.run(configuration, options: [.resetTracking])
     }
 }
