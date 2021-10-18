@@ -288,7 +288,11 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                         ]
                     self.coachingView.session = self.sceneView.session
                     self.coachingView.activatesAutomatically = true
-                    self.coachingView.goal = .horizontalPlane
+                    if configuration.planeDetection == .horizontal {
+                        self.coachingView.goal = .horizontalPlane
+                    }else{
+                        self.coachingView.goal = .verticalPlane
+                    }
                     // TODO: look into constraints issue. This causes a crash:
                     /**
                      Terminating app due to uncaught exception 'NSGenericException', reason: 'Unable to activate constraint with anchors <NSLayoutXAxisAnchor:0x28342dec0 "ARCoachingOverlayView:0x13a470ae0.centerX"> and <NSLayoutXAxisAnchor:0x28342c680 "FlutterTouchInterceptingView:0x10bad1c90.centerX"> because they have no common ancestor.  Does the constraint or its anchors reference items in different view hierarchies?  That's illegal.'
