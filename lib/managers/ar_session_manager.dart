@@ -79,6 +79,7 @@ class ARSessionManager {
     bool showWorldOrigin = false,
     bool handleTaps = true,
     bool handlePans = false, // nodes are not draggable by default
+    bool handleRotation = false, // nodes can not be rotated by default
   }) {
     _channel.invokeMethod<void>('init', {
       'showFeaturePoints': showFeaturePoints,
@@ -88,6 +89,7 @@ class ARSessionManager {
       'showWorldOrigin': showWorldOrigin,
       'handleTaps': handleTaps,
       'handlePans': handlePans,
+      'handleRotation': handleRotation,
     });
   }
 

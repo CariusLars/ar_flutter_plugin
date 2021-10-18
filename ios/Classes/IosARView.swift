@@ -7,6 +7,7 @@ import ARCoreCloudAnchors
 
 class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureRecognizerDelegate, ARSessionDelegate {
     let sceneView: ARSCNView
+    let coachingView: ARCoachingOverlayView
     let sessionManagerChannel: FlutterMethodChannel
     let objectManagerChannel: FlutterMethodChannel
     let anchorManagerChannel: FlutterMethodChannel
@@ -21,12 +22,16 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     private var cloudAnchorHandler: CloudAnchorHandler? = nil
     private var arcoreSession: GARSession? = nil
     private var arcoreMode: Bool = false
-
+    
     private var panStartLocation: CGPoint?
     private var panCurrentLocation: CGPoint?
     private var panCurrentVelocity: CGPoint?
     private var panCurrentTranslation: CGPoint?
+    private var rotationStartLocation: CGPoint?
+    private var rotation: CGFloat?
+    private var rotationVelocity: CGFloat?
     private var panningNode: SCNNode?
+    private var panningNodeCurrentWorldLocation: SCNVector3?
 
     init(
         frame: CGRect,
@@ -35,6 +40,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         binaryMessenger messenger: FlutterBinaryMessenger
     ) {
         self.sceneView = ARSCNView(frame: frame)
+        self.coachingView = ARCoachingOverlayView(frame: frame)
+        
         self.sessionManagerChannel = FlutterMethodChannel(name: "arsession_\(viewId)", binaryMessenger: messenger)
         self.objectManagerChannel = FlutterMethodChannel(name: "arobjects_\(viewId)", binaryMessenger: messenger)
         self.anchorManagerChannel = FlutterMethodChannel(name: "aranchors_\(viewId)", binaryMessenger: messenger)
@@ -42,13 +49,13 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
 
         let configuration = ARWorldTrackingConfiguration() // Create default configuration before initializeARView is called
         self.sceneView.delegate = self
+        self.coachingView.delegate = self
         self.sceneView.session.run(configuration)
         self.sceneView.session.delegate = self
 
         self.sessionManagerChannel.setMethodCallHandler(self.onSessionMethodCalled)
         self.objectManagerChannel.setMethodCallHandler(self.onObjectMethodCalled)
         self.anchorManagerChannel.setMethodCallHandler(self.onAnchorMethodCalled)
-        
     }
 
     func view() -> UIView {
@@ -258,6 +265,36 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 panGestureRecognizer.delegate = self
                 self.sceneView.gestureRecognizers?.append(panGestureRecognizer)
             }
+        }
+        
+        if let configHandleRotation = arguments["handleRotation"] as? Bool {
+            if (configHandleRotation){
+                let rotationGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(handleRotation(_:)))
+                rotationGestureRecognizer.delegate = self
+                self.sceneView.gestureRecognizers?.append(rotationGestureRecognizer)
+            }
+        }
+        
+        // Add coaching view
+        if self.sceneView.superview != nil && self.coachingView.superview == nil {
+            self.sceneView.addSubview(self.coachingView)
+//            self.coachingView.translatesAutoresizingMaskIntoConstraints = false
+            self.coachingView.autoresizingMask = [
+                  .flexibleWidth, .flexibleHeight
+                ]
+            self.coachingView.session = self.sceneView.session
+            self.coachingView.activatesAutomatically = true
+            self.coachingView.goal = .horizontalPlane
+            // TODO: look into constraints issue. This causes a crash:
+            /**
+             Terminating app due to uncaught exception 'NSGenericException', reason: 'Unable to activate constraint with anchors <NSLayoutXAxisAnchor:0x28342dec0 "ARCoachingOverlayView:0x13a470ae0.centerX"> and <NSLayoutXAxisAnchor:0x28342c680 "FlutterTouchInterceptingView:0x10bad1c90.centerX"> because they have no common ancestor.  Does the constraint or its anchors reference items in different view hierarchies?  That's illegal.'
+             */
+//            NSLayoutConstraint.activate([
+//                self.coachingView.centerXAnchor.constraint(equalTo: self.sceneView.superview!.centerXAnchor),
+//                self.coachingView.centerYAnchor.constraint(equalTo: self.sceneView.superview!.centerYAnchor),
+//                self.coachingView.widthAnchor.constraint(equalTo: self.sceneView.superview!.widthAnchor),
+//                self.coachingView.heightAnchor.constraint(equalTo: self.sceneView.superview!.heightAnchor)
+//                ])
         }
     
         // Update session configuration
@@ -484,6 +521,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     }
                 }
                 if (nodeHitResults.count != 0 && panningNode != nil) {
+                    panningNodeCurrentWorldLocation = panningNode!.worldPosition
                     // TODO: send the node name and the position back to Flutter controller callback
                     self.objectManagerChannel.invokeMethod("onPanStart", arguments: panningNode!.name) // Chaining of Array and Set is used to remove duplicates
                     return
@@ -498,13 +536,73 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
             panCurrentLocation = recognizer.location(in: sceneView)
             panCurrentTranslation = recognizer.translation(in: sceneView)
 
-            if let panT = panCurrentTranslation, let panNode = panningNode {
-                // TODO: is this node on a vertical or horizontal plane? Maybe just use the tracking mode for now and don't support both simultaneously?
-                // TODO: use sceneView.unprojectPoint to convert the screen position to world coordinates
-                let translation: SCNVector3 = SCNVector3(panT.x/100000, 0, panT.y/100000) // quickest way to convert screen into world positions (meters)
-                panNode.localTranslate(by: translation);
-                // TODO: pass the velocity details back to Flutter controller callback
+            if let panLoc = panCurrentLocation, let panNode = panningNode {
+                if let query = sceneView.raycastQuery(from: panLoc, allowing: .estimatedPlane, alignment: .horizontal) {
+                    guard let result = self.sceneView.session.raycast(query).first else {
+                        return
+                    }
+                    let posX = result.worldTransform.columns.3.x
+                    let posY = result.worldTransform.columns.3.y
+                    let posZ = result.worldTransform.columns.3.z
+                    panNode.worldPosition = SCNVector3(posX, posY, posZ)
+                }
                 self.objectManagerChannel.invokeMethod("onPanChange", arguments: panNode.name)
+            }
+        }
+        // State Ended
+        if(recognizer.state == UIGestureRecognizer.State.ended)
+        {
+            // kill variables
+            panStartLocation = nil
+            panCurrentLocation = nil
+            // TODO: send the node name and the final position back to Flutter
+            self.objectManagerChannel.invokeMethod("onPanEnd", arguments: panningNode?.name)
+            panningNode = nil
+        }
+    }
+    
+    @objc func handleRotation(_ recognizer: UIRotationGestureRecognizer) {
+        guard let sceneView = recognizer.view as? ARSCNView else {
+            return
+        }
+
+        // State Begins
+        if recognizer.state == UIGestureRecognizer.State.began
+        {
+            rotationStartLocation = recognizer.location(in: sceneView)
+            if let startLocation = rotationStartLocation {
+                let allHitResults = sceneView.hitTest(startLocation, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.closest.rawValue])
+                // Because 3D model loading can lead to composed nodes, we have to traverse through a node's parent until the parent node with the name assigned by the Flutter API is found
+                let nodeHitResults: Array<String> = allHitResults.compactMap {
+                    if let nearestNode = nearestParentWithNameStart(node: $0.node, characters: "[#") {
+                        panningNode = nearestNode
+                        return nearestNode.name
+                    }else{
+                        return nil
+                    }
+                }
+                if (nodeHitResults.count != 0 && panningNode != nil) {
+                    // TODO: send the node name and the position back to Flutter controller callback
+                    self.objectManagerChannel.invokeMethod("onRotationStart", arguments: panningNode!.name) // Chaining of Array and Set is used to remove duplicates
+                    return
+                }
+            }
+        }
+        // State Changes
+        if(recognizer.state == UIGestureRecognizer.State.changed)
+        {
+            // the velocity of the gesture is how fast it is moving. This can be used to translate the position of the node.
+            rotation = recognizer.rotation
+            rotationVelocity = recognizer.velocity
+
+            if let r = rotationVelocity, let panNode = panningNode {
+                // velocity needs to be reduced substantially otherwise the rotation change seems too fast as radians; also needs inverting to match the movement of the fingers as they rotate on the screen
+                let r2 = (r*0.01) * -1
+                let nodeRotation = panNode.rotation
+                let rotation: SCNQuaternion = SCNQuaternion(x: 0, y: 1, z: 0, w: nodeRotation.w+Float(r2)) // quickest way to convert screen into world positions (meters)
+                panNode.rotation = rotation
+                // TODO: pass the velocity details back to Flutter controller callback
+                self.objectManagerChannel.invokeMethod("onRotationChange", arguments: panNode.name)
             }
 
             // update position of panning node if it has been created
@@ -515,10 +613,10 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         if(recognizer.state == UIGestureRecognizer.State.ended)
         {
             // kill variables
-            panStartLocation = nil
-            panCurrentLocation = nil
+            rotation = nil
+            rotationVelocity = nil
             // TODO: send the node name and the final position back to Flutter
-            self.objectManagerChannel.invokeMethod("onPanEnd", arguments: panningNode?.name)
+            self.objectManagerChannel.invokeMethod("onRotationEnd", arguments: panningNode?.name)
             panningNode = nil
         }
     
@@ -641,7 +739,12 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         @unknown default:
             return "Unknown"
         }
+    }
+}
+
+extension IosARView: ARCoachingOverlayViewDelegate {
+    
+    func coachingOverlayViewWillActivate(_ coachingOverlayView: ARCoachingOverlayView){
         
     }
-        
 }
