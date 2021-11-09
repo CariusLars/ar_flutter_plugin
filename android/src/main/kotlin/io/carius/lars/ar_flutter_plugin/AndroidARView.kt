@@ -431,6 +431,9 @@ internal class AndroidARView(
                 //transformationSystem.selectionVisualizer.applySelectionVisual(hitTestResult.node as TransformableNode)
                 //transformationSystem.selectNode(hitTestResult.node as TransformableNode)
             //}
+            if (hitTestResult.node != null && motionEvent?.action == MotionEvent.ACTION_DOWN) {
+                objectManagerChannel.invokeMethod("onNodeTap", listOf(hitTestResult.node?.name))
+            }
             transformationSystem.onTouch(
                 hitTestResult,
                 motionEvent

@@ -73,7 +73,6 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
     this.arObjectManager.onInitialize();
 
     this.arSessionManager.onPlaneOrPointTap = onPlaneOrPointTapped;
-    this.arObjectManager.onNodeTap = onNodeTapped;
     this.arObjectManager.onPanStart = onPanStarted;
     this.arObjectManager.onPanChange = onPanChanged;
     this.arObjectManager.onPanEnd = onPanEnded;
@@ -90,11 +89,6 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
       this.arAnchorManager.removeAnchor(anchor);
     });
     anchors = [];
-  }
-
-  Future<void> onNodeTapped(List<String> nodes) async {
-    var number = nodes.length;
-    this.arSessionManager.onError("Tapped $number node(s)");
   }
 
   Future<void> onPlaneOrPointTapped(
