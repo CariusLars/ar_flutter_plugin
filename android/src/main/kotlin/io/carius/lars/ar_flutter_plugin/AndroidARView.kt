@@ -19,9 +19,6 @@ import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
 import com.google.ar.sceneform.*
 import com.google.ar.sceneform.math.Vector3
-import com.google.ar.sceneform.rendering.Material
-import com.google.ar.sceneform.rendering.PlaneRenderer
-import com.google.ar.sceneform.rendering.Texture
 import com.google.ar.sceneform.ux.*
 import io.carius.lars.ar_flutter_plugin.Serialization.deserializeMatrix4
 import io.carius.lars.ar_flutter_plugin.Serialization.serializeAnchor
@@ -43,17 +40,14 @@ import android.transition.Scene
 import android.R.attr.name
 import android.R.attr.name
 import android.R.attr.name
+import android.view.Gravity
 
+import java.security.AccessController.getContext
 
+import android.R
+import com.google.ar.sceneform.rendering.*
 
-
-
-
-
-
-
-
-
+import java.security.AccessController
 
 
 internal class AndroidARView(
@@ -83,6 +77,7 @@ internal class AndroidARView(
     private var enableRotation = false
     private var enablePans = false
     private var keepNodeSelected = true;
+    private var footprintSelectionVisualizer = FootprintSelectionVisualizer()
     // Model builder
     private var modelBuilder = ArModelBuilder()
     // Cloud anchor handler
@@ -169,6 +164,10 @@ internal class AndroidARView(
                         "removeNode" -> {
                             val nodeName: String? = call.argument<String>("name")
                             nodeName?.let{
+                                if (transformationSystem.selectedNode?.name == nodeName){
+                                    transformationSystem.selectNode(null)
+                                    keepNodeSelected = true
+                                }
                                 val node = arSceneView.scene.findByName(nodeName)
                                 node?.let{
                                     arSceneView.scene.removeChild(node)
@@ -288,8 +287,19 @@ internal class AndroidARView(
         objectManagerChannel.setMethodCallHandler(onObjectMethodCall)
         anchorManagerChannel.setMethodCallHandler(onAnchorMethodCall)
 
+        //Original visualizer: com.google.ar.sceneform.ux.R.raw.sceneform_footprint
+
+        MaterialFactory.makeTransparentWithColor(context, Color(255f, 255f, 255f, 0.3f))
+            .thenAccept { mat ->
+                footprintSelectionVisualizer.footprintRenderable = ShapeFactory.makeCylinder(0.7f,0.05f, Vector3(0f,0f,0f), mat)
+            }
+
         transformationSystem =
-            TransformationSystem(activity.getResources().getDisplayMetrics(), FootprintSelectionVisualizer())
+            TransformationSystem(
+                activity.resources.displayMetrics,
+                footprintSelectionVisualizer)
+
+
 
         onResume() // call onResume once to setup initial session
         // TODO: find out why this does not happen automatically

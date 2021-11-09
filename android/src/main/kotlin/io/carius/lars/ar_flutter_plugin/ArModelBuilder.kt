@@ -1,23 +1,22 @@
 package io.carius.lars.ar_flutter_plugin
 
+import android.R
+import android.app.Activity
 import android.content.Context
 import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.math.Quaternion
-import com.google.ar.sceneform.rendering.Color
-import com.google.ar.sceneform.rendering.Material
-import com.google.ar.sceneform.rendering.MaterialFactory
-import com.google.ar.sceneform.rendering.ShapeFactory
-import com.google.ar.sceneform.rendering.ModelRenderable
-import com.google.ar.sceneform.rendering.RenderableDefinition
 import com.google.ar.sceneform.assets.RenderableSource
 
 import java.util.concurrent.CompletableFuture
 import android.net.Uri
+import android.view.Gravity
+import android.widget.Toast
 import com.google.ar.core.*
 import com.google.ar.sceneform.ArSceneView
 import com.google.ar.sceneform.FrameTime
 import com.google.ar.sceneform.math.MathHelper
+import com.google.ar.sceneform.rendering.*
 import com.google.ar.sceneform.utilities.Preconditions
 import com.google.ar.sceneform.ux.*
 
@@ -28,6 +27,7 @@ import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.security.AccessController
 
 
 // Responsible for creating Renderables and Nodes
