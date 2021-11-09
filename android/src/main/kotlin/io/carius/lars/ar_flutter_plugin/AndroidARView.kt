@@ -715,9 +715,12 @@ internal class AndroidARView(
         val node = arSceneView.scene.findByName(name)
         node?.let {
             val transformTriple = deserializeMatrix4(transform)
-            it.worldScale = transformTriple.first
-            it.worldPosition = transformTriple.second
-            it.worldRotation = transformTriple.third
+            it.localScale = transformTriple.first
+            it.localPosition = transformTriple.second
+            it.localRotation = transformTriple.third
+            //it.worldScale = transformTriple.first
+            //it.worldPosition = transformTriple.second
+            //it.worldRotation = transformTriple.third
         }
     }
 
@@ -768,6 +771,10 @@ internal class AndroidARView(
                 anchorNode.anchor?.detach()
                 // Remove children
                 for (node in anchorNode.children) {
+                    if (transformationSystem.selectedNode?.name == node.name){
+                        transformationSystem.selectNode(null)
+                        keepNodeSelected = true
+                    }
                     node.setParent(null)
                 }
                 // Remove anchor node

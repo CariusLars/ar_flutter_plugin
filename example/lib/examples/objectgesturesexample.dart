@@ -139,11 +139,18 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
   onPanEnded(String nodeName, Vector3 newPosition, Quaternion newRotation,
       Vector3 newScale) {
     print("Ended panning node " + nodeName);
-    //final pannedNode =
-    this.nodes.firstWhere((element) => element.name == nodeName);
+    final pannedNode =
+        this.nodes.firstWhere((element) => element.name == nodeName);
+
+    /*
+    * Uncomment the following commands if you want to keep the transformations of the Flutter representations of the nodes up to date
+    * (e.g. if you intend to share the nodes through the cloud)
+    */
+
+    // Updates to scale, position, and rotation should be done in this order!
+    //pannedNode.scale = newScale; //scale is not required to update here, but I added it for the sake of completeness
     //pannedNode.position = newPosition;
     //pannedNode.rotationFromQuaternion = newRotation;
-    //pannedNode.scale = newScale;
   }
 
   onRotationStarted(String nodeName) {
@@ -157,10 +164,17 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
   onRotationEnded(String nodeName, Vector3 newPosition, Quaternion newRotation,
       Vector3 newScale) {
     print("Ended rotating node " + nodeName);
-    //final rotatedNode =
-    //    this.nodes.firstWhere((element) => element.name == nodeName);
+    final rotatedNode =
+        this.nodes.firstWhere((element) => element.name == nodeName);
+
+    /*
+    * Uncomment the following commands if you want to keep the transformations of the Flutter representations of the nodes up to date
+    * (e.g. if you intend to share the nodes through the cloud)
+    */
+
+    // Updates to scale, position, and rotation should be done in this order!
+    //rotatedNode.scale = newScale; //scale is not required to update here, but I added it for the sake of completeness
     //rotatedNode.position = newPosition;
     //rotatedNode.rotationFromQuaternion = newRotation;
-    //rotatedNode.scale = newScale;
   }
 }
