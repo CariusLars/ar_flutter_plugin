@@ -82,6 +82,7 @@ internal class AndroidARView(
     // Setting defaults
     private var enableRotation = false
     private var enablePans = false
+    private var keepNodeSelected = true;
     // Model builder
     private var modelBuilder = ArModelBuilder()
     // Cloud anchor handler
@@ -554,6 +555,16 @@ internal class AndroidARView(
         val updatedAnchors = arSceneView.arFrame!!.updatedAnchors
         // Notify the cloudManager of all the updates.
         if (this::cloudAnchorHandler.isInitialized) {cloudAnchorHandler.onUpdate(updatedAnchors)}
+        
+        if (keepNodeSelected && transformationSystem.selectedNode != null && transformationSystem.selectedNode!!.isTransforming){
+            // If the selected node is currently transforming, we want to deselect it as sone as the transformation is done
+            keepNodeSelected = false
+        }
+        if (!keepNodeSelected && transformationSystem.selectedNode != null && !transformationSystem.selectedNode!!.isTransforming){
+            // once the transformation is done, deselect the node and allow selection of another node
+            transformationSystem.selectNode(null)
+            keepNodeSelected = true
+        }
 
     }
 

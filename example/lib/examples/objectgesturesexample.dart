@@ -74,6 +74,12 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
 
     this.arSessionManager.onPlaneOrPointTap = onPlaneOrPointTapped;
     this.arObjectManager.onNodeTap = onNodeTapped;
+    this.arObjectManager.onPanStart = onPanStarted;
+    this.arObjectManager.onPanChange = onPanChanged;
+    this.arObjectManager.onPanEnd = onPanEnded;
+    this.arObjectManager.onRotationStart = onRotationStarted;
+    this.arObjectManager.onRotationChange = onRotationChanged;
+    this.arObjectManager.onRotationEnd = onRotationEnded;
   }
 
   Future<void> onRemoveEverything() async {
@@ -120,5 +126,41 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
         this.arSessionManager.onError("Adding Anchor failed");
       }
     }
+  }
+
+  onPanStarted(String nodeName) {
+    print("Started panning node " + nodeName);
+  }
+
+  onPanChanged(String nodeName) {
+    print("Continued panning node " + nodeName);
+  }
+
+  onPanEnded(String nodeName, Vector3 newPosition, Quaternion newRotation,
+      Vector3 newScale) {
+    print("Ended panning node " + nodeName);
+    //final pannedNode =
+    this.nodes.firstWhere((element) => element.name == nodeName);
+    //pannedNode.position = newPosition;
+    //pannedNode.rotationFromQuaternion = newRotation;
+    //pannedNode.scale = newScale;
+  }
+
+  onRotationStarted(String nodeName) {
+    print("Started rotating node " + nodeName);
+  }
+
+  onRotationChanged(String nodeName) {
+    print("Continued rotating node " + nodeName);
+  }
+
+  onRotationEnded(String nodeName, Vector3 newPosition, Quaternion newRotation,
+      Vector3 newScale) {
+    print("Ended rotating node " + nodeName);
+    //final rotatedNode =
+    //    this.nodes.firstWhere((element) => element.name == nodeName);
+    //rotatedNode.position = newPosition;
+    //rotatedNode.rotationFromQuaternion = newRotation;
+    //rotatedNode.scale = newScale;
   }
 }

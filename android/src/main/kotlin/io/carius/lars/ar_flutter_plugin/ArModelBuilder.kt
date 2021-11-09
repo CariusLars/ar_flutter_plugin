@@ -213,14 +213,13 @@ class CustomTranslationController(transformableNode: BaseTransformableNode, gest
     override fun onContinueTransformation(gesture: DragGesture) {
         platformChannel.invokeMethod("onPanChange", transformableNode.name)
         super.onContinueTransformation(gesture)
-
         }
 
     override fun onEndTransformation(gesture: DragGesture) {
-        platformChannel.invokeMethod("onPanEnd", transformableNode.name)
+        val serializedLocalTransformation = serializeLocalTransformation(transformableNode.name, transformableNode.localPosition, transformableNode.localRotation, transformableNode.localScale)
+        platformChannel.invokeMethod("onPanEnd", serializedLocalTransformation)
         super.onEndTransformation(gesture)
-        transformableNode.transformationSystem.selectNode(null) //TODO: this does not seem to work yet
-    }
+     }
 }
 
 class CustomRotationController(transformableNode: BaseTransformableNode, gestureRecognizer: TwistGestureRecognizer, objectManagerChannel: MethodChannel) :
@@ -237,12 +236,11 @@ class CustomRotationController(transformableNode: BaseTransformableNode, gesture
     override fun onContinueTransformation(gesture: TwistGesture) {
         platformChannel.invokeMethod("onRotationChange", transformableNode.name)
         super.onContinueTransformation(gesture)
-
     }
 
     override fun onEndTransformation(gesture: TwistGesture) {
-        platformChannel.invokeMethod("onRotationEnd", transformableNode.name)
+        val serializedLocalTransformation = serializeLocalTransformation(transformableNode.name, transformableNode.localPosition, transformableNode.localRotation, transformableNode.localScale)
+        platformChannel.invokeMethod("onRotationEnd", serializedLocalTransformation)
         super.onEndTransformation(gesture)
-        transformableNode.transformationSystem.selectNode(null) //TODO: this does not seem to work yet
-    }
+     }
 }

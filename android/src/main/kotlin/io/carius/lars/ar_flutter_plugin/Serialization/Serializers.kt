@@ -2,6 +2,9 @@ package io.carius.lars.ar_flutter_plugin.Serialization
 
 import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.math.Matrix
+import com.google.ar.sceneform.math.Quaternion
+import com.google.ar.sceneform.math.Vector3
 
 fun serializeHitResult(hitResult: HitResult): HashMap<String, Any> {
     val serializedHitResult = HashMap<String,Any>()
@@ -41,4 +44,14 @@ fun serializeAnchor(anchorNode: AnchorNode, anchor: Anchor?): HashMap<String, An
     serializedAnchor["childNodes"] = anchorNode.children.map { child -> child.name }
 
     return serializedAnchor
+}
+
+fun serializeLocalTransformation(name: String, position: Vector3, rotation: Quaternion, scale: Vector3): HashMap<String, Any>{
+    val serializedLocalTransformation = HashMap<String, Any>()
+    serializedLocalTransformation["name"] = name
+    serializedLocalTransformation["position"] = doubleArrayOf(position.x.toDouble(), position.y.toDouble(), position.z.toDouble())
+    serializedLocalTransformation["rotation"] = doubleArrayOf(rotation.x.toDouble(), rotation.y.toDouble(), rotation.z.toDouble(), rotation.w.toDouble())
+    serializedLocalTransformation["scale"] = doubleArrayOf(scale.x.toDouble(), scale.y.toDouble(), scale.z.toDouble())
+
+    return serializedLocalTransformation
 }

@@ -1,11 +1,20 @@
+import 'dart:typed_data';
+
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:flutter/services.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef NodeTapResultHandler = void Function(List<String> nodes);
-typedef NodePanStateResultHandler = void Function(String node);
-typedef NodeRotationStateResultHandler = void Function(String node);
+typedef NodePanStartHandler = void Function(String node);
+typedef NodePanChangeHandler = void Function(String node);
+typedef NodePanEndHandler = void Function(
+    String node, Vector3 newPosition, Quaternion newRotation, Vector3 newScale);
+typedef NodeRotationStartHandler = void Function(String node);
+typedef NodeRotationChangeHandler = void Function(String node);
+typedef NodeRotationEndHandler = void Function(
+    String node, Vector3 newPosition, Quaternion newRotation, Vector3 newScale);
 
 /// Manages the all node-related actions of an [ARView]
 class ARObjectManager {
@@ -17,12 +26,12 @@ class ARObjectManager {
 
   /// Callback function that is invoked when the platform detects a tap on a node
   NodeTapResultHandler? onNodeTap;
-  NodePanStateResultHandler? onPanStart;
-  NodePanStateResultHandler? onPanChange;
-  NodePanStateResultHandler? onPanEnd;
-  NodeRotationStateResultHandler? onRotationStart;
-  NodeRotationStateResultHandler? onRotationChange;
-  NodeRotationStateResultHandler? onRotationEnd;
+  NodePanStartHandler? onPanStart;
+  NodePanChangeHandler? onPanChange;
+  NodePanEndHandler? onPanEnd;
+  NodeRotationStartHandler? onRotationStart;
+  NodeRotationChangeHandler? onRotationChange;
+  NodeRotationEndHandler? onRotationEnd;
 
   ARObjectManager(int id, {this.debug = false}) {
     _channel = MethodChannel('arobjects_$id');
@@ -61,8 +70,6 @@ class ARObjectManager {
           print("panChanged");
           if (onPanChange != null) {
             final tappedNode = call.arguments as String;
-            // Update node position
-
             // Notify callback
             onPanChange!(tappedNode);
           }
@@ -70,9 +77,27 @@ class ARObjectManager {
         case 'onPanEnd':
           print("panEnded");
           if (onPanEnd != null) {
-            final tappedNode = call.arguments as String;
+            final tappedNodeName = call.arguments["name"] as String;
+            final tappedNodePosition =
+                call.arguments["position"] as Float64List;
+            final tappedNodeRotation =
+                call.arguments["rotation"] as Float64List;
+            final tappedNodeScale = call.arguments["scale"] as Float64List;
+
+            final positionVector = Vector3(tappedNodePosition[0],
+                tappedNodePosition[1], tappedNodePosition[2]);
+            final rotationMatix = Quaternion(
+                    tappedNodeRotation[0],
+                    tappedNodeRotation[1],
+                    tappedNodeRotation[2],
+                    tappedNodeRotation[3])
+                .normalized();
+            final scaleVector = Vector3(
+                tappedNodeScale[0], tappedNodeScale[1], tappedNodeScale[2]);
+
             // Notify callback
-            onPanEnd!(tappedNode);
+            onPanEnd!(
+                tappedNodeName, positionVector, rotationMatix, scaleVector);
           }
           break;
         case 'onRotationStart':
@@ -92,8 +117,27 @@ class ARObjectManager {
         case 'onRotationEnd':
           print("rotationEnded");
           if (onRotationEnd != null) {
-            final tappedNode = call.arguments as String;
-            onRotationEnd!(tappedNode);
+            final tappedNodeName = call.arguments["name"] as String;
+            final tappedNodePosition =
+                call.arguments["position"] as Float64List;
+            final tappedNodeRotation =
+                call.arguments["rotation"] as Float64List;
+            final tappedNodeScale = call.arguments["scale"] as Float64List;
+
+            final positionVector = Vector3(tappedNodePosition[0],
+                tappedNodePosition[1], tappedNodePosition[2]);
+            final rotationMatix = Quaternion(
+                    tappedNodeRotation[0],
+                    tappedNodeRotation[1],
+                    tappedNodeRotation[2],
+                    tappedNodeRotation[3])
+                .normalized();
+            final scaleVector = Vector3(
+                tappedNodeScale[0], tappedNodeScale[1], tappedNodeScale[2]);
+
+            // Notify callback
+            onRotationEnd!(
+                tappedNodeName, positionVector, rotationMatix, scaleVector);
           }
           break;
         default:

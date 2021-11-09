@@ -67,6 +67,10 @@ class ARNode {
         Matrix4.compose(position, Quaternion.fromRotation(value), scale);
   }
 
+  set rotationFromQuaternion(Quaternion value) {
+    transform = Matrix4.compose(position, value, scale);
+  }
+
   /// Determines the receiver's euler angles.
   /// The order of components in this vector matches the axes of rotation:
   /// 1. Pitch (the x component) is the rotation about the node's x-axis (in radians)
