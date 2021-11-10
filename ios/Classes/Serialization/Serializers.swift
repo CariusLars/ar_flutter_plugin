@@ -38,3 +38,18 @@ func serializeAnchor(anchor: ARAnchor, anchorNode: SCNNode?, ganchor: GARAnchor,
 
     return serializedAnchor
 }
+
+func serializeLocalTransformation(node: SCNNode?) -> Dictionary<String, Any?> {
+    var serializedLocalTransformation = Dictionary<String, Any?>()
+
+    let position: [Float?] = [node?.position.x, node?.position.y, node?.position.z]
+    let rotation: [Float?] = [node?.rotation.x, node?.rotation.y, node?.rotation.z, node?.rotation.w]
+    let scale: [Float?] = [node?.scale.x, node?.scale.y, node?.scale.z]
+    
+    serializedLocalTransformation["name"] = node?.name
+    serializedLocalTransformation["position"] = position
+    serializedLocalTransformation["rotation"] = rotation
+    serializedLocalTransformation["scale"] = scale
+
+    return serializedLocalTransformation
+}

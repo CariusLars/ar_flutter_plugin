@@ -167,7 +167,8 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
     */
 
     // Updates to scale, position, and rotation should be done in this order!
-    //rotatedNode.scale = newScale; //scale is not required to update here, but I added it for the sake of completeness
+    //rotatedNode.scale =
+    //newScale; //scale is not required to update here, but I added it for the sake of completeness
     //rotatedNode.position = newPosition;
     //rotatedNode.rotationFromQuaternion = newRotation;
   }

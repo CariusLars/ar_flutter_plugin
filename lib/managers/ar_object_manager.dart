@@ -79,10 +79,10 @@ class ARObjectManager {
           if (onPanEnd != null) {
             final tappedNodeName = call.arguments["name"] as String;
             final tappedNodePosition =
-                call.arguments["position"] as Float64List;
+                call.arguments["position"] as List<dynamic>;
             final tappedNodeRotation =
-                call.arguments["rotation"] as Float64List;
-            final tappedNodeScale = call.arguments["scale"] as Float64List;
+                call.arguments["rotation"] as List<dynamic>;
+            final tappedNodeScale = call.arguments["scale"] as List<dynamic>;
 
             final positionVector = Vector3(tappedNodePosition[0],
                 tappedNodePosition[1], tappedNodePosition[2]);
@@ -119,10 +119,10 @@ class ARObjectManager {
           if (onRotationEnd != null) {
             final tappedNodeName = call.arguments["name"] as String;
             final tappedNodePosition =
-                call.arguments["position"] as Float64List;
+                call.arguments["position"] as List<dynamic>;
             final tappedNodeRotation =
-                call.arguments["rotation"] as Float64List;
-            final tappedNodeScale = call.arguments["scale"] as Float64List;
+                call.arguments["rotation"] as List<dynamic>;
+            final tappedNodeScale = call.arguments["scale"] as List<dynamic>;
 
             final positionVector = Vector3(tappedNodePosition[0],
                 tappedNodePosition[1], tappedNodePosition[2]);
@@ -131,7 +131,7 @@ class ARObjectManager {
                     tappedNodeRotation[1],
                     tappedNodeRotation[2],
                     tappedNodeRotation[3])
-                .normalized();
+                //.normalized();
             final scaleVector = Vector3(
                 tappedNodeScale[0], tappedNodeScale[1], tappedNodeScale[2]);
 
