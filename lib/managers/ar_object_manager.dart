@@ -131,7 +131,7 @@ class ARObjectManager {
                     tappedNodeRotation[1],
                     tappedNodeRotation[2],
                     tappedNodeRotation[3])
-                //.normalized();
+                .normalized();
             final scaleVector = Vector3(
                 tappedNodeScale[0], tappedNodeScale[1], tappedNodeScale[2]);
 
