@@ -216,7 +216,7 @@ class CustomTranslationController(transformableNode: BaseTransformableNode, gest
         }
 
     override fun onEndTransformation(gesture: DragGesture) {
-        val serializedLocalTransformation = serializeLocalTransformation(transformableNode.name, transformableNode.localPosition, transformableNode.localRotation, transformableNode.localScale)
+        val serializedLocalTransformation = serializeLocalTransformation(transformableNode)
         platformChannel.invokeMethod("onPanEnd", serializedLocalTransformation)
         super.onEndTransformation(gesture)
      }
@@ -239,7 +239,7 @@ class CustomRotationController(transformableNode: BaseTransformableNode, gesture
     }
 
     override fun onEndTransformation(gesture: TwistGesture) {
-        val serializedLocalTransformation = serializeLocalTransformation(transformableNode.name, transformableNode.localPosition, transformableNode.localRotation, transformableNode.localScale)
+        val serializedLocalTransformation = serializeLocalTransformation(transformableNode)
         platformChannel.invokeMethod("onRotationEnd", serializedLocalTransformation)
         super.onEndTransformation(gesture)
      }

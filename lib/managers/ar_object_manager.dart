@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:ar_flutter_plugin/utils/json_converters.dart';
 import 'package:flutter/services.dart';
 import 'package:vector_math/vector_math_64.dart';
 
@@ -9,12 +10,10 @@ import 'package:vector_math/vector_math_64.dart';
 typedef NodeTapResultHandler = void Function(List<String> nodes);
 typedef NodePanStartHandler = void Function(String node);
 typedef NodePanChangeHandler = void Function(String node);
-typedef NodePanEndHandler = void Function(
-    String node, Vector3 newPosition, Quaternion newRotation, Vector3 newScale);
+typedef NodePanEndHandler = void Function(String node, Matrix4 transform);
 typedef NodeRotationStartHandler = void Function(String node);
 typedef NodeRotationChangeHandler = void Function(String node);
-typedef NodeRotationEndHandler = void Function(
-    String node, Vector3 newPosition, Quaternion newRotation, Vector3 newScale);
+typedef NodeRotationEndHandler = void Function(String node, Matrix4 transform);
 
 /// Manages the all node-related actions of an [ARView]
 class ARObjectManager {
@@ -59,7 +58,6 @@ class ARObjectManager {
           }
           break;
         case 'onPanStart':
-          print("panStarted");
           if (onPanStart != null) {
             final tappedNode = call.arguments as String;
             // Notify callback
@@ -67,7 +65,6 @@ class ARObjectManager {
           }
           break;
         case 'onPanChange':
-          print("panChanged");
           if (onPanChange != null) {
             final tappedNode = call.arguments as String;
             // Notify callback
@@ -75,69 +72,35 @@ class ARObjectManager {
           }
           break;
         case 'onPanEnd':
-          print("panEnded");
           if (onPanEnd != null) {
             final tappedNodeName = call.arguments["name"] as String;
-            final tappedNodePosition =
-                call.arguments["position"] as List<dynamic>;
-            final tappedNodeRotation =
-                call.arguments["rotation"] as List<dynamic>;
-            final tappedNodeScale = call.arguments["scale"] as List<dynamic>;
-
-            final positionVector = Vector3(tappedNodePosition[0],
-                tappedNodePosition[1], tappedNodePosition[2]);
-            final rotationMatix = Quaternion(
-                    tappedNodeRotation[0],
-                    tappedNodeRotation[1],
-                    tappedNodeRotation[2],
-                    tappedNodeRotation[3])
-                .normalized();
-            final scaleVector = Vector3(
-                tappedNodeScale[0], tappedNodeScale[1], tappedNodeScale[2]);
+            final transform =
+                MatrixConverter().fromJson(call.arguments['transform'] as List);
 
             // Notify callback
-            onPanEnd!(
-                tappedNodeName, positionVector, rotationMatix, scaleVector);
+            onPanEnd!(tappedNodeName, transform);
           }
           break;
         case 'onRotationStart':
-          print("rotationStarted");
           if (onRotationStart != null) {
             final tappedNode = call.arguments as String;
             onRotationStart!(tappedNode);
           }
           break;
         case 'onRotationChange':
-          print("rotationChanged");
           if (onRotationChange != null) {
             final tappedNode = call.arguments as String;
             onRotationChange!(tappedNode);
           }
           break;
         case 'onRotationEnd':
-          print("rotationEnded");
           if (onRotationEnd != null) {
             final tappedNodeName = call.arguments["name"] as String;
-            final tappedNodePosition =
-                call.arguments["position"] as List<dynamic>;
-            final tappedNodeRotation =
-                call.arguments["rotation"] as List<dynamic>;
-            final tappedNodeScale = call.arguments["scale"] as List<dynamic>;
-
-            final positionVector = Vector3(tappedNodePosition[0],
-                tappedNodePosition[1], tappedNodePosition[2]);
-            final rotationMatix = Quaternion(
-                    tappedNodeRotation[0],
-                    tappedNodeRotation[1],
-                    tappedNodeRotation[2],
-                    tappedNodeRotation[3])
-                .normalized();
-            final scaleVector = Vector3(
-                tappedNodeScale[0], tappedNodeScale[1], tappedNodeScale[2]);
+            final transform =
+                MatrixConverter().fromJson(call.arguments['transform'] as List);
 
             // Notify callback
-            onRotationEnd!(
-                tappedNodeName, positionVector, rotationMatix, scaleVector);
+            onRotationEnd!(tappedNodeName, transform);
           }
           break;
         default:
