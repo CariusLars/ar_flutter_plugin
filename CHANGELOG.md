@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.5.1
+* Removes overly restrictive background location permission on Android
 
 ## 0.5.0
 
