@@ -48,6 +48,29 @@ import android.R
 import com.google.ar.sceneform.rendering.*
 
 import java.security.AccessController
+import com.google.ar.sceneform.ux.PlaneDiscoveryController
+import android.view.ViewGroup
+import android.graphics.Typeface
+
+import android.widget.LinearLayout
+
+import android.widget.TextView
+
+import androidx.appcompat.widget.AppCompatImageView
+import com.google.ar.sceneform.ux.HandMotionView
+import com.google.ar.core.TrackingState
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 internal class AndroidARView(
@@ -71,6 +94,8 @@ internal class AndroidARView(
     private lateinit var arSceneView: ArSceneView
     private lateinit var transformationSystem: TransformationSystem
     private var showFeaturePoints = false
+    private var showAnimatedGuide = false
+    private lateinit var animatedGuide: View
     private var pointCloudNode = Node()
     private var worldOriginNode = Node()
     // Setting defaults
@@ -299,8 +324,6 @@ internal class AndroidARView(
                 activity.resources.displayMetrics,
                 footprintSelectionVisualizer)
 
-
-
         onResume() // call onResume once to setup initial session
         // TODO: find out why this does not happen automatically
     }
@@ -411,6 +434,12 @@ internal class AndroidARView(
     }
 
     fun onPause() {
+        // hide instructions view if no longer required
+        if (showAnimatedGuide){
+            val view = activity.findViewById(R.id.content) as ViewGroup
+            view.removeView(animatedGuide)
+            showAnimatedGuide = false
+        }
         arSceneView.pause()
     }
 
@@ -424,6 +453,7 @@ internal class AndroidARView(
         val argHandleTaps: Boolean? = call.argument<Boolean>("handleTaps")
         val argHandleRotation: Boolean? = call.argument<Boolean>("handleRotation")
         val argHandlePans: Boolean? = call.argument<Boolean>("handlePans")
+        val argShowAnimatedGuide: Boolean? = call.argument<Boolean>("showAnimatedGuide")
         
         arSceneView.scene.addOnUpdateListener { frameTime: FrameTime -> onFrame(frameTime) }
         arSceneView.scene.addOnPeekTouchListener { hitTestResult, motionEvent ->
@@ -438,6 +468,14 @@ internal class AndroidARView(
                 hitTestResult,
                 motionEvent
             )
+        }
+
+        // Configure Plane scanning guide
+        if (argShowAnimatedGuide == true) { // explicit comparison necessary because of nullable type
+            showAnimatedGuide = true
+            val view = activity.findViewById(R.id.content) as ViewGroup
+            animatedGuide = activity.layoutInflater.inflate(com.google.ar.sceneform.ux.R.layout.sceneform_plane_discovery_layout, null)
+            view.addView(animatedGuide)
         }
 
         // Configure feature points
@@ -539,6 +577,18 @@ internal class AndroidARView(
     }
 
     private fun onFrame(frameTime: FrameTime) {
+        // hide instructions view if no longer required
+        if (showAnimatedGuide && arSceneView.arFrame != null){
+            for (plane in arSceneView.arFrame!!.getUpdatedTrackables(Plane::class.java)) {
+                if (plane.trackingState === TrackingState.TRACKING) {
+                    val view = activity.findViewById(R.id.content) as ViewGroup
+                    view.removeView(animatedGuide)
+                    showAnimatedGuide = false
+                    break
+                }
+            }
+        }
+
         if (showFeaturePoints) {
             // remove points from last frame
             while (pointCloudNode.children?.size
