@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'ar_flutter_plugin'
-  s.version          = '0.5.0'
+  s.version          = '0.5.1'
   s.summary          = 'A Flutter plugin for shared AR experiences.'
   s.description      = <<-DESC
 A Flutter plugin for shared AR experiences supporting Android and iOS.
