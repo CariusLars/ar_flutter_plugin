@@ -64,7 +64,7 @@ class ArModelBuilder {
                     xNode.renderable = ShapeFactory.makeCylinder(axisRadius, axisSize, Vector3.zero(), redMat)
                 }
 
-        MaterialFactory.makeOpaqueWithColor(context, Color(axisRadius, 255f, 0f))
+        MaterialFactory.makeOpaqueWithColor(context, Color(0f, 255f, 0f))
                 .thenAccept { greenMat ->
                     yNode.renderable = ShapeFactory.makeCylinder(axisRadius, axisSize, Vector3.zero(), greenMat)
                 }
