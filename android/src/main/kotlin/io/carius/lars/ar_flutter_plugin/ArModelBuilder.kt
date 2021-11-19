@@ -167,17 +167,9 @@ class ArModelBuilder {
 class CustomTransformableNode(transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean) :
     TransformableNode(transformationSystem) { //
 
-    private val customTranslationController = CustomTranslationController(
-        this,
-        transformationSystem.dragRecognizer,
-        objectManagerChannel
-    )
+    private lateinit var customTranslationController: CustomTranslationController
 
-    private val customRotationController = CustomRotationController(
-        this,
-        transformationSystem.twistRecognizer,
-        objectManagerChannel
-    )
+    private lateinit var customRotationController: CustomRotationController
 
     init {
         // Remove standard controllers
@@ -191,9 +183,19 @@ class CustomTransformableNode(transformationSystem: TransformationSystem, object
 
         // Add custom controllers if needed
         if (enablePans) {
+            customTranslationController = CustomTranslationController(
+                this,
+                transformationSystem.dragRecognizer,
+                objectManagerChannel
+            )
             addTransformationController(customTranslationController)
         }
         if (enableRotation) {
+            customRotationController = CustomRotationController(
+                this,
+                transformationSystem.twistRecognizer,
+                objectManagerChannel
+            )
             addTransformationController(customRotationController)
         }
     }

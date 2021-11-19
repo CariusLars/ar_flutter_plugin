@@ -620,13 +620,17 @@ internal class AndroidARView(
         if (this::cloudAnchorHandler.isInitialized) {cloudAnchorHandler.onUpdate(updatedAnchors)}
         
         if (keepNodeSelected && transformationSystem.selectedNode != null && transformationSystem.selectedNode!!.isTransforming){
-            // If the selected node is currently transforming, we want to deselect it as sone as the transformation is done
+            // If the selected node is currently transforming, we want to deselect it as soon as the transformation is done
             keepNodeSelected = false
         }
         if (!keepNodeSelected && transformationSystem.selectedNode != null && !transformationSystem.selectedNode!!.isTransforming){
             // once the transformation is done, deselect the node and allow selection of another node
             transformationSystem.selectNode(null)
             keepNodeSelected = true
+        }
+        if (!enablePans && !enableRotation){
+            //unselect all nodes as we do not want the selection visualizer
+            transformationSystem.selectNode(null)
         }
 
     }
