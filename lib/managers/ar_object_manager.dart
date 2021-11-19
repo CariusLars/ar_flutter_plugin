@@ -1,9 +1,19 @@
+import 'dart:typed_data';
+
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:ar_flutter_plugin/utils/json_converters.dart';
 import 'package:flutter/services.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef NodeTapResultHandler = void Function(List<String> nodes);
+typedef NodePanStartHandler = void Function(String node);
+typedef NodePanChangeHandler = void Function(String node);
+typedef NodePanEndHandler = void Function(String node, Matrix4 transform);
+typedef NodeRotationStartHandler = void Function(String node);
+typedef NodeRotationChangeHandler = void Function(String node);
+typedef NodeRotationEndHandler = void Function(String node, Matrix4 transform);
 
 /// Manages the all node-related actions of an [ARView]
 class ARObjectManager {
@@ -15,6 +25,12 @@ class ARObjectManager {
 
   /// Callback function that is invoked when the platform detects a tap on a node
   NodeTapResultHandler? onNodeTap;
+  NodePanStartHandler? onPanStart;
+  NodePanChangeHandler? onPanChange;
+  NodePanEndHandler? onPanEnd;
+  NodeRotationStartHandler? onRotationStart;
+  NodeRotationChangeHandler? onRotationChange;
+  NodeRotationEndHandler? onRotationEnd;
 
   ARObjectManager(int id, {this.debug = false}) {
     _channel = MethodChannel('arobjects_$id');
@@ -39,6 +55,52 @@ class ARObjectManager {
             onNodeTap!(tappedNodes
                 .map((tappedNode) => tappedNode.toString())
                 .toList());
+          }
+          break;
+        case 'onPanStart':
+          if (onPanStart != null) {
+            final tappedNode = call.arguments as String;
+            // Notify callback
+            onPanStart!(tappedNode);
+          }
+          break;
+        case 'onPanChange':
+          if (onPanChange != null) {
+            final tappedNode = call.arguments as String;
+            // Notify callback
+            onPanChange!(tappedNode);
+          }
+          break;
+        case 'onPanEnd':
+          if (onPanEnd != null) {
+            final tappedNodeName = call.arguments["name"] as String;
+            final transform =
+                MatrixConverter().fromJson(call.arguments['transform'] as List);
+
+            // Notify callback
+            onPanEnd!(tappedNodeName, transform);
+          }
+          break;
+        case 'onRotationStart':
+          if (onRotationStart != null) {
+            final tappedNode = call.arguments as String;
+            onRotationStart!(tappedNode);
+          }
+          break;
+        case 'onRotationChange':
+          if (onRotationChange != null) {
+            final tappedNode = call.arguments as String;
+            onRotationChange!(tappedNode);
+          }
+          break;
+        case 'onRotationEnd':
+          if (onRotationEnd != null) {
+            final tappedNodeName = call.arguments["name"] as String;
+            final transform =
+                MatrixConverter().fromJson(call.arguments['transform'] as List);
+
+            // Notify callback
+            onRotationEnd!(tappedNodeName, transform);
           }
           break;
         default:

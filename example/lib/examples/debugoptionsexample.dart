@@ -18,6 +18,7 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
   bool _showFeaturePoints = false;
   bool _showPlanes = false;
   bool _showWorldOrigin = false;
+  bool _showAnimatedGuide = true;
   String _planeTexturePath = "Images/triangle.png";
   bool _handleTaps = false;
 
@@ -93,6 +94,7 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
           showPlanes: _showPlanes,
           customPlaneTexturePath: _planeTexturePath,
           showWorldOrigin: _showWorldOrigin,
+          showAnimatedGuide: _showAnimatedGuide,
           handleTaps: _handleTaps,
         );
     this.arObjectManager.onInitialize();
