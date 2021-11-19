@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0
+* Adds handling of two gestures: panning and rotating
+* Adds example showcasing handling and panning of nodes
+* Adds animated coaching overlay for finding planes (uses standard animation from SceneKit/Sceneform on iOS/Android respectively) - active by default, can be turned off using ```ARSessionManager```
+* Updates ```ARCore/CloudAnchors``` to 1.26.0 on iOS
+* Removes overly restrictive permission for background location access on Android
+
 ## 0.5.1
 * Removes overly restrictive background location permission on Android
 
