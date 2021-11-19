@@ -10,6 +10,7 @@ import 'package:ar_flutter_plugin_example/examples/cloudanchorexample.dart';
 import 'package:ar_flutter_plugin_example/examples/localandwebobjectsexample.dart';
 import 'package:ar_flutter_plugin_example/examples/debugoptionsexample.dart';
 
+import 'examples/objectgesturesexample.dart';
 import 'examples/screenshotexample.dart';
 
 void main() {
@@ -95,6 +96,11 @@ class ExampleList extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => ObjectsOnPlanesWidget()))),
+      Example(
+          'Object Transformation Gestures',
+          'Rotate and Pan Objects',
+          () => Navigator.push(context,
+              MaterialPageRoute(builder: (context) => ObjectGesturesWidget()))),
       Example(
           'Screenshots',
           'Place 3D objects on planes and take screenshots',

@@ -3,11 +3,13 @@ package io.carius.lars.ar_flutter_plugin
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.gesture.Gesture
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.MotionEvent
 import android.view.PixelCopy
@@ -16,9 +18,8 @@ import android.widget.Toast
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
 import com.google.ar.sceneform.*
-import com.google.ar.sceneform.rendering.Material
-import com.google.ar.sceneform.rendering.PlaneRenderer
-import com.google.ar.sceneform.rendering.Texture
+import com.google.ar.sceneform.math.Vector3
+import com.google.ar.sceneform.ux.*
 import io.carius.lars.ar_flutter_plugin.Serialization.deserializeMatrix4
 import io.carius.lars.ar_flutter_plugin.Serialization.serializeAnchor
 import io.carius.lars.ar_flutter_plugin.Serialization.serializeHitResult
@@ -32,6 +33,45 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.FloatBuffer
 import java.util.concurrent.CompletableFuture
+import android.R.attr.name
+
+import android.transition.Scene
+
+import android.R.attr.name
+import android.R.attr.name
+import android.R.attr.name
+import android.view.Gravity
+
+import java.security.AccessController.getContext
+
+import android.R
+import com.google.ar.sceneform.rendering.*
+
+import java.security.AccessController
+import com.google.ar.sceneform.ux.PlaneDiscoveryController
+import android.view.ViewGroup
+import android.graphics.Typeface
+
+import android.widget.LinearLayout
+
+import android.widget.TextView
+
+import androidx.appcompat.widget.AppCompatImageView
+import com.google.ar.sceneform.ux.HandMotionView
+import com.google.ar.core.TrackingState
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 internal class AndroidARView(
         val activity: Activity,
@@ -52,9 +92,17 @@ internal class AndroidARView(
     private val anchorManagerChannel: MethodChannel = MethodChannel(messenger, "aranchors_$id")
     // UI variables
     private lateinit var arSceneView: ArSceneView
+    private lateinit var transformationSystem: TransformationSystem
     private var showFeaturePoints = false
+    private var showAnimatedGuide = false
+    private lateinit var animatedGuide: View
     private var pointCloudNode = Node()
     private var worldOriginNode = Node()
+    // Setting defaults
+    private var enableRotation = false
+    private var enablePans = false
+    private var keepNodeSelected = true;
+    private var footprintSelectionVisualizer = FootprintSelectionVisualizer()
     // Model builder
     private var modelBuilder = ArModelBuilder()
     // Cloud anchor handler
@@ -141,6 +189,10 @@ internal class AndroidARView(
                         "removeNode" -> {
                             val nodeName: String? = call.argument<String>("name")
                             nodeName?.let{
+                                if (transformationSystem.selectedNode?.name == nodeName){
+                                    transformationSystem.selectNode(null)
+                                    keepNodeSelected = true
+                                }
                                 val node = arSceneView.scene.findByName(nodeName)
                                 node?.let{
                                     arSceneView.scene.removeChild(node)
@@ -260,6 +312,18 @@ internal class AndroidARView(
         objectManagerChannel.setMethodCallHandler(onObjectMethodCall)
         anchorManagerChannel.setMethodCallHandler(onAnchorMethodCall)
 
+        //Original visualizer: com.google.ar.sceneform.ux.R.raw.sceneform_footprint
+
+        MaterialFactory.makeTransparentWithColor(context, Color(255f, 255f, 255f, 0.3f))
+            .thenAccept { mat ->
+                footprintSelectionVisualizer.footprintRenderable = ShapeFactory.makeCylinder(0.7f,0.05f, Vector3(0f,0f,0f), mat)
+            }
+
+        transformationSystem =
+            TransformationSystem(
+                activity.resources.displayMetrics,
+                footprintSelectionVisualizer)
+
         onResume() // call onResume once to setup initial session
         // TODO: find out why this does not happen automatically
     }
@@ -370,6 +434,12 @@ internal class AndroidARView(
     }
 
     fun onPause() {
+        // hide instructions view if no longer required
+        if (showAnimatedGuide){
+            val view = activity.findViewById(R.id.content) as ViewGroup
+            view.removeView(animatedGuide)
+            showAnimatedGuide = false
+        }
         arSceneView.pause()
     }
 
@@ -381,8 +451,32 @@ internal class AndroidARView(
         val argCustomPlaneTexturePath: String? = call.argument<String>("customPlaneTexturePath")
         val argShowWorldOrigin: Boolean? = call.argument<Boolean>("showWorldOrigin")
         val argHandleTaps: Boolean? = call.argument<Boolean>("handleTaps")
-
+        val argHandleRotation: Boolean? = call.argument<Boolean>("handleRotation")
+        val argHandlePans: Boolean? = call.argument<Boolean>("handlePans")
+        val argShowAnimatedGuide: Boolean? = call.argument<Boolean>("showAnimatedGuide")
+        
         arSceneView.scene.addOnUpdateListener { frameTime: FrameTime -> onFrame(frameTime) }
+        arSceneView.scene.addOnPeekTouchListener { hitTestResult, motionEvent ->
+            //if (hitTestResult.node != null){
+                //transformationSystem.selectionVisualizer.applySelectionVisual(hitTestResult.node as TransformableNode)
+                //transformationSystem.selectNode(hitTestResult.node as TransformableNode)
+            //}
+            if (hitTestResult.node != null && motionEvent?.action == MotionEvent.ACTION_DOWN) {
+                objectManagerChannel.invokeMethod("onNodeTap", listOf(hitTestResult.node?.name))
+            }
+            transformationSystem.onTouch(
+                hitTestResult,
+                motionEvent
+            )
+        }
+
+        // Configure Plane scanning guide
+        if (argShowAnimatedGuide == true) { // explicit comparison necessary because of nullable type
+            showAnimatedGuide = true
+            val view = activity.findViewById(R.id.content) as ViewGroup
+            animatedGuide = activity.layoutInflater.inflate(com.google.ar.sceneform.ux.R.layout.sceneform_plane_discovery_layout, null)
+            view.addView(animatedGuide)
+        }
 
         // Configure feature points
         if (argShowFeaturePoints ==
@@ -465,10 +559,36 @@ internal class AndroidARView(
             arSceneView.scene.setOnTouchListener{ hitTestResult: HitTestResult, motionEvent: MotionEvent? -> onTap(hitTestResult, motionEvent) }
         }
 
+        // Configure gestures
+        if (argHandleRotation ==
+                true) { // explicit comparison necessary because of nullable type
+            enableRotation = true
+        } else {
+            enableRotation = false
+        }
+        if (argHandlePans ==
+                true) { // explicit comparison necessary because of nullable type
+            enablePans = true
+        } else {
+            enablePans = false
+        }
+
         result.success(null)
     }
 
     private fun onFrame(frameTime: FrameTime) {
+        // hide instructions view if no longer required
+        if (showAnimatedGuide && arSceneView.arFrame != null){
+            for (plane in arSceneView.arFrame!!.getUpdatedTrackables(Plane::class.java)) {
+                if (plane.trackingState === TrackingState.TRACKING) {
+                    val view = activity.findViewById(R.id.content) as ViewGroup
+                    view.removeView(animatedGuide)
+                    showAnimatedGuide = false
+                    break
+                }
+            }
+        }
+
         if (showFeaturePoints) {
             // remove points from last frame
             while (pointCloudNode.children?.size
@@ -498,6 +618,20 @@ internal class AndroidARView(
         val updatedAnchors = arSceneView.arFrame!!.updatedAnchors
         // Notify the cloudManager of all the updates.
         if (this::cloudAnchorHandler.isInitialized) {cloudAnchorHandler.onUpdate(updatedAnchors)}
+        
+        if (keepNodeSelected && transformationSystem.selectedNode != null && transformationSystem.selectedNode!!.isTransforming){
+            // If the selected node is currently transforming, we want to deselect it as soon as the transformation is done
+            keepNodeSelected = false
+        }
+        if (!keepNodeSelected && transformationSystem.selectedNode != null && !transformationSystem.selectedNode!!.isTransforming){
+            // once the transformation is done, deselect the node and allow selection of another node
+            transformationSystem.selectNode(null)
+            keepNodeSelected = true
+        }
+        if (!enablePans && !enableRotation){
+            //unselect all nodes as we do not want the selection visualizer
+            transformationSystem.selectNode(null)
+        }
 
     }
 
@@ -512,7 +646,7 @@ internal class AndroidARView(
                     val key: String = loader.getLookupKeyForAsset(dict_node["uri"] as String)
 
                     // Add object to scene
-                    modelBuilder.makeNodeFromGltf(viewContext, dict_node["name"] as String, key, dict_node["transformation"] as ArrayList<Double>)
+                    modelBuilder.makeNodeFromGltf(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, key, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
@@ -538,7 +672,7 @@ internal class AndroidARView(
                             }
                 }
                 1 -> { // GLB Model from the web
-                    modelBuilder.makeNodeFromGlb(viewContext, dict_node["name"] as String, dict_node["uri"] as String, dict_node["transformation"] as ArrayList<Double>)
+                    modelBuilder.makeNodeFromGlb(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, dict_node["uri"] as String, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
@@ -567,7 +701,7 @@ internal class AndroidARView(
                     val documentsPath = viewContext.getApplicationInfo().dataDir
                     val assetPath = documentsPath + "/app_flutter/" + dict_node["uri"] as String
 
-                    modelBuilder.makeNodeFromGlb(viewContext, dict_node["name"] as String, assetPath as String, dict_node["transformation"] as ArrayList<Double>) //
+                    modelBuilder.makeNodeFromGlb(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, assetPath as String, dict_node["transformation"] as ArrayList<Double>) //
                     .thenAccept{node ->
                         val anchorName: String? = dict_anchor?.get("name") as? String
                         val anchorType: Int? = dict_anchor?.get("type") as? Int
@@ -598,7 +732,7 @@ internal class AndroidARView(
                     val assetPath = documentsPath + "/app_flutter/" + dict_node["uri"] as String
 
                     // Add object to scene
-                    modelBuilder.makeNodeFromGltf(viewContext, dict_node["name"] as String, assetPath, dict_node["transformation"] as ArrayList<Double>)
+                    modelBuilder.makeNodeFromGltf(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, assetPath, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
@@ -638,9 +772,12 @@ internal class AndroidARView(
         val node = arSceneView.scene.findByName(name)
         node?.let {
             val transformTriple = deserializeMatrix4(transform)
-            it.worldScale = transformTriple.first
-            it.worldPosition = transformTriple.second
-            it.worldRotation = transformTriple.third
+            it.localScale = transformTriple.first
+            it.localPosition = transformTriple.second
+            it.localRotation = transformTriple.third
+            //it.worldScale = transformTriple.first
+            //it.worldPosition = transformTriple.second
+            //it.worldRotation = transformTriple.third
         }
     }
 
@@ -651,11 +788,21 @@ internal class AndroidARView(
             return true
         }
         if (motionEvent != null && motionEvent.action == MotionEvent.ACTION_DOWN) {
-            val allHitResults = frame?.hitTest(motionEvent) ?: listOf<HitResult>()
-            val planeAndPointHitResults = allHitResults.filter { ((it.trackable is Plane) || (it.trackable is Point))  }
-            val serializedPlaneAndPointHitResults: ArrayList<HashMap<String, Any>> = ArrayList(planeAndPointHitResults.map { serializeHitResult(it) })
-            sessionManagerChannel.invokeMethod("onPlaneOrPointTap", serializedPlaneAndPointHitResults)
-            return true
+            if (transformationSystem.selectedNode == null || (!enablePans && !enableRotation)){
+                val allHitResults = frame?.hitTest(motionEvent) ?: listOf<HitResult>()
+                val planeAndPointHitResults =
+                    allHitResults.filter { ((it.trackable is Plane) || (it.trackable is Point)) }
+                val serializedPlaneAndPointHitResults: ArrayList<HashMap<String, Any>> =
+                    ArrayList(planeAndPointHitResults.map { serializeHitResult(it) })
+                sessionManagerChannel.invokeMethod(
+                    "onPlaneOrPointTap",
+                    serializedPlaneAndPointHitResults
+                )
+                return true
+            } else {
+                return false
+            }
+
         }
         return false
     }
@@ -681,6 +828,10 @@ internal class AndroidARView(
                 anchorNode.anchor?.detach()
                 // Remove children
                 for (node in anchorNode.children) {
+                    if (transformationSystem.selectedNode?.name == node.name){
+                        transformationSystem.selectNode(null)
+                        keepNodeSelected = true
+                    }
                     node.setParent(null)
                 }
                 // Remove anchor node
@@ -739,3 +890,5 @@ internal class AndroidARView(
     }
 
 }
+
+
