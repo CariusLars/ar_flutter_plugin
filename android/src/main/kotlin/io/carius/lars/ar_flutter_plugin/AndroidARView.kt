@@ -147,6 +147,16 @@ internal class AndroidARView(
                                 handlerThread.quitSafely();
                             }, Handler(handlerThread.looper));
                         }
+                        "dispose" -> {
+                            dispose();
+                            try{
+                                sessionManagerChannel.setMethodCallHandler(null)
+                                objectManagerChannel.setMethodCallHandler(null)
+                                anchorManagerChannel.setMethodCallHandler(null)
+                            }catch(e: Exception){
+                                print(e);
+                            }
+                        }
                         else -> {}
                     }
                 }
