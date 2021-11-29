@@ -58,9 +58,6 @@ class ARSessionManager {
             onPlaneOrPointTap(hitTestResults);
           }
           break;
-        case 'dispose':
-          _channel.invokeMethod<void>("dispose");
-          break;
         default:
           if (debug) {
             print('Unimplemented method ${call.method} ');
@@ -106,16 +103,6 @@ class ARSessionManager {
             label: 'HIDE',
             onPressed:
                 ScaffoldMessenger.of(buildContext).hideCurrentSnackBar)));
-  }
-
-  /// This function name is 'dispose' But in reality, just do sceneView.session.pause()
-  /// YOU must run this function before dispose.
-  dispose() async {
-    try{
-      await _channel.invokeMethod<void>("dispose");
-    }catch(e){
-      print(e);
-    }
   }
 
   /// Returns a future ImageProvider that contains a screenshot of the current AR Scene
