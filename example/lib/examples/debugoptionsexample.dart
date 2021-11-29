@@ -23,6 +23,13 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
   bool _handleTaps = false;
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    arSessionManager.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
