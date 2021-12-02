@@ -64,9 +64,17 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         return self.sceneView
     }
 
+    func onDispose(_ result:FlutterResult) {
+                sceneView.session.pause()
+                self.sessionManagerChannel.setMethodCallHandler(nil)
+                self.objectManagerChannel.setMethodCallHandler(nil)
+                self.anchorManagerChannel.setMethodCallHandler(nil)
+                result(nil)
+            }
+
     func onSessionMethodCalled(_ call :FlutterMethodCall, _ result:FlutterResult) {
         let arguments = call.arguments as? Dictionary<String, Any>
-          
+
         switch call.method {
             case "init":
                 //self.sessionManagerChannel.invokeMethod("onError", arguments: ["SessionTEST from iOS"])
@@ -82,6 +90,10 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 } else {
                     result(nil)
                 }
+            case "dispose":
+                onDispose(result)
+                result(nil)
+                break
             default:
                 result(FlutterMethodNotImplemented)
                 break
