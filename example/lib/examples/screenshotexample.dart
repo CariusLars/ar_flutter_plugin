@@ -30,7 +30,6 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     arSessionManager.dispose();
   }

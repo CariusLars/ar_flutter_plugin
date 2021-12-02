@@ -30,7 +30,6 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     arSessionManager.dispose();
   }

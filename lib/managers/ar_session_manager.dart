@@ -108,12 +108,12 @@ class ARSessionManager {
                 ScaffoldMessenger.of(buildContext).hideCurrentSnackBar)));
   }
 
-  /// This function name is 'dispose' But in reality, just do sceneView.session.pause()
-  /// YOU must run this function before dispose.
+  /// Dispose the AR view on the platforms to pause the scenes and disconnect the platform handlers.
+  /// You should call this before removing the AR view to prevent out of memory erros
   dispose() async {
-    try{
+    try {
       await _channel.invokeMethod<void>("dispose");
-    }catch(e){
+    } catch (e) {
       print(e);
     }
   }

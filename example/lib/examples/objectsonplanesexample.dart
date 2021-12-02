@@ -30,7 +30,6 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     arSessionManager.dispose();
   }

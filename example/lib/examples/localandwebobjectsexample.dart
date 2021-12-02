@@ -35,7 +35,6 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     arSessionManager.dispose();
   }
