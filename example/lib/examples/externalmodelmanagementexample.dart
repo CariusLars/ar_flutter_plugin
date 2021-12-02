@@ -61,6 +61,12 @@ class _ExternalModelManagementWidgetState
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    arSessionManager.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Show error message if initialization failed
     if (_error) {

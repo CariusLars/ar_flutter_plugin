@@ -29,6 +29,12 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
   List<ARAnchor> anchors = [];
 
   @override
+  void dispose() {
+    super.dispose();
+    arSessionManager.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(

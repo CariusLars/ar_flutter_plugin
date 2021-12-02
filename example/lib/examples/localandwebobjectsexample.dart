@@ -34,6 +34,12 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
   HttpClient httpClient;
 
   @override
+  void dispose() {
+    super.dispose();
+    arSessionManager.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(

@@ -58,6 +58,9 @@ class ARSessionManager {
             onPlaneOrPointTap(hitTestResults);
           }
           break;
+        case 'dispose':
+          _channel.invokeMethod<void>("dispose");
+          break;
         default:
           if (debug) {
             print('Unimplemented method ${call.method} ');
@@ -103,6 +106,16 @@ class ARSessionManager {
             label: 'HIDE',
             onPressed:
                 ScaffoldMessenger.of(buildContext).hideCurrentSnackBar)));
+  }
+
+  /// Dispose the AR view on the platforms to pause the scenes and disconnect the platform handlers.
+  /// You should call this before removing the AR view to prevent out of memory erros
+  dispose() async {
+    try {
+      await _channel.invokeMethod<void>("dispose");
+    } catch (e) {
+      print(e);
+    }
   }
 
   /// Returns a future ImageProvider that contains a screenshot of the current AR Scene

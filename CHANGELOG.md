@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.1
+* Adds ```dispose``` method to ```ARSessionManager``` to prevent memory overflow issues when AR view is closed and reopened multiple times
+
 ## 0.6.0
 * Adds handling of two gestures: panning and rotating
 * Adds example showcasing handling and panning of nodes
