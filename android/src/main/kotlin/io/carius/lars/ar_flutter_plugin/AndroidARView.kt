@@ -362,6 +362,7 @@ internal class AndroidARView(
                     override fun onActivityStopped(activity: Activity) {
                         Log.d(TAG, "onActivityStopped")
                         // onStopped()
+                        onPause()
                     }
 
                     override fun onActivitySaveInstanceState(
