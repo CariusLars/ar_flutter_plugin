@@ -3,13 +3,11 @@ package io.carius.lars.ar_flutter_plugin
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.gesture.Gesture
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.MotionEvent
 import android.view.PixelCopy
@@ -33,31 +31,12 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.FloatBuffer
 import java.util.concurrent.CompletableFuture
-import android.R.attr.name
-
-import android.transition.Scene
-
-import android.R.attr.name
-import android.R.attr.name
-import android.R.attr.name
-import android.view.Gravity
-
-import java.security.AccessController.getContext
 
 import android.R
 import com.google.ar.sceneform.rendering.*
 
-import java.security.AccessController
-import com.google.ar.sceneform.ux.PlaneDiscoveryController
 import android.view.ViewGroup
-import android.graphics.Typeface
 
-import android.widget.LinearLayout
-
-import android.widget.TextView
-
-import androidx.appcompat.widget.AppCompatImageView
-import com.google.ar.sceneform.ux.HandMotionView
 import com.google.ar.core.TrackingState
 
 
@@ -109,7 +88,7 @@ internal class AndroidARView(
     private lateinit var cloudAnchorHandler: CloudAnchorHandler
 
     private lateinit var sceneUpdateListener: com.google.ar.sceneform.Scene.OnUpdateListener
-    private lateinit var faceSceneUpdateListener: com.google.ar.sceneform.Scene.OnPeekTouchListener
+    private lateinit var onNodeTapListener: com.google.ar.sceneform.Scene.OnPeekTouchListener
 
     // Method channel handlers
     private val onSessionMethodCall =
@@ -457,7 +436,7 @@ internal class AndroidARView(
             arSceneView.session?.close()
             arSceneView.destroy()
             arSceneView.scene?.removeOnUpdateListener(sceneUpdateListener)
-            arSceneView.scene?.removeOnPeekTouchListener(faceSceneUpdateListener)
+            arSceneView.scene?.removeOnPeekTouchListener(onNodeTapListener)
         }catch (e : Exception){
             e.printStackTrace();
         }
@@ -479,7 +458,7 @@ internal class AndroidARView(
         sceneUpdateListener = com.google.ar.sceneform.Scene.OnUpdateListener {
             frameTime: FrameTime -> onFrame(frameTime)
         }
-        faceSceneUpdateListener = com.google.ar.sceneform.Scene.OnPeekTouchListener { hitTestResult, motionEvent ->
+        onNodeTapListener = com.google.ar.sceneform.Scene.OnPeekTouchListener { hitTestResult, motionEvent ->
             //if (hitTestResult.node != null){
                 //transformationSystem.selectionVisualizer.applySelectionVisual(hitTestResult.node as TransformableNode)
                 //transformationSystem.selectNode(hitTestResult.node as TransformableNode)
@@ -494,7 +473,7 @@ internal class AndroidARView(
         }
 
         arSceneView.scene?.addOnUpdateListener(sceneUpdateListener)
-        arSceneView.scene?.addOnPeekTouchListener(faceSceneUpdateListener)
+        arSceneView.scene?.addOnPeekTouchListener(onNodeTapListener)
 
 
         // Configure Plane scanning guide
