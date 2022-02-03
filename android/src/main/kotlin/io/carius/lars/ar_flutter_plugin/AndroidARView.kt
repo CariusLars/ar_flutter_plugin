@@ -418,6 +418,8 @@ internal class AndroidARView(
             Log.d(TAG, "Unable to get camera" + ex)
             activity.finish()
             return
+        } catch (e : Exception){
+            return
         }
     }
 
