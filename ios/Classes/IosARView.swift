@@ -381,8 +381,9 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                         } else {
                             // Attach to top-level node of the scene
                             self.sceneView.scene.rootNode.addChildNode(node)
+                            promise(.success(true))
                         }
-                        promise(.success(true))
+                        promise(.success(false))
                     } else {
                         self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(dict_node["uri"] as! String)"])
                         promise(.success(false))
@@ -411,8 +412,9 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                             } else {
                                 // Attach to top-level node of the scene
                                 self.sceneView.scene.rootNode.addChildNode(node)
+                                promise(.success(true))
                             }
-                            promise(.success(true))
+                            promise(.success(false))
                         } else {
                             self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(dict_node["name"] as! String)"])
                             promise(.success(false))
@@ -443,8 +445,9 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                         } else {
                             // Attach to top-level node of the scene
                             self.sceneView.scene.rootNode.addChildNode(node)
+                            promise(.success(true))
                         }
-                        promise(.success(true))
+                        promise(.success(false))
                     } else {
                         self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(dict_node["uri"] as! String)"])
                         promise(.success(false))
@@ -474,8 +477,9 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                         } else {
                             // Attach to top-level node of the scene
                             self.sceneView.scene.rootNode.addChildNode(node)
+                            promise(.success(true))
                         }
-                        promise(.success(true))
+                        promise(.success(false))
                     } else {
                         self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(dict_node["uri"] as! String)"])
                         promise(.success(false))

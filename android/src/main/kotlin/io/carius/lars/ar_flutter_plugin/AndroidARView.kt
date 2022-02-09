@@ -667,8 +667,9 @@ internal class AndroidARView(
                                     }
                                 } else {
                                     arSceneView.scene.addChild(node)
+                                    completableFutureSuccess.complete(true)
                                 }
-                                completableFutureSuccess.complete(true)
+                                completableFutureSuccess.complete(false)
                             }
                             .exceptionally { throwable ->
                                 // Pass error to session manager (this has to be done on the main thread if this activity)
@@ -693,8 +694,9 @@ internal class AndroidARView(
                                     }
                                 } else {
                                     arSceneView.scene.addChild(node)
+                                    completableFutureSuccess.complete(true)
                                 }
-                                completableFutureSuccess.complete(true)
+                                completableFutureSuccess.complete(false)
                             }
                             .exceptionally { throwable ->
                                 // Pass error to session manager (this has to be done on the main thread if this activity)
@@ -722,8 +724,9 @@ internal class AndroidARView(
                                     }
                                 } else {
                                     arSceneView.scene.addChild(node)
+                                    completableFutureSuccess.complete(true)
                                 }
-                                completableFutureSuccess.complete(true)
+                                completableFutureSuccess.complete(false)
                             }
                             .exceptionally { throwable ->
                                 // Pass error to session manager (this has to be done on the main thread if this activity)
@@ -753,8 +756,9 @@ internal class AndroidARView(
                                     }
                                 } else {
                                     arSceneView.scene.addChild(node)
+                                    completableFutureSuccess.complete(true)
                                 }
-                                completableFutureSuccess.complete(true)
+                                completableFutureSuccess.complete(false)
                             }
                             .exceptionally { throwable ->
                                 // Pass error to session manager (this has to be done on the main thread if this activity)
