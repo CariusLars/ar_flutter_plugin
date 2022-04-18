@@ -418,6 +418,8 @@ internal class AndroidARView(
             Log.d(TAG, "Unable to get camera" + ex)
             activity.finish()
             return
+        } catch (e : Exception){
+            return
         }
     }
 
@@ -665,8 +667,9 @@ internal class AndroidARView(
                                     }
                                 } else {
                                     arSceneView.scene.addChild(node)
+                                    completableFutureSuccess.complete(true)
                                 }
-                                completableFutureSuccess.complete(true)
+                                completableFutureSuccess.complete(false)
                             }
                             .exceptionally { throwable ->
                                 // Pass error to session manager (this has to be done on the main thread if this activity)
@@ -691,8 +694,9 @@ internal class AndroidARView(
                                     }
                                 } else {
                                     arSceneView.scene.addChild(node)
+                                    completableFutureSuccess.complete(true)
                                 }
-                                completableFutureSuccess.complete(true)
+                                completableFutureSuccess.complete(false)
                             }
                             .exceptionally { throwable ->
                                 // Pass error to session manager (this has to be done on the main thread if this activity)
@@ -720,8 +724,9 @@ internal class AndroidARView(
                                     }
                                 } else {
                                     arSceneView.scene.addChild(node)
+                                    completableFutureSuccess.complete(true)
                                 }
-                                completableFutureSuccess.complete(true)
+                                completableFutureSuccess.complete(false)
                             }
                             .exceptionally { throwable ->
                                 // Pass error to session manager (this has to be done on the main thread if this activity)
@@ -751,8 +756,9 @@ internal class AndroidARView(
                                     }
                                 } else {
                                     arSceneView.scene.addChild(node)
+                                    completableFutureSuccess.complete(true)
                                 }
-                                completableFutureSuccess.complete(true)
+                                completableFutureSuccess.complete(false)
                             }
                             .exceptionally { throwable ->
                                 // Pass error to session manager (this has to be done on the main thread if this activity)
