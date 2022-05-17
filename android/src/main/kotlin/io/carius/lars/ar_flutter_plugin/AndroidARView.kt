@@ -121,10 +121,10 @@ internal class AndroidARView(
                                         }
                                         mainHandler.post(runnable)
                                     } catch (e: IOException) {
-                                        result.error(null, e.message, e.stackTrace);
+                                        result.error("e", e.message, e.stackTrace);
                                     }
                                 } else {
-                                    result.error(null, "failed to take screenshot", null);
+                                    result.error("e", "failed to take screenshot", null);
                                 }
                                 handlerThread.quitSafely();
                             }, Handler(handlerThread.looper));
@@ -151,7 +151,7 @@ internal class AndroidARView(
                                 addNode(it).thenAccept{status: Boolean ->
                                     result.success(status)
                                 }.exceptionally { throwable ->
-                                    result.error(null, throwable.message, throwable.stackTrace)
+                                    result.error("e", throwable.message, throwable.stackTrace)
                                     null
                                 }
                             }
@@ -163,7 +163,7 @@ internal class AndroidARView(
                                 addNode(dict_node, dict_anchor).thenAccept{status: Boolean ->
                                     result.success(status)
                                 }.exceptionally { throwable ->
-                                    result.error(null, throwable.message, throwable.stackTrace)
+                                    result.error("e", throwable.message, throwable.stackTrace)
                                     null
                                 }
                             } else {
