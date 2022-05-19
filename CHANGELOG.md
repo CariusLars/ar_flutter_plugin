@@ -1,12 +1,15 @@
 # Changelog
 
+## 0.6.4
+* Flutter 3 compatibility
+
 ## 0.6.3
 * The function 'addNode' returned only true. You have now modified it to return false as well.
 * Prevent apps from turning off when errors other than those on your camera occur.
 
 ## 0.6.2
 * Slight changes in ```AndroidARView``` dispose methods to prevent memory overflow issues when AR view is closed and reopened multiple times
-  
+
 ## 0.6.1
 * Adds ```dispose``` method to ```ARSessionManager``` to prevent memory overflow issues when AR view is closed and reopened multiple times
 
