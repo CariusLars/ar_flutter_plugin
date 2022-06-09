@@ -56,7 +56,7 @@ If you have problems with permissions on iOS (e.g. with the camera view not show
           'PERMISSION_SENSORS=1',
 
           ## dart: PermissionGroup.bluetooth
-          'PERMISSION_BLUETOOTH=1',´
+          'PERMISSION_BLUETOOTH=1',
 
           # add additional permission groups if required
         ]
