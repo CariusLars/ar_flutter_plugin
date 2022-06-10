@@ -3,6 +3,8 @@ import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
+import 'package:ar_flutter_plugin/utils/json_converters.dart';
+
 
 // Type definitions to enforce a consistent use of the API
 typedef ARHitResultHandler = void Function(List<ARHitTestResult> hits);
@@ -30,6 +32,27 @@ class ARSessionManager {
     _channel.setMethodCallHandler(_platformCallHandler);
     if (debug) {
       print("ARSessionManager initialized");
+    }
+  }
+
+  /// Returns the camera pose with respect to the world coordinate system of the [ARView]
+  Future<Matrix4?> getCameraPose() async {
+    try {
+      final serializedCameraPose = await _channel.invokeMethod<List<dynamic>>('getCameraPose', {});
+      return MatrixConverter().fromJson(serializedCameraPose!);
+    } catch (e) {
+      print('Error caught: ' + e.toString());
+      return null;
+    }
+  }
+
+  Future getPose(String anchorName) async {
+    try {
+      final serializedCameraPose = await _channel.invokeMethod<List<dynamic>>('getAnchorPose', {"anchorId": anchorName});
+      return MatrixConverter().fromJson(serializedCameraPose!);
+    } catch (e) {
+      print('Error caught: ' + e.toString());
+      return null;
     }
   }
 

@@ -81,6 +81,20 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 //result(nil)
                 initializeARView(arguments: arguments!, result: result)
                 break
+            case "getCameraPose":
+                if let cameraPose = sceneView.session.currentFrame?.camera.transform {
+                    result(serializeMatrix(cameraPose))
+                } else {
+                    result(FlutterError())
+                }
+                break
+            case "getAnchorPose":
+            if let cameraPose = anchorCollection[arguments?["anchorId"] as! String]?.transform {
+                    result(serializeMatrix(cameraPose))
+                } else {
+                    result(FlutterError())
+                }
+                break
             case "snapshot":
                 // call the SCNView Snapshot method and return the Image
                 let snapshotImage = sceneView.snapshot()
