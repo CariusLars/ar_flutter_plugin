@@ -105,7 +105,7 @@ internal class AndroidARView(
                             if (anchorNode != null) {
                                 result.success(serializePose(anchorNode.anchor!!.pose))
                             } else {
-                                result.error(null, "could not get anchor pose", null)
+                                result.error("Error", "could not get anchor pose", null)
                             }
                         }
                         "getCameraPose" -> {
@@ -113,7 +113,7 @@ internal class AndroidARView(
                             if (cameraPose != null) {
                                 result.success(serializePose(cameraPose!!))
                             } else {
-                                result.error(null, "could not get camera pose", null)
+                                result.error("Error", "could not get camera pose", null)
                             }
                         }
                         "snapshot" -> {
