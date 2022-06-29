@@ -93,9 +93,4 @@ Contributions to this plugin are very welcome. To contribute code and discuss id
 This is a rough sketch of the architecture the plugin implements:
 
 ![ar_plugin_architecture](./AR_Plugin_Architecture_highlevel.svg)
-Extension of the package [![pub package](https://img.shields.io/pub/v/ar_flutter_plugin.svg)](https://pub.dev/packages/ar_flutter_plugin) that adds support for:
-- getting given Anchor pose with respect to the ARView coordinate system
-- calculating distance between two Vector3 objects
-- calculating distance between two anchors
-- calculating distance between anchor and camera (getCameraPose() from gps branch used here)
 
