@@ -84,6 +84,7 @@ class ARSessionManager {
     bool handleTaps = true,
     bool handlePans = false, // nodes are not draggable by default
     bool handleRotation = false, // nodes can not be rotated by default
+    bool handleScaling = false, // nodes can not be scaled by default
   }) {
     _channel.invokeMethod<void>('init', {
       'showAnimatedGuide': showAnimatedGuide,
@@ -95,6 +96,7 @@ class ARSessionManager {
       'handleTaps': handleTaps,
       'handlePans': handlePans,
       'handleRotation': handleRotation,
+      'handleScaling': handleScaling,
     });
   }
 

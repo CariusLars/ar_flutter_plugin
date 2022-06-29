@@ -14,6 +14,9 @@ typedef NodePanEndHandler = void Function(String node, Matrix4 transform);
 typedef NodeRotationStartHandler = void Function(String node);
 typedef NodeRotationChangeHandler = void Function(String node);
 typedef NodeRotationEndHandler = void Function(String node, Matrix4 transform);
+typedef NodeScaleStartHandler = void Function(String node);
+typedef NodeScaleChangeHandler = void Function(String node);
+typedef NodeScaleEndHandler = void Function(String node, Matrix4 transform);
 
 /// Manages the all node-related actions of an [ARView]
 class ARObjectManager {
@@ -31,6 +34,9 @@ class ARObjectManager {
   NodeRotationStartHandler? onRotationStart;
   NodeRotationChangeHandler? onRotationChange;
   NodeRotationEndHandler? onRotationEnd;
+  NodeScaleStartHandler? onScaleStart;
+  NodeScaleChangeHandler? onScaleChange;
+  NodeScaleEndHandler? onScaleEnd;
 
   ARObjectManager(int id, {this.debug = false}) {
     _channel = MethodChannel('arobjects_$id');
@@ -103,6 +109,28 @@ class ARObjectManager {
             onRotationEnd!(tappedNodeName, transform);
           }
           break;
+        case 'onScaleStart':
+          if (onScaleStart != null) {
+            final tappedNode = call.arguments as String;
+            onScaleStart!(tappedNode);
+          }
+          break;
+        case 'onScaleChange':
+          if (onScaleChange != null) {
+            final tappedNode = call.arguments as String;
+            onScaleChange!(tappedNode);
+          }
+          break;
+        case 'onScaleEnd':
+          if (onScaleEnd != null) {
+            final tappedNodeName = call.arguments["name"] as String;
+            final transform =
+                MatrixConverter().fromJson(call.arguments['transform'] as List);
+
+            // Notify callback
+            onScaleEnd!(tappedNodeName, transform);
+          }
+          break;
         default:
           if (debug) {
             print('Unimplemented method ${call.method} ');
@@ -136,7 +164,9 @@ class ARObjectManager {
       } else {
         return await _channel.invokeMethod<bool>('addNode', node.toMap());
       }
+      print("before exception");
     } on PlatformException catch (e) {
+      print("add exception");
       return false;
     }
   }
