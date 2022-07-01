@@ -78,7 +78,7 @@ class ARLocationManager {
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     locationStream =
-        Geolocator.getPositionStream(desiredAccuracy: LocationAccuracy.high)
+        Geolocator.getPositionStream(locationSettings: LocationSettings(accuracy: LocationAccuracy.high))
             .listen((Position position) {
       //print(position.latitude.toString() + ', ' + position.longitude.toString());
       currentLocation = position;

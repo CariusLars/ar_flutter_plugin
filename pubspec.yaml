@@ -11,10 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: ^8.1.6
-  vector_math: ^2.1.0
-  json_annotation: ^4.0.1
-  geolocator: ^7.6.2
+  permission_handler: ^10.0.0
+  vector_math: ^2.1.2
+  json_annotation: ^4.5.0
+  geolocator: ^9.0.0
 
 dev_dependencies:
   flutter_test:
