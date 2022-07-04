@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.5
+* Fixes the 'addNode' function to return true when a node is added to an anchor.
+
 ## 0.6.4
 * Flutter 3 compatibility
 
