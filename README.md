@@ -16,6 +16,7 @@ flutter pub add ar_flutter_plugin
 ```
 
 Or manually add this to your `pubspec.yaml` file (and run `flutter pub get`):
+# ar_flutter_plugin package extension
 
 ```yaml
 dependencies:
@@ -92,3 +93,4 @@ Contributions to this plugin are very welcome. To contribute code and discuss id
 This is a rough sketch of the architecture the plugin implements:
 
 ![ar_plugin_architecture](./AR_Plugin_Architecture_highlevel.svg)
+
