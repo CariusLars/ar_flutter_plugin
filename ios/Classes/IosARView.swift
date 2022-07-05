@@ -83,7 +83,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 break
             case "placeBasedOnCoordinates":
                 let coordinates = CGPoint(x: CGFloat( arguments!["x"] as! Float), y: CGFloat( arguments!["y"] as! Float));
-                parseTouchLocation(touchLocation: coordinates);
+                let htResult = parseTouchLocation(touchLocation: coordinates, returnHitResult: true);
+            result(htResult);
                 break;
             case "getCameraPose":
                 if let cameraPose = sceneView.session.currentFrame?.camera.transform {
@@ -519,16 +520,16 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         guard let sceneView = recognizer.view as? ARSCNView else {
             return
         }
-        parseTouchLocation(touchLocation: recognizer.location(in: sceneView))
+        parseTouchLocation(touchLocation: recognizer.location(in: sceneView), returnHitResult: false)
     }
 
-    func parseTouchLocation(touchLocation: CGPoint) {
+    func parseTouchLocation(touchLocation: CGPoint, returnHitResult: Bool) -> Any? {
         let allHitResults = sceneView.hitTest(touchLocation, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.closest.rawValue])
         // Because 3D model loading can lead to composed nodes, we have to traverse through a node's parent until the parent node with the name assigned by the Flutter API is found
         let nodeHitResults: Array<String> = allHitResults.compactMap { nearestParentWithNameStart(node: $0.node, characters: "[#")?.name }
-        if (nodeHitResults.count != 0) {
+        if (nodeHitResults.count != 0 && !returnHitResult) {
             self.objectManagerChannel.invokeMethod("onNodeTap", arguments: Array(Set(nodeHitResults))) // Chaining of Array and Set is used to remove duplicates
-            return
+            return nil;
         }
             
         let planeTypes: ARHitTestResult.ResultType
@@ -547,8 +548,15 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
             
         let serializedPlaneAndPointHitResults = planeAndPointHitResults.map{serializeHitResult($0)}
         if (serializedPlaneAndPointHitResults.count != 0) {
-            self.sessionManagerChannel.invokeMethod("onPlaneOrPointTap", arguments: serializedPlaneAndPointHitResults)
+            
+            if (returnHitResult) {
+                return serializedPlaneAndPointHitResults;
+            } else {
+                self.sessionManagerChannel.invokeMethod("onPlaneOrPointTap", arguments: serializedPlaneAndPointHitResults)
+            }
+            
         }
+        return nil;
     }
 
     @objc func handlePan(_ recognizer: UIPanGestureRecognizer) {
