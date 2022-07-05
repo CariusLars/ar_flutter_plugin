@@ -48,6 +48,20 @@ class ARSessionManager {
     }
   }
 
+  /// Returns the camera pose in Matrix4 format with respect to the world coordinate system of the [ARView]
+  Future<bool> placeBasedOnScreenCoordinates(double x, double y) async {
+    try {
+      await _channel.invokeMethod<List<dynamic>>('placeBasedOnCoordinates', {
+        "x" : x,
+        "y" : y
+      });
+      return true;
+    } catch (e) {
+      print('Error caught: ' + e.toString());
+      return false;
+    }
+  }
+
   /// Returns the given anchor pose in Matrix4 format with respect to the world coordinate system of the [ARView]
   Future<Matrix4?> getPose(ARAnchor anchor) async {
     try {
