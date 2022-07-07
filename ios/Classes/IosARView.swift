@@ -190,6 +190,9 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 arcoreSession = try! GARSession.session()
 
                 if (arcoreSession != nil){
+                    let configuration = GARSessionConfiguration();
+                    configuration.cloudAnchorMode = .enabled;
+                    arcoreSession?.setConfiguration(configuration, error: nil)
                     if let token = JWTGenerator().generateWebToken(){
                         arcoreSession!.setAuthToken(token)
 
