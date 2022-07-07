@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.1
+* Adds config to fix iOS cloud anchors not being able to upload
+
 ## 0.7.0
 * Adds support to calculate distance between device and anchor and distance between two anchors
 
