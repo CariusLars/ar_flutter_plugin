@@ -81,6 +81,10 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 //result(nil)
                 initializeARView(arguments: arguments!, result: result)
                 break
+            case "placeBasedOnCoordinates":
+                let coordinates = CGPoint(x: CGFloat( arguments!["x"] as! Float), y: CGFloat( arguments!["y"] as! Float));
+                parseTouchLocation(touchLocation: coordinates);
+                break;
             case "getCameraPose":
                 if let cameraPose = sceneView.session.currentFrame?.camera.transform {
                     result(serializeMatrix(cameraPose))
@@ -116,7 +120,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
 
     func onObjectMethodCalled(_ call :FlutterMethodCall, _ result: @escaping FlutterResult) {
         let arguments = call.arguments as? Dictionary<String, Any>
-          
+
         switch call.method {
             case "init":
                 self.objectManagerChannel.invokeMethod("onError", arguments: ["ObjectTEST from iOS"])
@@ -153,7 +157,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
 
     func onAnchorMethodCalled(_ call :FlutterMethodCall, _ result: @escaping FlutterResult) {
         let arguments = call.arguments as? Dictionary<String, Any>
-          
+
         switch call.method {
             case "init":
                 self.objectManagerChannel.invokeMethod("onError", arguments: ["ObjectTEST from iOS"])
@@ -171,7 +175,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                         break
                     default:
                         result(false)
-                    
+
                     }
                 }
                 result(nil)
@@ -190,11 +194,11 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     arcoreSession?.setConfiguration(configuration, error: nil);
                     if let token = JWTGenerator().generateWebToken(){
                         arcoreSession!.setAuthToken(token)
-                        
+
                         cloudAnchorHandler = CloudAnchorHandler(session: arcoreSession!)
                         arcoreSession!.delegate = cloudAnchorHandler
                         arcoreSession!.delegateQueue = DispatchQueue.main
-                        
+
                         arcoreMode = true
                     } else {
                         sessionManagerChannel.invokeMethod("onError", arguments: ["Error generating JWT, have you added cloudAnchorKey.json into the example/ios/Runner directory?"])
@@ -202,7 +206,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 } else {
                     sessionManagerChannel.invokeMethod("onError", arguments: ["Error initializing Google AR Session"])
                 }
-                    
+
                 break
             case "uploadAnchor":
                 if let anchorName = arguments!["name"] as? String, let anchor = anchorCollection[anchorName] {
@@ -232,18 +236,18 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         self.configuration = ARWorldTrackingConfiguration()
         if let planeDetectionConfig = arguments["planeDetectionConfig"] as? Int {
             switch planeDetectionConfig {
-                case 1: 
+                case 1:
                     configuration.planeDetection = .horizontal
-                
-                case 2: 
+
+                case 2:
                     if #available(iOS 11.3, *) {
                         configuration.planeDetection = .vertical
                     }
-                case 3: 
+                case 3:
                     if #available(iOS 11.3, *) {
                         configuration.planeDetection = [.horizontal, .vertical]
                     }
-                default: 
+                default:
                     configuration.planeDetection = []
             }
         }
@@ -280,7 +284,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
             }
         }
         self.sceneView.debugOptions = ARSCNDebugOptions(rawValue: debugOptions)
-        
+
         if let configHandleTaps = arguments["handleTaps"] as? Bool {
             if (configHandleTaps){
                 let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
@@ -297,7 +301,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 self.sceneView.gestureRecognizers?.append(panGestureRecognizer)
             }
         }
-        
+
         if let configHandleRotation = arguments["handleRotation"] as? Bool {
             if (configHandleRotation){
                 let rotationGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(handleRotation(_:)))
@@ -305,7 +309,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 self.sceneView.gestureRecognizers?.append(rotationGestureRecognizer)
             }
         }
-        
+
         // Add coaching view
         if let configShowAnimatedGuide = arguments["showAnimatedGuide"] as? Bool {
             if configShowAnimatedGuide {
@@ -335,13 +339,13 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 }
             }
         }
-    
+
         // Update session configuration
         self.sceneView.session.run(configuration)
     }
 
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        
+
         if let planeAnchor = anchor as? ARPlaneAnchor{
             let plane = modelBuilder.makePlane(anchor: planeAnchor, flutterAssetFile: customPlaneTexturePath)
             trackedPlanes[anchor.identifier] = (node, plane)
@@ -352,7 +356,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     }
 
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-        
+
         if let planeAnchor = anchor as? ARPlaneAnchor, let plane = trackedPlanes[anchor.identifier] {
             modelBuilder.updatePlaneNode(planeNode: plane.1, anchor: planeAnchor)
         }
@@ -361,7 +365,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
         trackedPlanes.removeValue(forKey: anchor.identifier)
     }
-    
+
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         if (arcoreMode) {
             do {
@@ -375,7 +379,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     func addNode(dict_node: Dictionary<String, Any>, dict_anchor: Dictionary<String, Any>? = nil) -> Future<Bool, Never> {
 
         return Future {promise in
-            
+
             switch (dict_node["type"] as! Int) {
                 case 0: // GLTF2 Model from Flutter asset folder
                     // Get path to given Flutter asset
@@ -388,14 +392,13 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                                     if let anchor = self.anchorCollection[anchorName]{
                                         // Attach node to the top-level node of the specified anchor
                                         self.sceneView.node(for: anchor)?.addChildNode(node)
-                                        promise(.success(true))
                                     } else {
                                         promise(.success(false))
                                     }
                                 default:
                                     promise(.success(false))
                                 }
-                            
+
                         } else {
                             // Attach to top-level node of the scene
                             self.sceneView.scene.rootNode.addChildNode(node)
@@ -420,14 +423,13 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                                         if let anchor = self.anchorCollection[anchorName]{
                                             // Attach node to the top-level node of the specified anchor
                                             self.sceneView.node(for: anchor)?.addChildNode(node)
-                                            promise(.success(true))
                                         } else {
                                             promise(.success(false))
                                         }
                                     default:
                                         promise(.success(false))
                                     }
-                                
+
                             } else {
                                 // Attach to top-level node of the scene
                                 self.sceneView.scene.rootNode.addChildNode(node)
@@ -445,7 +447,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
                     let documentsDirectory = paths[0]
                     let targetPath = documentsDirectory.appendingPathComponent(dict_node["uri"] as! String).path
- 
+
                     // Add object to scene
                     if let node: SCNNode = self.modelBuilder.makeNodeFromFileSystemGLB(name: dict_node["name"] as! String, modelPath: targetPath, transformation: dict_node["transformation"] as? Array<NSNumber>) {
                         if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
@@ -454,14 +456,13 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                                     if let anchor = self.anchorCollection[anchorName]{
                                         // Attach node to the top-level node of the specified anchor
                                         self.sceneView.node(for: anchor)?.addChildNode(node)
-                                        promise(.success(true))
                                     } else {
                                         promise(.success(false))
                                     }
                                 default:
                                     promise(.success(false))
                                 }
-                            
+
                         } else {
                             // Attach to top-level node of the scene
                             self.sceneView.scene.rootNode.addChildNode(node)
@@ -487,14 +488,13 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                                     if let anchor = self.anchorCollection[anchorName]{
                                         // Attach node to the top-level node of the specified anchor
                                         self.sceneView.node(for: anchor)?.addChildNode(node)
-                                        promise(.success(true))
                                     } else {
                                         promise(.success(false))
                                     }
                                 default:
                                     promise(.success(false))
                                 }
-                            
+
                         } else {
                             // Attach to top-level node of the scene
                             self.sceneView.scene.rootNode.addChildNode(node)
@@ -509,21 +509,23 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 default:
                     promise(.success(false))
             }
-            
+
         }
     }
-    
+
     func transformNode(name: String, transform: Array<NSNumber>) {
         let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true)
         node?.transform = deserializeMatrix4(transform)
     }
-    
+
     @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
         guard let sceneView = recognizer.view as? ARSCNView else {
             return
         }
-        let touchLocation = recognizer.location(in: sceneView)
-    
+        parseTouchLocation(touchLocation: recognizer.location(in: sceneView))
+    }
+
+    func parseTouchLocation(touchLocation: CGPoint) {
         let allHitResults = sceneView.hitTest(touchLocation, options: [SCNHitTestOption.searchMode : SCNHitTestSearchMode.closest.rawValue])
         // Because 3D model loading can lead to composed nodes, we have to traverse through a node's parent until the parent node with the name assigned by the Flutter API is found
         let nodeHitResults: Array<String> = allHitResults.compactMap { nearestParentWithNameStart(node: $0.node, characters: "[#")?.name }
