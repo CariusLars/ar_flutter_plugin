@@ -116,6 +116,26 @@ internal class AndroidARView(
                                 result.error("Error", "could not get camera pose", null)
                             }
                         }
+                        "placeBasedOnCoordinates" -> {
+                            val cpuCoordinates = floatArrayOf(call.arguments['x'], call.arguments['y'])
+                            val viewCoordinates = FloatArray(2)
+                            if (arSceneView.arFrame != null) {
+                                arSceneView.arFrame!!.transformCoordinates2d(
+                                    Coordinates2d.IMAGE_PIXELS,
+                                    cpuCoordinates,
+                                    Coordinates2d.VIEW,
+                                    viewCoordinates
+                                )
+                                val allHitResults = arSceneView.arFrame!!.hitTest(viewCoordinates[0], viewCoordinates[1])
+                                val planeAndPointHitResults = allHitResults.filter { ((it.trackable is Plane) || (it.trackable is Point)) }
+                                val serializedPlaneAndPointHitResults: ArrayList<HashMap<String, Any>> =
+                                    ArrayList(planeAndPointHitResults.map { serializeHitResult(it) })
+                                result.success(serializedPlaneAndPointHitResults)
+                            } else {
+                                result.success(null)
+                            }
+
+                        }
                         "snapshot" -> {
                             var bitmap = Bitmap.createBitmap(arSceneView.width, arSceneView.height,
                                     Bitmap.Config.ARGB_8888);
