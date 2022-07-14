@@ -49,16 +49,15 @@ class ARSessionManager {
   }
 
   /// Places anchor in given 2D coordinates (starting from the top-left side of the screen)
-  Future<bool> placeBasedOnScreenCoordinates(double x, double y) async {
+  Future placeBasedOnScreenCoordinates(double x, double y) async {
     try {
-      await _channel.invokeMethod<List<dynamic>>('placeBasedOnCoordinates', {
+      return await _channel.invokeMethod<List<dynamic>>('placeBasedOnCoordinates', {
         "x" : x,
         "y" : y
       });
-      return true;
     } catch (e) {
       print('Error caught: ' + e.toString());
-      return false;
+      return null;
     }
   }
 
