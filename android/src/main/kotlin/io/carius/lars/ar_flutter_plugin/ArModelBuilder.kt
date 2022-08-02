@@ -93,7 +93,6 @@ class ArModelBuilder {
     // Creates a node form a given gltf model path or URL. The gltf asset loading in Scenform is asynchronous, so the function returns a completable future of type Node
     fun makeNodeFromGltf(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, enableScaling: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
-        println("MAKENODEFROMGLTF: ")
         val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation, enableScaling)
 
         ModelRenderable.builder()

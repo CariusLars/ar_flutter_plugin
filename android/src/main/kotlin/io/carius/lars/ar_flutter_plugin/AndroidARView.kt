@@ -661,7 +661,6 @@ internal class AndroidARView(
                     // Get path to given Flutter asset
                     val loader: FlutterLoader = FlutterInjector.instance().flutterLoader()
                     val key: String = loader.getLookupKeyForAsset(dict_node["uri"] as String)
-                    println("FREDTAP2: added model: ")
                     // Add object to scene
                     modelBuilder.makeNodeFromGltf(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, enableScaling, dict_node["name"] as String, key, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
@@ -675,25 +674,8 @@ internal class AndroidARView(
                                         val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("1 LOADED RENDERABLE " +  node.getRenderable()?.getMaterial().toString() )) }
                                         mainHandler.post(runnable)
                                         
-                                        println("3 LOADED RENDERABLE " +  node.getRenderable()?.getMaterial().toString())
-                                        for(i in 1..10){
-                                            println(i)
-                                            println(node.getRenderable()?.getMaterial().toString())
-
-                                          //  node.getRenderable()?.setMaterial(i,node.getRenderable()?.getMaterial(i).setFloat4("baseColorFactor", 1,1,1,1))
-                                        }
-                                        /*for(int x = 0; x < node.getRenderable()?.getSubmeshCount(); x++) {
-                                             Material m;
-                                             m = node.getRenderable()?.getMaterial(x).makeCopy();
-                                            m.setFloat4("baseColorFactor", 1,1,1,1); // changing the color factor works,  setFloat("alphaCutoff", cutoffValue); does not seem to work
-                                            node.getRenderable()?.setMaterial(x,m);
-                                        }*/
-                                      //  node.getRenderable()?.getMaterial().setFloat4("baseColorFactor", 1,1,1,1)
-                                        println("3a LOADED RENDERABLE " +  node.getRenderable()?.getMaterial().toString())
                                         anchorNode.addChild(node)
                                         completableFutureSuccess.complete(true)
-                                        println("4 LOADED RENDERABLE " +  node.getRenderable()?.getSubmeshCount().toString())
-                                        println("5 LOADED RENDERABLE " +  node.getRenderable()?.getSubmeshCount().toString())
                                     } else {
                                         completableFutureSuccess.complete(false)
                                     }
@@ -813,8 +795,6 @@ internal class AndroidARView(
         } catch (e: java.lang.Exception) {
             completableFutureSuccess.completeExceptionally(e)
         }
-            println("FREDTAP: added model: ")
-           // println("FREDTAP: added model: " + tmp.toString())
         return completableFutureSuccess
     }
 
