@@ -10,20 +10,18 @@ import 'package:ar_flutter_plugin/datatypes/node_types.dart';
 import 'package:ar_flutter_plugin/datatypes/hittest_result_types.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
-import 'package:flutter/services.dart';
 import 'package:vector_math/vector_math_64.dart';
-import 'dart:math';
 
 class ScreenshotWidget extends StatefulWidget {
-  ScreenshotWidget({Key key}) : super(key: key);
+  const ScreenshotWidget({Key? key}) : super(key: key);
   @override
   _ScreenshotWidgetState createState() => _ScreenshotWidgetState();
 }
 
 class _ScreenshotWidgetState extends State<ScreenshotWidget> {
-  ARSessionManager arSessionManager;
-  ARObjectManager arObjectManager;
-  ARAnchorManager arAnchorManager;
+  late ARSessionManager arSessionManager;
+  late ARObjectManager arObjectManager;
+  late ARAnchorManager arAnchorManager;
 
   List<ARNode> nodes = [];
   List<ARAnchor> anchors = [];
@@ -40,8 +38,10 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
         appBar: AppBar(
           title: const Text('Screenshots'),
         ),
-        body: Container(
-            child: Stack(children: [
+        body: 
+        Container(
+            child:
+          Stack(children: [
           ARView(
             onARViewCreated: onARViewCreated,
             planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
@@ -53,10 +53,10 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
                 children: [
                   ElevatedButton(
                       onPressed: onRemoveEverything,
-                      child: Text("Remove Everything")),
+                      child: const Text("Remove Everything")),
                   ElevatedButton(
                       onPressed: onTakeScreenshot,
-                      child: Text("Take Screenshot")),
+                      child: const Text("Take Screenshot")),
                 ]),
           )
         ])));
@@ -87,14 +87,16 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
     /*nodes.forEach((node) {
       this.arObjectManager.removeNode(node);
     });*/
-    anchors.forEach((anchor) {
-      this.arAnchorManager.removeAnchor(anchor);
-    });
+    // anchors.forEach((anchor)
+    for (var anchor in anchors)
+     {
+      arAnchorManager.removeAnchor(anchor);
+    };
     anchors = [];
   }
 
   Future<void> onTakeScreenshot() async {
-    var image = await this.arSessionManager.snapshot();
+    var image = await arSessionManager.snapshot();
     await showDialog(
         context: context,
         builder: (_) => Dialog(
@@ -107,19 +109,19 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
 
   Future<void> onNodeTapped(List<String> nodes) async {
     var number = nodes.length;
-    this.arSessionManager.onError("Tapped $number node(s)");
+    arSessionManager.onError("Tapped $number node(s)");
   }
 
   Future<void> onPlaneOrPointTapped(
-      List<ARHitTestResult> hitTestResults) async {
+      List<ARHitTestResult?> hitTestResults) async {
     var singleHitTestResult = hitTestResults.firstWhere(
-        (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
+        (hitTestResult) => hitTestResult?.type == ARHitTestResultType.plane);
     if (singleHitTestResult != null) {
       var newAnchor =
           ARPlaneAnchor(transformation: singleHitTestResult.worldTransform);
-      bool didAddAnchor = await this.arAnchorManager.addAnchor(newAnchor);
-      if (didAddAnchor) {
-        this.anchors.add(newAnchor);
+      bool? didAddAnchor = await arAnchorManager.addAnchor(newAnchor);
+      if (didAddAnchor != null && didAddAnchor) {
+        anchors.add(newAnchor);
         // Add note to anchor
         var newNode = ARNode(
             type: NodeType.webGLB,
@@ -128,15 +130,16 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
             scale: Vector3(0.2, 0.2, 0.2),
             position: Vector3(0.0, 0.0, 0.0),
             rotation: Vector4(1.0, 0.0, 0.0, 0.0));
-        bool didAddNodeToAnchor =
-            await this.arObjectManager.addNode(newNode, planeAnchor: newAnchor);
-        if (didAddNodeToAnchor) {
-          this.nodes.add(newNode);
+        bool? didAddNodeToAnchor =
+            await arObjectManager.addNode(newNode, planeAnchor: newAnchor);
+        
+        if (didAddNodeToAnchor != null && didAddNodeToAnchor) {
+          nodes.add(newNode);
         } else {
-          this.arSessionManager.onError("Adding Node to Anchor failed");
+          arSessionManager.onError("Adding Node to Anchor failed");
         }
       } else {
-        this.arSessionManager.onError("Adding Anchor failed");
+        arSessionManager.onError("Adding Anchor failed");
       }
       /*
       // To add a node to the tapped position without creating an anchor, use the following code (Please mind: the function onRemoveEverything has to be adapted accordingly!):
