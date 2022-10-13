@@ -7,14 +7,14 @@ import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 
 class DebugOptionsWidget extends StatefulWidget {
-  DebugOptionsWidget({Key key}) : super(key: key);
+  DebugOptionsWidget({Key? key}) : super(key: key);
   @override
   _DebugOptionsWidgetState createState() => _DebugOptionsWidgetState();
 }
 
 class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
-  ARSessionManager arSessionManager;
-  ARObjectManager arObjectManager;
+  late ARSessionManager arSessionManager;
+  late ARObjectManager arObjectManager;
   bool _showFeaturePoints = false;
   bool _showPlanes = false;
   bool _showWorldOrigin = false;
