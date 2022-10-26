@@ -37,7 +37,7 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "com.google.ar:core:1.33.0"
+    implementation "com.google.ar:core:1.34.0"
 
     implementation 'com.google.ar.sceneform:core:1.15.0'
     implementation 'com.google.ar.sceneform:assets:1.15.0'
