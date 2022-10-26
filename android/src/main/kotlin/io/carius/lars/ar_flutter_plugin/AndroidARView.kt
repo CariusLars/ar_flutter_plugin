@@ -475,9 +475,12 @@ internal class AndroidARView(
 
     fun onDestroy() {
         try {
-            for (anchor in arSceneView.session!!.allAnchors) {
-                anchor?.detach()
+            if (arSceneView.session != null) {
+                for (anchor in arSceneView.session!!.allAnchors) {
+                    anchor?.detach()
+                }
             }
+
             arSceneView.session?.close()
             arSceneView.destroy()
             arSceneView.scene?.removeOnUpdateListener(sceneUpdateListener)
