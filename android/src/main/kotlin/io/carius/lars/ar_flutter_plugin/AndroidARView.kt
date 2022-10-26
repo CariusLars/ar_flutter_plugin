@@ -476,7 +476,6 @@ internal class AndroidARView(
     fun onDestroy() {
         try {
             for (anchor in arSceneView.session!!.allAnchors) {
-                Log.d(TAG, "detaching" + anchor?.cloudAnchorId)
                 anchor?.detach()
             }
             arSceneView.session?.close()
