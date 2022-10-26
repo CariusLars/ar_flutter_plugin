@@ -476,7 +476,8 @@ internal class AndroidARView(
     fun onDestroy() {
         try {
             for (anchor in arSceneView.session!!.allAnchors) {
-                anchor?.detach();
+                Log.d(TAG, "detaching" + anchor?.cloudAnchorId)
+                anchor?.detach()
             }
             arSceneView.session?.close()
             arSceneView.destroy()
@@ -488,6 +489,7 @@ internal class AndroidARView(
     }
 
     private fun initializeARView(call: MethodCall, result: MethodChannel.Result) {
+        Log.d(TAG, "initializeARView")
         // Unpack call arguments
         val argShowFeaturePoints: Boolean? = call.argument<Boolean>("showFeaturePoints")
         val argPlaneDetectionConfig: Int? = call.argument<Int>("planeDetectionConfig")
