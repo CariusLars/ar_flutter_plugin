@@ -21,7 +21,6 @@ A Flutter plugin for shared AR experiences supporting Android and iOS.
   #s.dependency 'ARCore/CloudAnchors', '~> 1.12.0'
   #s.dependency 'ARCore', '~> 1.2.0'
   s.dependency 'ARCore/CloudAnchors', '~> 1.34.0'
-  s.dependency 'GTMSessionFetcher/Core', '~> 2.1'
   s.platform = :ios, '13.0'
 
 
