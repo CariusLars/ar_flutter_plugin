@@ -239,8 +239,8 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     if (singleHitTestResult != null) {
       var newAnchor = ARPlaneAnchor(
           transformation: singleHitTestResult.worldTransform, ttl: 2);
-      bool didAddAnchor = await this.arAnchorManager.addAnchor(newAnchor);
-      if (didAddAnchor) {
+      bool? didAddAnchor = await this.arAnchorManager.addAnchor(newAnchor);
+      if (didAddAnchor ?? false) {
         this.anchors.add(newAnchor);
         // Add note to anchor
         var newNode = ARNode(
@@ -251,9 +251,9 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
             position: Vector3(0.0, 0.0, 0.0),
             rotation: Vector4(1.0, 0.0, 0.0, 0.0),
             data: {"onTapText": "Ouch, that hurt!"});
-        bool didAddNodeToAnchor =
+        bool? didAddNodeToAnchor =
             await this.arObjectManager.addNode(newNode, planeAnchor: newAnchor);
-        if (didAddNodeToAnchor) {
+        if (didAddNodeToAnchor ?? false) {
           this.nodes.add(newNode);
           setState(() {
             readyToUpload = true;
