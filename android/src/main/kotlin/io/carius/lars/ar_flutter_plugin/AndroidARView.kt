@@ -39,18 +39,9 @@ import com.google.ar.sceneform.rendering.*
 import android.view.ViewGroup
 
 import com.google.ar.core.TrackingState
-
-
-
-
-
-
-
-
-
-
-
-
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 
 internal class AndroidARView(
@@ -480,11 +471,11 @@ internal class AndroidARView(
                     anchor?.detach()
                 }
             }
-
-            arSceneView.session?.close()
-            arSceneView.destroy()
+            cloudAnchorHandler.dispose();
             arSceneView.scene?.removeOnUpdateListener(sceneUpdateListener)
             arSceneView.scene?.removeOnPeekTouchListener(onNodeTapListener)
+            arSceneView.session?.close()
+            arSceneView.destroy()
         }catch (e : Exception){
             e.printStackTrace();
         }
