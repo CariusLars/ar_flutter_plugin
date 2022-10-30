@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.2
+* Fixes missing texturing on iOS
+
 ## 0.7.1
 * Adds config to fix iOS cloud anchors not being able to upload
 
