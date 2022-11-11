@@ -13,8 +13,8 @@ class DebugOptionsWidget extends StatefulWidget {
 }
 
 class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
-  late ARSessionManager arSessionManager;
-  late ARObjectManager arObjectManager;
+  ARSessionManager? arSessionManager;
+  ARObjectManager? arObjectManager;
   bool _showFeaturePoints = false;
   bool _showPlanes = false;
   bool _showWorldOrigin = false;
@@ -25,7 +25,7 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
   @override
   void dispose() {
     super.dispose();
-    arSessionManager.dispose();
+    arSessionManager!.dispose();
   }
 
   @override
@@ -95,7 +95,7 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
     this.arSessionManager = arSessionManager;
     this.arObjectManager = arObjectManager;
 
-    this.arSessionManager.onInitialize(
+    this.arSessionManager!.onInitialize(
           showFeaturePoints: _showFeaturePoints,
           showPlanes: _showPlanes,
           customPlaneTexturePath: _planeTexturePath,
@@ -103,11 +103,11 @@ class _DebugOptionsWidgetState extends State<DebugOptionsWidget> {
           showAnimatedGuide: _showAnimatedGuide,
           handleTaps: _handleTaps,
         );
-    this.arObjectManager.onInitialize();
+    this.arObjectManager!.onInitialize();
   }
 
   void updateSessionSettings() {
-    this.arSessionManager.onInitialize(
+    this.arSessionManager!.onInitialize(
           showFeaturePoints: _showFeaturePoints,
           showPlanes: _showPlanes,
           customPlaneTexturePath: _planeTexturePath,

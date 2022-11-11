@@ -17,26 +17,26 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 
 class LocalAndWebObjectsWidget extends StatefulWidget {
-  LocalAndWebObjectsWidget({Key key}) : super(key: key);
+  LocalAndWebObjectsWidget({Key? key}) : super(key: key);
   @override
   _LocalAndWebObjectsWidgetState createState() =>
       _LocalAndWebObjectsWidgetState();
 }
 
 class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
-  ARSessionManager arSessionManager;
-  ARObjectManager arObjectManager;
+  ARSessionManager? arSessionManager;
+  ARObjectManager? arObjectManager;
   //String localObjectReference;
-  ARNode localObjectNode;
+  ARNode? localObjectNode;
   //String webObjectReference;
-  ARNode webObjectNode;
-  ARNode fileSystemNode;
-  HttpClient httpClient;
+  ARNode? webObjectNode;
+  ARNode? fileSystemNode;
+  HttpClient? httpClient;
 
   @override
   void dispose() {
     super.dispose();
-    arSessionManager.dispose();
+    arSessionManager!.dispose();
   }
 
   @override
@@ -97,14 +97,14 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
     this.arSessionManager = arSessionManager;
     this.arObjectManager = arObjectManager;
 
-    this.arSessionManager.onInitialize(
+    this.arSessionManager!.onInitialize(
           showFeaturePoints: false,
           showPlanes: true,
           customPlaneTexturePath: "Images/triangle.png",
           showWorldOrigin: true,
           handleTaps: false,
         );
-    this.arObjectManager.onInitialize();
+    this.arObjectManager!.onInitialize();
 
     //Download model to file system
     httpClient = new HttpClient();
@@ -118,7 +118,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
   }
 
   Future<File> _downloadFile(String url, String filename) async {
-    var request = await httpClient.getUrl(Uri.parse(url));
+    var request = await httpClient!.getUrl(Uri.parse(url));
     var response = await request.close();
     var bytes = await consolidateHttpClientResponseBytes(response);
     String dir = (await getApplicationDocumentsDirectory()).path;
@@ -129,7 +129,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
   }
 
   Future<void> _downloadAndUnpack(String url, String filename) async {
-    var request = await httpClient.getUrl(Uri.parse(url));
+    var request = await httpClient!.getUrl(Uri.parse(url));
     var response = await request.close();
     var bytes = await consolidateHttpClientResponseBytes(response);
     String dir = (await getApplicationDocumentsDirectory()).path;
@@ -143,13 +143,13 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
           zipFile: File('$dir/$filename'), destinationDir: Directory(dir));
       print("Unzipping successful");
     } catch (e) {
-      print("Unzipping failed: " + e);
+      print("Unzipping failed: " + e.toString());
     }
   }
 
   Future<void> onLocalObjectAtOriginButtonPressed() async {
     if (this.localObjectNode != null) {
-      this.arObjectManager.removeNode(this.localObjectNode);
+      this.arObjectManager!.removeNode(this.localObjectNode!);
       this.localObjectNode = null;
     } else {
       var newNode = ARNode(
@@ -158,14 +158,14 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
           scale: Vector3(0.2, 0.2, 0.2),
           position: Vector3(0.0, 0.0, 0.0),
           rotation: Vector4(1.0, 0.0, 0.0, 0.0));
-      bool didAddLocalNode = await this.arObjectManager.addNode(newNode);
-      this.localObjectNode = (didAddLocalNode) ? newNode : null;
+      bool? didAddLocalNode = await this.arObjectManager!.addNode(newNode);
+      this.localObjectNode = (didAddLocalNode!) ? newNode : null;
     }
   }
 
   Future<void> onWebObjectAtOriginButtonPressed() async {
     if (this.webObjectNode != null) {
-      this.arObjectManager.removeNode(this.webObjectNode);
+      this.arObjectManager!.removeNode(this.webObjectNode!);
       this.webObjectNode = null;
     } else {
       var newNode = ARNode(
@@ -173,14 +173,14 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
           uri:
               "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
           scale: Vector3(0.2, 0.2, 0.2));
-      bool didAddWebNode = await this.arObjectManager.addNode(newNode);
-      this.webObjectNode = (didAddWebNode) ? newNode : null;
+      bool? didAddWebNode = await this.arObjectManager!.addNode(newNode);
+      this.webObjectNode = (didAddWebNode!) ? newNode : null;
     }
   }
 
   Future<void> onFileSystemObjectAtOriginButtonPressed() async {
     if (this.fileSystemNode != null) {
-      this.arObjectManager.removeNode(this.fileSystemNode);
+      this.arObjectManager!.removeNode(this.fileSystemNode!);
       this.fileSystemNode = null;
     } else {
       var newNode = ARNode(
@@ -192,8 +192,8 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
       //    type: NodeType.fileSystemAppFolderGLTF2,
       //    uri: "Chicken_01.gltf",
       //    scale: Vector3(0.2, 0.2, 0.2));
-      bool didAddFileSystemNode = await this.arObjectManager.addNode(newNode);
-      this.fileSystemNode = (didAddFileSystemNode) ? newNode : null;
+      bool? didAddFileSystemNode = await this.arObjectManager!.addNode(newNode);
+      this.fileSystemNode = (didAddFileSystemNode!) ? newNode : null;
     }
   }
 
@@ -215,7 +215,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
       newTransform.rotate(newRotationAxis, newRotationAmount);
       newTransform.scale(newScale);
 
-      this.localObjectNode.transform = newTransform;
+      this.localObjectNode!.transform = newTransform;
     }
   }
 
@@ -237,7 +237,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
       newTransform.rotate(newRotationAxis, newRotationAmount);
       newTransform.scale(newScale);
 
-      this.webObjectNode.transform = newTransform;
+      this.webObjectNode!.transform = newTransform;
     }
   }
 }

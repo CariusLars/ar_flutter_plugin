@@ -15,15 +15,15 @@ import 'package:vector_math/vector_math_64.dart';
 import 'dart:math';
 
 class ObjectGesturesWidget extends StatefulWidget {
-  ObjectGesturesWidget({Key key}) : super(key: key);
+  ObjectGesturesWidget({Key? key}) : super(key: key);
   @override
   _ObjectGesturesWidgetState createState() => _ObjectGesturesWidgetState();
 }
 
 class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
-  ARSessionManager arSessionManager;
-  ARObjectManager arObjectManager;
-  ARAnchorManager arAnchorManager;
+  ARSessionManager? arSessionManager;
+  ARObjectManager? arObjectManager;
+  ARAnchorManager? arAnchorManager;
 
   List<ARNode> nodes = [];
   List<ARAnchor> anchors = [];
@@ -31,7 +31,7 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
   @override
   void dispose() {
     super.dispose();
-    arSessionManager.dispose();
+    arSessionManager!.dispose();
   }
 
   @override
@@ -68,7 +68,7 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
     this.arObjectManager = arObjectManager;
     this.arAnchorManager = arAnchorManager;
 
-    this.arSessionManager.onInitialize(
+    this.arSessionManager!.onInitialize(
           showFeaturePoints: false,
           showPlanes: true,
           customPlaneTexturePath: "Images/triangle.png",
@@ -76,15 +76,15 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
           handlePans: true,
           handleRotation: true,
         );
-    this.arObjectManager.onInitialize();
+    this.arObjectManager!.onInitialize();
 
-    this.arSessionManager.onPlaneOrPointTap = onPlaneOrPointTapped;
-    this.arObjectManager.onPanStart = onPanStarted;
-    this.arObjectManager.onPanChange = onPanChanged;
-    this.arObjectManager.onPanEnd = onPanEnded;
-    this.arObjectManager.onRotationStart = onRotationStarted;
-    this.arObjectManager.onRotationChange = onRotationChanged;
-    this.arObjectManager.onRotationEnd = onRotationEnded;
+    this.arSessionManager!.onPlaneOrPointTap = onPlaneOrPointTapped;
+    this.arObjectManager!.onPanStart = onPanStarted;
+    this.arObjectManager!.onPanChange = onPanChanged;
+    this.arObjectManager!.onPanEnd = onPanEnded;
+    this.arObjectManager!.onRotationStart = onRotationStarted;
+    this.arObjectManager!.onRotationChange = onRotationChanged;
+    this.arObjectManager!.onRotationEnd = onRotationEnded;
   }
 
   Future<void> onRemoveEverything() async {
@@ -92,7 +92,7 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
       this.arObjectManager.removeNode(node);
     });*/
     anchors.forEach((anchor) {
-      this.arAnchorManager.removeAnchor(anchor);
+      this.arAnchorManager!.removeAnchor(anchor);
     });
     anchors = [];
   }
@@ -104,8 +104,8 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
     if (singleHitTestResult != null) {
       var newAnchor =
           ARPlaneAnchor(transformation: singleHitTestResult.worldTransform);
-      bool didAddAnchor = await this.arAnchorManager.addAnchor(newAnchor);
-      if (didAddAnchor) {
+      bool? didAddAnchor = await this.arAnchorManager!.addAnchor(newAnchor);
+      if (didAddAnchor!) {
         this.anchors.add(newAnchor);
         // Add note to anchor
         var newNode = ARNode(
@@ -115,15 +115,15 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
             scale: Vector3(0.2, 0.2, 0.2),
             position: Vector3(0.0, 0.0, 0.0),
             rotation: Vector4(1.0, 0.0, 0.0, 0.0));
-        bool didAddNodeToAnchor =
-            await this.arObjectManager.addNode(newNode, planeAnchor: newAnchor);
-        if (didAddNodeToAnchor) {
+        bool? didAddNodeToAnchor =
+            await this.arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
+        if (didAddNodeToAnchor!) {
           this.nodes.add(newNode);
         } else {
-          this.arSessionManager.onError("Adding Node to Anchor failed");
+          this.arSessionManager!.onError("Adding Node to Anchor failed");
         }
       } else {
-        this.arSessionManager.onError("Adding Anchor failed");
+        this.arSessionManager!.onError("Adding Anchor failed");
       }
     }
   }
