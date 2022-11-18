@@ -11,11 +11,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: 10.1.0
-  vector_math: 2.1.1
-  json_annotation: 4.5.0
-  geolocator: 9.0.0
-  app_settings: 4.1.6
 
   ar_flutter_plugin:
     # When depending on this package from a real application you should use:

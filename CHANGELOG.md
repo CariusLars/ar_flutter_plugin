@@ -1,5 +1,8 @@
 # Changelog
 
+##0.7.3
+* Update the examples with null-safety
+
 ## 0.7.2
 * Fixes missing texturing on iOS
 
