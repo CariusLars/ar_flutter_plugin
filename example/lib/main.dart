@@ -72,7 +72,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class ExampleList extends StatelessWidget {
-  ExampleList({Key key}) : super(key: key);
+  ExampleList({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +127,7 @@ class ExampleList extends StatelessWidget {
 }
 
 class ExampleCard extends StatelessWidget {
-  ExampleCard({Key key, this.example}) : super(key: key);
+  ExampleCard({Key? key, required this.example}) : super(key: key);
   final Example example;
 
   @override

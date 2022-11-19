@@ -19,9 +19,9 @@ class ScreenshotWidget extends StatefulWidget {
 }
 
 class _ScreenshotWidgetState extends State<ScreenshotWidget> {
-  late ARSessionManager arSessionManager;
-  late ARObjectManager arObjectManager;
-  late ARAnchorManager arAnchorManager;
+  ARSessionManager? arSessionManager;
+  ARObjectManager? arObjectManager;
+  ARAnchorManager? arAnchorManager;
 
   List<ARNode> nodes = [];
   List<ARAnchor> anchors = [];
@@ -29,7 +29,7 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
   @override
   void dispose() {
     super.dispose();
-    arSessionManager.dispose();
+    arSessionManager!.dispose();
   }
 
   @override
@@ -71,16 +71,16 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
     this.arObjectManager = arObjectManager;
     this.arAnchorManager = arAnchorManager;
 
-    this.arSessionManager.onInitialize(
+    this.arSessionManager!.onInitialize(
           showFeaturePoints: false,
           showPlanes: true,
           customPlaneTexturePath: "Images/triangle.png",
           showWorldOrigin: true,
         );
-    this.arObjectManager.onInitialize();
+    this.arObjectManager!.onInitialize();
 
-    this.arSessionManager.onPlaneOrPointTap = onPlaneOrPointTapped;
-    this.arObjectManager.onNodeTap = onNodeTapped;
+    this.arSessionManager!.onPlaneOrPointTap = onPlaneOrPointTapped;
+    this.arObjectManager!.onNodeTap = onNodeTapped;
   }
 
   Future<void> onRemoveEverything() async {
@@ -90,13 +90,13 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
     // anchors.forEach((anchor)
     for (var anchor in anchors)
      {
-      arAnchorManager.removeAnchor(anchor);
+      arAnchorManager!.removeAnchor(anchor);
     };
     anchors = [];
   }
 
   Future<void> onTakeScreenshot() async {
-    var image = await arSessionManager.snapshot();
+    var image = await arSessionManager!.snapshot();
     await showDialog(
         context: context,
         builder: (_) => Dialog(
@@ -109,17 +109,17 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
 
   Future<void> onNodeTapped(List<String> nodes) async {
     var number = nodes.length;
-    arSessionManager.onError("Tapped $number node(s)");
+    arSessionManager!.onError("Tapped $number node(s)");
   }
 
   Future<void> onPlaneOrPointTapped(
-      List<ARHitTestResult?> hitTestResults) async {
+      List<ARHitTestResult> hitTestResults) async {
     var singleHitTestResult = hitTestResults.firstWhere(
-        (hitTestResult) => hitTestResult?.type == ARHitTestResultType.plane);
+        (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
     if (singleHitTestResult != null) {
       var newAnchor =
           ARPlaneAnchor(transformation: singleHitTestResult.worldTransform);
-      bool? didAddAnchor = await arAnchorManager.addAnchor(newAnchor);
+      bool? didAddAnchor = await arAnchorManager!.addAnchor(newAnchor);
       if (didAddAnchor != null && didAddAnchor) {
         anchors.add(newAnchor);
         // Add note to anchor
@@ -131,15 +131,15 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
             position: Vector3(0.0, 0.0, 0.0),
             rotation: Vector4(1.0, 0.0, 0.0, 0.0));
         bool? didAddNodeToAnchor =
-            await arObjectManager.addNode(newNode, planeAnchor: newAnchor);
+            await arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
         
         if (didAddNodeToAnchor != null && didAddNodeToAnchor) {
           nodes.add(newNode);
         } else {
-          arSessionManager.onError("Adding Node to Anchor failed");
+          arSessionManager!.onError("Adding Node to Anchor failed");
         }
       } else {
-        arSessionManager.onError("Adding Anchor failed");
+        arSessionManager!.onError("Adding Anchor failed");
       }
       /*
       // To add a node to the tapped position without creating an anchor, use the following code (Please mind: the function onRemoveEverything has to be adapted accordingly!):
