@@ -91,10 +91,9 @@ class ArModelBuilder {
     }
 
     // Creates a node form a given gltf model path or URL. The gltf asset loading in Scenform is asynchronous, so the function returns a completable future of type Node
-    fun makeNodeFromGltf(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
+    fun makeNodeFromGltf(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, enableScaling: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
-
-        val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
+        val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation, enableScaling)
 
         ModelRenderable.builder()
                 .setSource(context, RenderableSource.builder().setSource(
@@ -118,14 +117,15 @@ class ArModelBuilder {
                     null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
                 }
 
+        
     return completableFutureNode
     }
 
     // Creates a node form a given glb model path or URL. The gltf asset loading in Sceneform is asynchronous, so the function returns a compleatable future of type Node
-    fun makeNodeFromGlb(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
+    fun makeNodeFromGlb(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, enableScaling: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
 
-        val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
+        val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation, enableScaling)
         //gltfNode.scaleController.isEnabled = false
         //gltfNode.translationController.isEnabled = false
 
@@ -164,12 +164,14 @@ class ArModelBuilder {
     }
 }
 
-class CustomTransformableNode(transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean) :
+class CustomTransformableNode(transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, enableScaling: Boolean) :
     TransformableNode(transformationSystem) { //
 
     private lateinit var customTranslationController: CustomTranslationController
 
     private lateinit var customRotationController: CustomRotationController
+	
+	private lateinit var customScaleController: CustomScaleController
 
     init {
         // Remove standard controllers
@@ -197,6 +199,17 @@ class CustomTransformableNode(transformationSystem: TransformationSystem, object
                 objectManagerChannel
             )
             addTransformationController(customRotationController)
+        }
+		if (enableScaling) {
+            customScaleController = CustomScaleController(
+                this,
+                transformationSystem.pinchRecognizer,
+                objectManagerChannel
+            )
+			
+			customScaleController.setMinScale(0.1f);
+			customScaleController.setMaxScale(4.0f);
+            addTransformationController(customScaleController)
         }
     }
 }
@@ -243,6 +256,29 @@ class CustomRotationController(transformableNode: BaseTransformableNode, gesture
     override fun onEndTransformation(gesture: TwistGesture) {
         val serializedLocalTransformation = serializeLocalTransformation(transformableNode)
         platformChannel.invokeMethod("onRotationEnd", serializedLocalTransformation)
+        super.onEndTransformation(gesture)
+     }
+}
+
+class CustomScaleController(transformableNode: BaseTransformableNode, gestureRecognizer: PinchGestureRecognizer, objectManagerChannel: MethodChannel) :
+    ScaleController(transformableNode, gestureRecognizer) {
+
+    val platformChannel: MethodChannel = objectManagerChannel
+
+    override fun canStartTransformation(gesture: PinchGesture): Boolean {
+        platformChannel.invokeMethod("onScaleStart", transformableNode.name)
+        super.canStartTransformation(gesture)
+        return transformableNode.isSelected
+    }
+
+    override fun onContinueTransformation(gesture: PinchGesture) {
+        platformChannel.invokeMethod("onScaleChange", transformableNode.name)
+        super.onContinueTransformation(gesture)
+    }
+
+    override fun onEndTransformation(gesture: PinchGesture) {
+        val serializedLocalTransformation = serializeLocalTransformation(transformableNode)
+        platformChannel.invokeMethod("onScaleEnd", serializedLocalTransformation)
         super.onEndTransformation(gesture)
      }
 }

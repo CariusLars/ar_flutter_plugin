@@ -81,6 +81,7 @@ internal class AndroidARView(
     // Setting defaults
     private var enableRotation = false
     private var enablePans = false
+	private var enableScaling = false
     private var keepNodeSelected = true;
     private var footprintSelectionVisualizer = FootprintSelectionVisualizer()
     // Model builder
@@ -319,7 +320,7 @@ internal class AndroidARView(
 
         MaterialFactory.makeTransparentWithColor(context, Color(255f, 255f, 255f, 0.3f))
                 .thenAccept { mat ->
-                    footprintSelectionVisualizer.footprintRenderable = ShapeFactory.makeCylinder(0.7f,0.05f, Vector3(0f,0f,0f), mat)
+                    footprintSelectionVisualizer.footprintRenderable = ShapeFactory.makeCylinder(0.7f,0.05f, Vector3(0f,0f,0.25f), mat)
                 }
 
         transformationSystem =
@@ -470,6 +471,7 @@ internal class AndroidARView(
         val argShowWorldOrigin: Boolean? = call.argument<Boolean>("showWorldOrigin")
         val argHandleTaps: Boolean? = call.argument<Boolean>("handleTaps")
         val argHandleRotation: Boolean? = call.argument<Boolean>("handleRotation")
+		val argHandleScaling: Boolean? = call.argument<Boolean>("handleScaling")
         val argHandlePans: Boolean? = call.argument<Boolean>("handlePans")
         val argShowAnimatedGuide: Boolean? = call.argument<Boolean>("showAnimatedGuide")
 
@@ -480,8 +482,9 @@ internal class AndroidARView(
         onNodeTapListener = com.google.ar.sceneform.Scene.OnPeekTouchListener { hitTestResult, motionEvent ->
             //if (hitTestResult.node != null){
                 //transformationSystem.selectionVisualizer.applySelectionVisual(hitTestResult.node as TransformableNode)
-                //transformationSystem.selectNode(hitTestResult.node as TransformableNode)
+				//transformationSystem.selectNode(hitTestResult.node as TransformableNode)
             //}
+			
             if (hitTestResult.node != null && motionEvent?.action == MotionEvent.ACTION_DOWN) {
                 objectManagerChannel.invokeMethod("onNodeTap", listOf(hitTestResult.node?.name))
             }
@@ -597,6 +600,12 @@ internal class AndroidARView(
         } else {
             enablePans = false
         }
+		if (argHandleScaling ==
+                true) { // explicit comparison necessary because of nullable type
+            enableScaling = true
+        } else {
+            enableScaling = false
+        }
 
         result.success(null)
     }
@@ -653,7 +662,7 @@ internal class AndroidARView(
             transformationSystem.selectNode(null)
             keepNodeSelected = true
         }
-        if (!enablePans && !enableRotation){
+        if (!enablePans && !enableRotation && !enableScaling){
             //unselect all nodes as we do not want the selection visualizer
             transformationSystem.selectNode(null)
         }
@@ -662,22 +671,26 @@ internal class AndroidARView(
 
     private fun addNode(dict_node: HashMap<String, Any>, dict_anchor: HashMap<String, Any>? = null): CompletableFuture<Boolean>{
         val completableFutureSuccess: CompletableFuture<Boolean> = CompletableFuture()
-
+        
         try {
             when (dict_node["type"] as Int) {
                 0 -> { // GLTF2 Model from Flutter asset folder
                     // Get path to given Flutter asset
                     val loader: FlutterLoader = FlutterInjector.instance().flutterLoader()
                     val key: String = loader.getLookupKeyForAsset(dict_node["uri"] as String)
-
                     // Add object to scene
-                    modelBuilder.makeNodeFromGltf(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, key, dict_node["transformation"] as ArrayList<Double>)
+                    modelBuilder.makeNodeFromGltf(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, enableScaling, dict_node["name"] as String, key, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
+                                
                                 if (anchorName != null && anchorType != null) {
                                     val anchorNode = arSceneView.scene.findByName(anchorName) as AnchorNode?
                                     if (anchorNode != null) {
+                                        val mainHandler = Handler(viewContext.mainLooper)
+                                        val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("1 LOADED RENDERABLE " +  node.getRenderable()?.getMaterial().toString() )) }
+                                        mainHandler.post(runnable)
+                                        
                                         anchorNode.addChild(node)
                                         completableFutureSuccess.complete(true)
                                     } else {
@@ -685,6 +698,10 @@ internal class AndroidARView(
                                     }
                                 } else {
                                     arSceneView.scene.addChild(node)
+                                    val mainHandler = Handler(viewContext.mainLooper)
+                                    val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("2 LOADED RENDERABLE " +  node )) }
+                                     mainHandler.post(runnable)
+
                                     completableFutureSuccess.complete(true)
                                 }
                                 completableFutureSuccess.complete(false)
@@ -692,14 +709,15 @@ internal class AndroidARView(
                             .exceptionally { throwable ->
                                 // Pass error to session manager (this has to be done on the main thread if this activity)
                                 val mainHandler = Handler(viewContext.mainLooper)
-                                val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable" +  dict_node["uri"] as String)) }
+                                val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable " +  dict_node["uri"] as String)) }
                                 mainHandler.post(runnable)
                                 completableFutureSuccess.completeExceptionally(throwable)
                                 null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
                             }
+                        
                 }
                 1 -> { // GLB Model from the web
-                    modelBuilder.makeNodeFromGlb(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, dict_node["uri"] as String, dict_node["transformation"] as ArrayList<Double>)
+                    modelBuilder.makeNodeFromGlb(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, enableScaling, dict_node["name"] as String, dict_node["uri"] as String, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
@@ -730,7 +748,7 @@ internal class AndroidARView(
                     val documentsPath = viewContext.getApplicationInfo().dataDir
                     val assetPath = documentsPath + "/app_flutter/" + dict_node["uri"] as String
 
-                    modelBuilder.makeNodeFromGlb(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, assetPath as String, dict_node["transformation"] as ArrayList<Double>) //
+                    modelBuilder.makeNodeFromGlb(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, enableScaling, dict_node["name"] as String, assetPath as String, dict_node["transformation"] as ArrayList<Double>) //
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
@@ -763,7 +781,7 @@ internal class AndroidARView(
                     val assetPath = documentsPath + "/app_flutter/" + dict_node["uri"] as String
 
                     // Add object to scene
-                    modelBuilder.makeNodeFromGltf(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, assetPath, dict_node["transformation"] as ArrayList<Double>)
+                    modelBuilder.makeNodeFromGltf(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, enableScaling, dict_node["name"] as String, assetPath, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
@@ -797,7 +815,6 @@ internal class AndroidARView(
         } catch (e: java.lang.Exception) {
             completableFutureSuccess.completeExceptionally(e)
         }
-
         return completableFutureSuccess
     }
 
@@ -821,7 +838,7 @@ internal class AndroidARView(
             return true
         }
         if (motionEvent != null && motionEvent.action == MotionEvent.ACTION_DOWN) {
-            if (transformationSystem.selectedNode == null || (!enablePans && !enableRotation)){
+            if (transformationSystem.selectedNode == null || (!enablePans && !enableRotation && !enableScaling)){
                 val allHitResults = frame?.hitTest(motionEvent) ?: listOf<HitResult>()
                 val planeAndPointHitResults =
                     allHitResults.filter { ((it.trackable is Plane) || (it.trackable is Point)) }
