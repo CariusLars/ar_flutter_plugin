@@ -1,7 +1,7 @@
 # Changelog
 
 ##0.7.4
-* Uses New ARCore API 1.35.0
+* Uses New ARCore API 1.35.0 (ARCore API required to be enabled in Google Cloud Console)
 * Place an anchor at point (X,Y) of screen programmatically
 
 ##0.7.3
