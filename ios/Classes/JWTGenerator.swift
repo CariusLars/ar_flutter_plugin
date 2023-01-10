@@ -36,7 +36,7 @@ class JWTGenerator {
                         let exp: Date
                         let aud: String
                     }
-                    let jwtTokenClaims = JWTTokenClaims(iss: clientEmail, sub: clientEmail, iat: Date(), exp: Date(timeIntervalSinceNow: 3600), aud: "https://arcorecloudanchor.googleapis.com/")
+                    let jwtTokenClaims = JWTTokenClaims(iss: clientEmail, sub: clientEmail, iat: Date(), exp: Date(timeIntervalSinceNow: 3600), aud: "https://arcore.googleapis.com/")
                   
                     var jwtToken = JWT(header: jwtTokenHeader, claims: jwtTokenClaims)
                     

@@ -39,18 +39,9 @@ import com.google.ar.sceneform.rendering.*
 import android.view.ViewGroup
 
 import com.google.ar.core.TrackingState
-
-
-
-
-
-
-
-
-
-
-
-
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 
 internal class AndroidARView(
@@ -114,6 +105,29 @@ internal class AndroidARView(
                                 result.success(serializePose(cameraPose!!))
                             } else {
                                 result.error("Error", "could not get camera pose", null)
+                            }
+                        }
+                        "placeBasedOnCoordinates" -> {
+                            if (call.arguments is Map<*,*>) {
+                                val cpuCoordinates = floatArrayOf((call.arguments as Map<*, *>)['x'] as Float, (call.arguments as Map<*, *>)['y'] as Float)
+                                val viewCoordinates = FloatArray(2)
+                                if (arSceneView.arFrame != null) {
+                                    arSceneView.arFrame!!.transformCoordinates2d(
+                                            Coordinates2d.IMAGE_PIXELS,
+                                            cpuCoordinates,
+                                            Coordinates2d.VIEW,
+                                            viewCoordinates
+                                    )
+                                    val allHitResults = arSceneView.arFrame!!.hitTest(viewCoordinates[0], viewCoordinates[1])
+                                    val planeAndPointHitResults = allHitResults.filter { ((it.trackable is Plane) || (it.trackable is Point)) }
+                                    val serializedPlaneAndPointHitResults: ArrayList<HashMap<String, Any>> =
+                                            ArrayList(planeAndPointHitResults.map { serializeHitResult(it) })
+                                    result.success(serializedPlaneAndPointHitResults)
+                                } else {
+                                    result.success(null)
+                                }
+                            } else {
+                                result.success(null)
                             }
                         }
                         "snapshot" -> {
@@ -452,16 +466,23 @@ internal class AndroidARView(
 
     fun onDestroy() {
         try {
-            arSceneView.session?.close()
-            arSceneView.destroy()
+            if (arSceneView.session != null) {
+                for (anchor in arSceneView.session!!.allAnchors) {
+                    anchor?.detach()
+                }
+            }
+            cloudAnchorHandler.dispose();
             arSceneView.scene?.removeOnUpdateListener(sceneUpdateListener)
             arSceneView.scene?.removeOnPeekTouchListener(onNodeTapListener)
+            arSceneView.session?.close()
+            arSceneView.destroy()
         }catch (e : Exception){
             e.printStackTrace();
         }
     }
 
     private fun initializeARView(call: MethodCall, result: MethodChannel.Result) {
+        Log.d(TAG, "initializeARView")
         // Unpack call arguments
         val argShowFeaturePoints: Boolean? = call.argument<Boolean>("showFeaturePoints")
         val argPlaneDetectionConfig: Int? = call.argument<Int>("planeDetectionConfig")
