@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:typed_data';
 
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
@@ -35,19 +36,17 @@ class ARObjectManager {
   ARObjectManager(int id, {this.debug = false}) {
     _channel = MethodChannel('arobjects_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
-    if (debug) {
-      print("ARObjectManager initialized");
-    }
+
+    developer.log("$runtimeType initialized");
   }
 
   Future<void> _platformCallHandler(MethodCall call) {
-    if (debug) {
-      print('_platformCallHandler call ${call.method} ${call.arguments}');
-    }
+    developer.log('_platformCallHandler call ${call.method} ${call.arguments}');
+
     try {
       switch (call.method) {
         case 'onError':
-          print(call.arguments);
+          developer.log(call.arguments);
           break;
         case 'onNodeTap':
           if (onNodeTap != null) {
@@ -104,12 +103,10 @@ class ARObjectManager {
           }
           break;
         default:
-          if (debug) {
-            print('Unimplemented method ${call.method} ');
-          }
+          developer.log('Unimplemented method ${call.method}');
       }
     } catch (e) {
-      print('Error caught: ' + e.toString());
+      developer.log('Error in $runtimeType: $e');
     }
     return Future.value();
   }
