@@ -1,8 +1,8 @@
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:ar_flutter_plugin/utils/json_converters.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:vector_math/vector_math_64.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef NodeTapResultHandler = void Function(List<String> nodes);
@@ -33,19 +33,17 @@ class ARObjectManager {
   ARObjectManager(int id, {this.debug = false}) {
     _channel = MethodChannel('arobjects_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
-    if (debug) {
-      print("ARObjectManager initialized");
-    }
+
+    debugPrint("ARObjectManager initialized");
   }
 
   Future<void> _platformCallHandler(MethodCall call) {
-    if (debug) {
-      print('_platformCallHandler call ${call.method} ${call.arguments}');
-    }
+    debugPrint('_platformCallHandler call ${call.method} ${call.arguments}');
+
     try {
       switch (call.method) {
         case 'onError':
-          print(call.arguments);
+          debugPrint(call.arguments);
           break;
         case 'onNodeTap':
           if (onNodeTap != null) {
@@ -102,12 +100,10 @@ class ARObjectManager {
           }
           break;
         default:
-          if (debug) {
-            print('Unimplemented method ${call.method} ');
-          }
+          debugPrint('Unimplemented method ${call.method} ');
       }
     } catch (e) {
-      print('Error caught: ' + e.toString());
+      debugPrint('Error caught: ' + e.toString());
     }
     return Future.value();
   }

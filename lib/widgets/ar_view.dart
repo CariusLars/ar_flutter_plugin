@@ -60,7 +60,7 @@ class AndroidARView implements PlatformARView {
 
   @override
   void onPlatformViewCreated(int id) {
-    print("Android platform view created!");
+    debugPrint("Android platform view created!");
     createManagers(id, _context, _arViewCreatedCallback, _planeDetectionConfig);
   }
 
@@ -95,7 +95,7 @@ class IosARView implements PlatformARView {
 
   @override
   void onPlatformViewCreated(int id) {
-    print("iOS platform view created!");
+    debugPrint("iOS platform view created!");
     createManagers(id, _context, _arViewCreatedCallback, _planeDetectionConfig);
   }
 
