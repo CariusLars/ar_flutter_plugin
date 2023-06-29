@@ -81,7 +81,7 @@ class ArModelBuilder: NSObject {
 
             return node
         } catch {
-            print("\(error.localizedDescription)")
+            debugPrint("\(error.localizedDescription)")
             return nil
         }
     }
@@ -110,7 +110,7 @@ class ArModelBuilder: NSObject {
 
             return node
         } catch {
-            print("\(error.localizedDescription)")
+            debugPrint("\(error.localizedDescription)")
             return nil
         }
     }
@@ -139,7 +139,7 @@ class ArModelBuilder: NSObject {
 
             return node
         } catch {
-            print("\(error.localizedDescription)")
+            debugPrint("\(error.localizedDescription)")
             return nil
         }
     }
@@ -153,7 +153,7 @@ class ArModelBuilder: NSObject {
             let handler: (URL?, URLResponse?, Error?) -> Void = {(url: URL?, urlResponse: URLResponse?, error: Error?) -> Void in
                 // If response code is not 200, link was invalid, so return
                 if ((urlResponse as? HTTPURLResponse)?.statusCode != 200) {
-                    print("makeNodeFromWebGltf received non-200 response code")
+                    debugPrint("makeNodeFromWebGltf received non-200 response code")
                     node = nil
                     promise(.success(node))
                 } else {
@@ -186,7 +186,7 @@ class ArModelBuilder: NSObject {
                             node?.worldOrientation = worldRotation*/
 
                         } catch {
-                            print("\(error.localizedDescription)")
+                            debugPrint("\(error.localizedDescription)")
                             node = nil
                         }
                         

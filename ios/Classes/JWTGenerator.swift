@@ -49,7 +49,7 @@ class JWTGenerator {
                   
                   }
               } catch {
-                   print("Error generating JWT")
+                   debugPrint("Error generating JWT")
               }
         }
         return nil

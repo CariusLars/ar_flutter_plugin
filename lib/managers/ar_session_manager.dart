@@ -33,9 +33,8 @@ class ARSessionManager {
       {this.debug = false}) {
     _channel = MethodChannel('arsession_$id');
     _channel.setMethodCallHandler(_platformCallHandler);
-    if (debug) {
-      print("ARSessionManager initialized");
-    }
+
+    debugPrint("ARSessionManager initialized");
   }
 
   /// Returns the camera pose in Matrix4 format with respect to the world coordinate system of the [ARView]
@@ -43,9 +42,9 @@ class ARSessionManager {
     try {
       final serializedCameraPose =
           await _channel.invokeMethod<List<dynamic>>('getCameraPose', {});
-      return MatrixConverter().fromJson(serializedCameraPose!);
+      return const MatrixConverter().fromJson(serializedCameraPose!);
     } catch (e) {
-      print('Error caught: ' + e.toString());
+      debugPrint('Error caught: ' + e.toString());
       return null;
     }
   }
@@ -60,9 +59,9 @@ class ARSessionManager {
           await _channel.invokeMethod<List<dynamic>>('getAnchorPose', {
         "anchorId": anchor.name,
       });
-      return MatrixConverter().fromJson(serializedCameraPose!);
+      return const MatrixConverter().fromJson(serializedCameraPose!);
     } catch (e) {
-      print('Error caught: ' + e.toString());
+      debugPrint('Error caught: ' + e.toString());
       return null;
     }
   }
@@ -104,40 +103,32 @@ class ARSessionManager {
   }
 
   Future<void> _platformCallHandler(MethodCall call) {
-    if (debug) {
-      print('_platformCallHandler call ${call.method} ${call.arguments}');
-    }
+    debugPrint('_platformCallHandler call ${call.method} ${call.arguments}');
+
     try {
       switch (call.method) {
         case 'onError':
-          if (onError != null) {
-            onError(call.arguments[0]);
-            print(call.arguments);
-          }
+          onError(call.arguments[0]);
+          debugPrint(call.arguments);
           break;
         case 'onPlaneOrPointTap':
-          if (onPlaneOrPointTap != null) {
-            final rawHitTestResults = call.arguments as List<dynamic>;
-            final serializedHitTestResults = rawHitTestResults
-                .map(
-                    (hitTestResult) => Map<String, dynamic>.from(hitTestResult))
-                .toList();
-            final hitTestResults = serializedHitTestResults.map((e) {
-              return ARHitTestResult.fromJson(e);
-            }).toList();
-            onPlaneOrPointTap(hitTestResults);
-          }
+          final rawHitTestResults = call.arguments as List<dynamic>;
+          final serializedHitTestResults = rawHitTestResults
+              .map((hitTestResult) => Map<String, dynamic>.from(hitTestResult))
+              .toList();
+          final hitTestResults = serializedHitTestResults.map((e) {
+            return ARHitTestResult.fromJson(e);
+          }).toList();
+          onPlaneOrPointTap(hitTestResults);
           break;
         case 'dispose':
           _channel.invokeMethod<void>("dispose");
           break;
         default:
-          if (debug) {
-            print('Unimplemented method ${call.method} ');
-          }
+          debugPrint('Unimplemented method ${call.method} ');
       }
     } catch (e) {
-      print('Error caught: ' + e.toString());
+      debugPrint('Error caught: ' + e.toString());
     }
     return Future.value();
   }
@@ -184,7 +175,7 @@ class ARSessionManager {
     try {
       await _channel.invokeMethod<void>("dispose");
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 

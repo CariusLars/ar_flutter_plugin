@@ -1,7 +1,5 @@
 import 'package:ar_flutter_plugin/datatypes/anchor_types.dart';
-import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:ar_flutter_plugin/utils/json_converters.dart';
-import 'package:vector_math/vector_math_64.dart';
 import 'package:flutter/widgets.dart';
 
 /// Object attached to a tracked physical entity of the AR environment (can be initialized with a world transformation)
@@ -42,10 +40,9 @@ class ARPlaneAnchor extends ARAnchor {
     required Matrix4 transformation,
     String? name,
     List<String>? childNodes,
-    String? cloudanchorid,
+    cloudanchorid,
     int? ttl,
   })  : childNodes = childNodes ?? [],
-        cloudanchorid = cloudanchorid ?? null,
         ttl = ttl ?? 1,
         super(
             type: AnchorType.plane, transformation: transformation, name: name);
@@ -85,7 +82,7 @@ ARPlaneAnchor aRPlaneAnchorFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> aRPlaneAnchorToJson(ARPlaneAnchor instance) {
   return <String, dynamic>{
     'type': instance.type.index,
-    'transformation': MatrixConverter().toJson(instance.transformation),
+    'transformation': const MatrixConverter().toJson(instance.transformation),
     'name': instance.name,
     'childNodes': instance.childNodes,
     'cloudanchorid': instance.cloudanchorid,
@@ -118,7 +115,7 @@ ARUnkownAnchor aRUnkownAnchorFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> aRUnkownAnchorToJson(ARUnkownAnchor instance) {
   return <String, dynamic>{
     'type': instance.type.index,
-    'transformation': MatrixConverter().toJson(instance.transformation),
+    'transformation': const MatrixConverter().toJson(instance.transformation),
     'name': instance.name,
   };
 }

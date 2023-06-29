@@ -11,14 +11,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: ^10.1.0
-  vector_math: ^2.1.1
-  json_annotation: ^4.5.0
-  geolocator: ^9.0.0
+  permission_handler: ^10.3.0
+  vector_math: ^2.1.2
+  json_annotation: ^4.7.0
+  geolocator: ^9.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^1.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
