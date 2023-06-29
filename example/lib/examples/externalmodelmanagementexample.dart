@@ -345,7 +345,7 @@ class _ExternalModelManagementWidgetState
     //});
 
     // Get anchors within a radius of 100m of the current device's location
-    if (this.arLocationManager!.currentLocation != null) {
+    if (this.arLocationManager != null) {
       firebaseManager.downloadAnchorsByLocation((snapshot) {
         final cloudAnchorId = snapshot.get("cloudanchorid");
         anchorsInDownloadProgress[cloudAnchorId] =

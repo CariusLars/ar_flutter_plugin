@@ -154,29 +154,25 @@ class ARView extends StatefulWidget {
           "Camera permission is restriced by the OS, please check parental control settings"})
       : super(key: key);
   @override
-  _ARViewState createState() => _ARViewState(
-      showPlatformType: showPlatformType,
-      permissionPromptDescription: permissionPromptDescription,
-      permissionPromptButtonText: permissionPromptButtonText,
-      permissionPromptParentalRestriction: permissionPromptParentalRestriction);
+  _ARViewState createState() => _ARViewState();
 }
 
 class _ARViewState extends State<ARView> {
   PermissionStatus _cameraPermission = PermissionStatus.denied;
-  bool showPlatformType;
-  String permissionPromptDescription;
-  String permissionPromptButtonText;
-  String permissionPromptParentalRestriction;
-
-  _ARViewState(
-      {required this.showPlatformType,
-      required this.permissionPromptDescription,
-      required this.permissionPromptButtonText,
-      required this.permissionPromptParentalRestriction});
+  late bool showPlatformType;
+  late String permissionPromptDescription;
+  late String permissionPromptButtonText;
+  late String permissionPromptParentalRestriction;
 
   @override
   void initState() {
     super.initState();
+    showPlatformType = widget.showPlatformType;
+    permissionPromptDescription = widget.permissionPromptDescription;
+    permissionPromptButtonText = widget.permissionPromptButtonText;
+    permissionPromptParentalRestriction =
+        widget.permissionPromptParentalRestriction;
+
     initCameraPermission();
   }
 

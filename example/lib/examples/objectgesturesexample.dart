@@ -134,13 +134,13 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
 
   onPanEnded(String nodeName, Matrix4 newTransform) {
     print("Ended panning node " + nodeName);
-    final pannedNode =
-        this.nodes.firstWhere((element) => element.name == nodeName);
 
     /*
     * Uncomment the following command if you want to keep the transformations of the Flutter representations of the nodes up to date
     * (e.g. if you intend to share the nodes through the cloud)
     */
+    // final pannedNode =
+    //     this.nodes.firstWhere((element) => element.name == nodeName);
     //pannedNode.transform = newTransform;
   }
 
@@ -154,13 +154,13 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
 
   onRotationEnded(String nodeName, Matrix4 newTransform) {
     print("Ended rotating node " + nodeName);
-    final rotatedNode =
-        this.nodes.firstWhere((element) => element.name == nodeName);
 
     /*
     * Uncomment the following command if you want to keep the transformations of the Flutter representations of the nodes up to date
     * (e.g. if you intend to share the nodes through the cloud)
     */
+    // final rotatedNode =
+    //     this.nodes.firstWhere((element) => element.name == nodeName);
     //rotatedNode.transform = newTransform;
   }
 }
