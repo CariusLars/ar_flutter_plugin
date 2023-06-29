@@ -22,7 +22,7 @@ class CloudAnchorHandler: NSObject, GARSessionDelegate {
             // Register listener so it is invoked when the operation finishes
             pendingAnchors[newAnchor] = (anchorName, listener)
         } catch {
-            print(error)
+            debugPrint(error)
         }
     }
     
@@ -32,7 +32,7 @@ class CloudAnchorHandler: NSObject, GARSessionDelegate {
             // Register listener so it is invoked when the operation finishes
             pendingAnchors[newAnchor] = (anchorName, listener)
         } catch {
-            print(error)
+            debugPrint(error)
         }
     }
     
@@ -42,7 +42,7 @@ class CloudAnchorHandler: NSObject, GARSessionDelegate {
             // Register listener so it is invoked when the operation finishes
             pendingAnchors[newAnchor] = (nil, listener)
         } catch {
-            print(error)
+            debugPrint(error)
         }
         
     }

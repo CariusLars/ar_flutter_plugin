@@ -206,7 +206,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 break
             case "uploadAnchor":
                 if let anchorName = arguments!["name"] as? String, let anchor = anchorCollection[anchorName] {
-                    print("---------------- HOSTING INITIATED ------------------")
+                    debugPrint("---------------- HOSTING INITIATED ------------------")
                     if let ttl = arguments!["ttl"] as? Int {
                         cloudAnchorHandler?.hostCloudAnchorWithTtl(anchorName: anchorName, anchor: anchor, listener: cloudAnchorUploadedListener(parent: self), ttl: ttl)
                     } else {
@@ -217,7 +217,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 break
             case "downloadAnchor":
                 if let anchorId = arguments!["cloudanchorid"] as? String {
-                    print("---------------- RESOLVING INITIATED ------------------")
+                    debugPrint("---------------- RESOLVING INITIATED ------------------")
                     cloudAnchorHandler?.resolveCloudAnchor(anchorId: anchorId, listener: cloudAnchorDownloadedListener(parent: self))
                 }
                 break
@@ -368,7 +368,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
             do {
                 try arcoreSession!.update(frame)
             } catch {
-                print(error)
+                debugPrint(error)
             }
         }
     }
@@ -412,7 +412,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     // Add object to scene
                     self.modelBuilder.makeNodeFromWebGlb(name: dict_node["name"] as! String, modelURL: dict_node["uri"] as! String, transformation: dict_node["transformation"] as? Array<NSNumber>)
                     .sink(receiveCompletion: {
-                                    completion in print("Async Model Downloading Task completed: ", completion)
+                                    completion in debugPrint("Async Model Downloading Task completed: ", completion)
                     }, receiveValue: { val in
                         if let node: SCNNode = val {
                             if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
@@ -723,7 +723,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     args["cloudanchorid"] = anchor?.cloudIdentifier
                     parent.anchorManagerChannel.invokeMethod("onCloudAnchorUploaded", arguments: args)
                 } else {
-                    print("Error uploading anchor, state: \(parent.decodeCloudAnchorState(state: cloudState))")
+                    debugPrint("Error uploading anchor, state: \(parent.decodeCloudAnchorState(state: cloudState))")
                     parent.sessionManagerChannel.invokeMethod("onError", arguments: ["Error uploading anchor, state: \(parent.decodeCloudAnchorState(state: cloudState))"])
                     return
                 }
@@ -753,7 +753,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
 
                     })
                 } else {
-                    print("Error downloading anchor, state \(cloudState)")
+                    debugPrint("Error downloading anchor, state \(cloudState)")
                     parent.sessionManagerChannel.invokeMethod("onError", arguments: ["Error downloading anchor, state \(cloudState)"])
                     return
                 }

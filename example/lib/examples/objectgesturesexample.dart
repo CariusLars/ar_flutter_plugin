@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 class ObjectGesturesWidget extends StatefulWidget {
-  ObjectGesturesWidget({Key? key}) : super(key: key);
+  const ObjectGesturesWidget({Key? key}) : super(key: key);
   @override
   _ObjectGesturesWidgetState createState() => _ObjectGesturesWidgetState();
 }
@@ -38,8 +38,7 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
         appBar: AppBar(
           title: const Text('Object Transformation Gestures'),
         ),
-        body: Container(
-            child: Stack(children: [
+        body: Stack(children: [
           ARView(
             onARViewCreated: onARViewCreated,
             planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
@@ -51,10 +50,10 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
                 children: [
                   ElevatedButton(
                       onPressed: onRemoveEverything,
-                      child: Text("Remove Everything")),
+                      child: const Text("Remove Everything")),
                 ]),
           )
-        ])));
+        ]));
   }
 
   void onARViewCreated(
@@ -89,9 +88,9 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
     /*nodes.forEach((node) {
       this.arObjectManager.removeNode(node);
     });*/
-    anchors.forEach((anchor) {
-      this.arAnchorManager!.removeAnchor(anchor);
-    });
+    for (var anchor in anchors) {
+      arAnchorManager!.removeAnchor(anchor);
+    }
     anchors = [];
   }
 
@@ -101,9 +100,9 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
         (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
     var newAnchor =
         ARPlaneAnchor(transformation: singleHitTestResult.worldTransform);
-    bool? didAddAnchor = await this.arAnchorManager!.addAnchor(newAnchor);
+    bool? didAddAnchor = await arAnchorManager!.addAnchor(newAnchor);
     if (didAddAnchor!) {
-      this.anchors.add(newAnchor);
+      anchors.add(newAnchor);
       // Add note to anchor
       var newNode = ARNode(
           type: NodeType.webGLB,
@@ -113,27 +112,27 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
           position: Vector3(0.0, 0.0, 0.0),
           rotation: Vector4(1.0, 0.0, 0.0, 0.0));
       bool? didAddNodeToAnchor =
-          await this.arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
+          await arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
       if (didAddNodeToAnchor!) {
-        this.nodes.add(newNode);
+        nodes.add(newNode);
       } else {
-        this.arSessionManager!.onError("Adding Node to Anchor failed");
+        arSessionManager!.onError("Adding Node to Anchor failed");
       }
     } else {
-      this.arSessionManager!.onError("Adding Anchor failed");
+      arSessionManager!.onError("Adding Anchor failed");
     }
   }
 
   onPanStarted(String nodeName) {
-    print("Started panning node " + nodeName);
+    debugPrint("Started panning node " + nodeName);
   }
 
   onPanChanged(String nodeName) {
-    print("Continued panning node " + nodeName);
+    debugPrint("Continued panning node " + nodeName);
   }
 
   onPanEnded(String nodeName, Matrix4 newTransform) {
-    print("Ended panning node " + nodeName);
+    debugPrint("Ended panning node " + nodeName);
 
     /*
     * Uncomment the following command if you want to keep the transformations of the Flutter representations of the nodes up to date
@@ -145,15 +144,15 @@ class _ObjectGesturesWidgetState extends State<ObjectGesturesWidget> {
   }
 
   onRotationStarted(String nodeName) {
-    print("Started rotating node " + nodeName);
+    debugPrint("Started rotating node " + nodeName);
   }
 
   onRotationChanged(String nodeName) {
-    print("Continued rotating node " + nodeName);
+    debugPrint("Continued rotating node " + nodeName);
   }
 
   onRotationEnded(String nodeName, Matrix4 newTransform) {
-    print("Ended rotating node " + nodeName);
+    debugPrint("Ended rotating node " + nodeName);
 
     /*
     * Uncomment the following command if you want to keep the transformations of the Flutter representations of the nodes up to date

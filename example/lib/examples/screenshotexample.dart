@@ -38,8 +38,7 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
         appBar: AppBar(
           title: const Text('Screenshots'),
         ),
-        body: Container(
-            child: Stack(children: [
+        body: Stack(children: [
           ARView(
             onARViewCreated: onARViewCreated,
             planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
@@ -57,7 +56,7 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
                       child: const Text("Take Screenshot")),
                 ]),
           )
-        ])));
+        ]));
   }
 
   void onARViewCreated(
@@ -89,7 +88,6 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
     for (var anchor in anchors) {
       arAnchorManager!.removeAnchor(anchor);
     }
-    ;
     anchors = [];
   }
 

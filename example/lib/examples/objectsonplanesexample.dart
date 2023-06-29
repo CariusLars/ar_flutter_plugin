@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 class ObjectsOnPlanesWidget extends StatefulWidget {
-  ObjectsOnPlanesWidget({Key? key}) : super(key: key);
+  const ObjectsOnPlanesWidget({Key? key}) : super(key: key);
   @override
   _ObjectsOnPlanesWidgetState createState() => _ObjectsOnPlanesWidgetState();
 }
@@ -38,8 +38,7 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
         appBar: AppBar(
           title: const Text('Anchors & Objects on Planes'),
         ),
-        body: Container(
-            child: Stack(children: [
+        body: Stack(children: [
           ARView(
             onARViewCreated: onARViewCreated,
             planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
@@ -51,10 +50,10 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
                 children: [
                   ElevatedButton(
                       onPressed: onRemoveEverything,
-                      child: Text("Remove Everything")),
+                      child: const Text("Remove Everything")),
                 ]),
           )
-        ])));
+        ]));
   }
 
   void onARViewCreated(
@@ -82,15 +81,15 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
     /*nodes.forEach((node) {
       this.arObjectManager.removeNode(node);
     });*/
-    anchors.forEach((anchor) {
-      this.arAnchorManager!.removeAnchor(anchor);
-    });
+    for (var anchor in anchors) {
+      arAnchorManager!.removeAnchor(anchor);
+    }
     anchors = [];
   }
 
   Future<void> onNodeTapped(List<String> nodes) async {
     var number = nodes.length;
-    this.arSessionManager!.onError("Tapped $number node(s)");
+    arSessionManager!.onError("Tapped $number node(s)");
   }
 
   Future<void> onPlaneOrPointTapped(
@@ -99,9 +98,9 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
         (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
     var newAnchor =
         ARPlaneAnchor(transformation: singleHitTestResult.worldTransform);
-    bool? didAddAnchor = await this.arAnchorManager!.addAnchor(newAnchor);
+    bool? didAddAnchor = await arAnchorManager!.addAnchor(newAnchor);
     if (didAddAnchor!) {
-      this.anchors.add(newAnchor);
+      anchors.add(newAnchor);
       // Add note to anchor
       var newNode = ARNode(
           type: NodeType.webGLB,
@@ -111,14 +110,14 @@ class _ObjectsOnPlanesWidgetState extends State<ObjectsOnPlanesWidget> {
           position: Vector3(0.0, 0.0, 0.0),
           rotation: Vector4(1.0, 0.0, 0.0, 0.0));
       bool? didAddNodeToAnchor =
-          await this.arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
+          await arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
       if (didAddNodeToAnchor!) {
-        this.nodes.add(newNode);
+        nodes.add(newNode);
       } else {
-        this.arSessionManager!.onError("Adding Node to Anchor failed");
+        arSessionManager!.onError("Adding Node to Anchor failed");
       }
     } else {
-      this.arSessionManager!.onError("Adding Anchor failed");
+      arSessionManager!.onError("Adding Anchor failed");
     }
   }
 }
