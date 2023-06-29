@@ -1,11 +1,11 @@
+import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
-import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef ARViewCreatedCallback = void Function(
@@ -73,7 +73,7 @@ class AndroidARView implements PlatformARView {
     _arViewCreatedCallback = arViewCreatedCallback;
     _planeDetectionConfig = planeDetectionConfig;
     // This is used in the platform side to register the view.
-    final String viewType = 'ar_flutter_plugin';
+    const String viewType = 'ar_flutter_plugin';
     // Pass parameters to the platform side.
     final Map<String, dynamic> creationParams = <String, dynamic>{};
 
@@ -108,7 +108,7 @@ class IosARView implements PlatformARView {
     _arViewCreatedCallback = arViewCreatedCallback;
     _planeDetectionConfig = planeDetectionConfig;
     // This is used in the platform side to register the view.
-    final String viewType = 'ar_flutter_plugin';
+    const String viewType = 'ar_flutter_plugin';
     // Pass parameters to the platform side.
     final Map<String, dynamic> creationParams = <String, dynamic>{};
 
@@ -142,7 +142,7 @@ class ARView extends StatefulWidget {
   /// Configures whether or not to display the device's platform type above the AR view. Defaults to false
   final bool showPlatformType;
 
-  ARView(
+  const ARView(
       {Key? key,
       required this.onARViewCreated,
       this.planeDetectionConfig = PlaneDetectionConfig.none,
@@ -155,11 +155,10 @@ class ARView extends StatefulWidget {
       : super(key: key);
   @override
   _ARViewState createState() => _ARViewState(
-      showPlatformType: this.showPlatformType,
-      permissionPromptDescription: this.permissionPromptDescription,
-      permissionPromptButtonText: this.permissionPromptButtonText,
-      permissionPromptParentalRestriction:
-          this.permissionPromptParentalRestriction);
+      showPlatformType: showPlatformType,
+      permissionPromptDescription: permissionPromptDescription,
+      permissionPromptButtonText: permissionPromptButtonText,
+      permissionPromptParentalRestriction: permissionPromptParentalRestriction);
 }
 
 class _ARViewState extends State<ARView> {
@@ -250,7 +249,7 @@ class _ARViewState extends State<ARView> {
           return Center(child: Text(permissionPromptParentalRestriction));
         }
       default:
-        return Text('something went wrong');
+        return const Text('something went wrong');
     }
   }
 }

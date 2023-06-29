@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:ar_flutter_plugin/utils/json_converters.dart';
@@ -74,8 +72,8 @@ class ARObjectManager {
         case 'onPanEnd':
           if (onPanEnd != null) {
             final tappedNodeName = call.arguments["name"] as String;
-            final transform =
-                MatrixConverter().fromJson(call.arguments['transform'] as List);
+            final transform = const MatrixConverter()
+                .fromJson(call.arguments['transform'] as List);
 
             // Notify callback
             onPanEnd!(tappedNodeName, transform);
@@ -96,8 +94,8 @@ class ARObjectManager {
         case 'onRotationEnd':
           if (onRotationEnd != null) {
             final tappedNodeName = call.arguments["name"] as String;
-            final transform =
-                MatrixConverter().fromJson(call.arguments['transform'] as List);
+            final transform = const MatrixConverter()
+                .fromJson(call.arguments['transform'] as List);
 
             // Notify callback
             onRotationEnd!(tappedNodeName, transform);
@@ -125,8 +123,8 @@ class ARObjectManager {
       node.transformNotifier.addListener(() {
         _channel.invokeMethod<void>('transformationChanged', {
           'name': node.name,
-          'transformation':
-              MatrixValueNotifierConverter().toJson(node.transformNotifier)
+          'transformation': const MatrixValueNotifierConverter()
+              .toJson(node.transformNotifier)
         });
       });
       if (planeAnchor != null) {
@@ -136,7 +134,7 @@ class ARObjectManager {
       } else {
         return await _channel.invokeMethod<bool>('addNode', node.toMap());
       }
-    } on PlatformException catch (e) {
+    } on PlatformException {
       return false;
     }
   }

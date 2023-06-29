@@ -1,6 +1,5 @@
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef AnchorUploadedHandler = void Function(ARAnchor arAnchor);
@@ -86,7 +85,7 @@ class ARAnchorManager {
   Future<bool?> addAnchor(ARAnchor anchor) async {
     try {
       return await _channel.invokeMethod<bool>('addAnchor', anchor.toJson());
-    } on PlatformException catch (e) {
+    } on PlatformException {
       return false;
     }
   }
@@ -103,7 +102,7 @@ class ARAnchorManager {
           await _channel.invokeMethod<bool>('uploadAnchor', anchor.toJson());
       pendingAnchors.add(anchor);
       return response;
-    } on PlatformException catch (e) {
+    } on PlatformException {
       return false;
     }
   }
@@ -113,5 +112,6 @@ class ARAnchorManager {
     print("TRYING TO DOWNLOAD ANCHOR WITH ID " + cloudanchorid);
     _channel
         .invokeMethod<bool>('downloadAnchor', {"cloudanchorid": cloudanchorid});
+    return null;
   }
 }

@@ -1,22 +1,20 @@
-import 'dart:convert';
-
-import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
-import 'package:ar_flutter_plugin/models/ar_anchor.dart';
-import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
-import 'package:ar_flutter_plugin/datatypes/node_types.dart';
 import 'package:ar_flutter_plugin/datatypes/hittest_result_types.dart';
-import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:ar_flutter_plugin/datatypes/node_types.dart';
+import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
+import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
-import 'package:vector_math/vector_math_64.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 class CloudAnchorWidget extends StatefulWidget {
   CloudAnchorWidget({Key? key}) : super(key: key);
@@ -157,8 +155,8 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     this.arAnchorManager!.onAnchorDownloaded = onAnchorDownloaded;
 
     this
-        .arLocationManager
-        !.startLocationUpdates()
+        .arLocationManager!
+        .startLocationUpdates()
         .then((value) => null)
         .onError((error, stackTrace) {
       switch (error.toString()) {
@@ -236,33 +234,32 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
       List<ARHitTestResult> hitTestResults) async {
     var singleHitTestResult = hitTestResults.firstWhere(
         (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
-    if (singleHitTestResult != null) {
-      var newAnchor = ARPlaneAnchor(
-          transformation: singleHitTestResult.worldTransform, ttl: 2);
-      bool? didAddAnchor = await this.arAnchorManager!.addAnchor(newAnchor);
-      if (didAddAnchor ?? false) {
-        this.anchors.add(newAnchor);
-        // Add note to anchor
-        var newNode = ARNode(
-            type: NodeType.webGLB,
-            uri: "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
-            scale: Vector3(0.2, 0.2, 0.2),
-            position: Vector3(0.0, 0.0, 0.0),
-            rotation: Vector4(1.0, 0.0, 0.0, 0.0),
-            data: {"onTapText": "Ouch, that hurt!"});
-        bool? didAddNodeToAnchor =
-            await this.arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
-        if (didAddNodeToAnchor ?? false) {
-          this.nodes.add(newNode);
-          setState(() {
-            readyToUpload = true;
-          });
-        } else {
-          this.arSessionManager!.onError("Adding Node to Anchor failed");
-        }
+    var newAnchor = ARPlaneAnchor(
+        transformation: singleHitTestResult.worldTransform, ttl: 2);
+    bool? didAddAnchor = await this.arAnchorManager!.addAnchor(newAnchor);
+    if (didAddAnchor ?? false) {
+      this.anchors.add(newAnchor);
+      // Add note to anchor
+      var newNode = ARNode(
+          type: NodeType.webGLB,
+          uri:
+              "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
+          scale: Vector3(0.2, 0.2, 0.2),
+          position: Vector3(0.0, 0.0, 0.0),
+          rotation: Vector4(1.0, 0.0, 0.0, 0.0),
+          data: {"onTapText": "Ouch, that hurt!"});
+      bool? didAddNodeToAnchor =
+          await this.arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
+      if (didAddNodeToAnchor ?? false) {
+        this.nodes.add(newNode);
+        setState(() {
+          readyToUpload = true;
+        });
       } else {
-        this.arSessionManager!.onError("Adding Anchor failed");
+        this.arSessionManager!.onError("Adding Node to Anchor failed");
       }
+    } else {
+      this.arSessionManager!.onError("Adding Anchor failed");
     }
   }
 
@@ -289,15 +286,18 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     this.arSessionManager!.onError("Upload successful");
   }
 
-  ARAnchor onAnchorDownloaded(Map<String, dynamic>serializedAnchor) {
-    final anchor = ARPlaneAnchor.fromJson(anchorsInDownloadProgress[serializedAnchor["cloudanchorid"]] as Map<String, dynamic>);
+  ARAnchor onAnchorDownloaded(Map<String, dynamic> serializedAnchor) {
+    final anchor = ARPlaneAnchor.fromJson(
+        anchorsInDownloadProgress[serializedAnchor["cloudanchorid"]]
+            as Map<String, dynamic>);
     anchorsInDownloadProgress.remove(anchor.cloudanchorid);
     this.anchors.add(anchor);
 
     // Download nodes attached to this anchor
     firebaseManager.getObjectsFromAnchor(anchor, (snapshot) {
       snapshot.docs.forEach((objectDoc) {
-        ARNode object = ARNode.fromMap(objectDoc.data() as Map<String, dynamic>);
+        ARNode object =
+            ARNode.fromMap(objectDoc.data() as Map<String, dynamic>);
         arObjectManager!.addNode(object, planeAnchor: anchor);
         this.nodes.add(object);
       });
@@ -318,7 +318,8 @@ class _CloudAnchorWidgetState extends State<CloudAnchorWidget> {
     if (this.arLocationManager!.currentLocation != null) {
       firebaseManager.downloadAnchorsByLocation((snapshot) {
         final cloudAnchorId = snapshot.get("cloudanchorid");
-        anchorsInDownloadProgress[cloudAnchorId] = snapshot.data() as Map<String, dynamic>;
+        anchorsInDownloadProgress[cloudAnchorId] =
+            snapshot.data() as Map<String, dynamic>;
         arAnchorManager!.downloadAnchor(cloudAnchorId);
       }, this.arLocationManager!.currentLocation, 0.1);
       setState(() {
