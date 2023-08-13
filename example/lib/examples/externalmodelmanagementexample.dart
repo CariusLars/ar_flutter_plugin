@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
 import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
@@ -266,33 +264,31 @@ class _ExternalModelManagementWidgetState
       List<ARHitTestResult> hitTestResults) async {
     var singleHitTestResult = hitTestResults.firstWhere(
         (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
-    if (singleHitTestResult != null) {
-      var newAnchor = ARPlaneAnchor(
-          transformation: singleHitTestResult.worldTransform, ttl: 2);
-      bool? didAddAnchor = await this.arAnchorManager!.addAnchor(newAnchor);
-      if (didAddAnchor!) {
-        this.anchors.add(newAnchor);
-        // Add note to anchor
-        var newNode = ARNode(
-            type: NodeType.webGLB,
-            uri: this.selectedModel.uri,
-            scale: VectorMath.Vector3(0.2, 0.2, 0.2),
-            position: VectorMath.Vector3(0.0, 0.0, 0.0),
-            rotation: VectorMath.Vector4(1.0, 0.0, 0.0, 0.0),
-            data: {"onTapText": "I am a " + this.selectedModel.name});
-        bool? didAddNodeToAnchor =
-            await this.arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
-        if (didAddNodeToAnchor!) {
-          this.nodes.add(newNode);
-          setState(() {
-            readyToUpload = true;
-          });
-        } else {
-          this.arSessionManager!.onError("Adding Node to Anchor failed");
-        }
+    var newAnchor = ARPlaneAnchor(
+        transformation: singleHitTestResult.worldTransform, ttl: 2);
+    bool? didAddAnchor = await this.arAnchorManager!.addAnchor(newAnchor);
+    if (didAddAnchor!) {
+      this.anchors.add(newAnchor);
+      // Add note to anchor
+      var newNode = ARNode(
+          type: NodeType.webGLB,
+          uri: this.selectedModel.uri,
+          scale: VectorMath.Vector3(0.2, 0.2, 0.2),
+          position: VectorMath.Vector3(0.0, 0.0, 0.0),
+          rotation: VectorMath.Vector4(1.0, 0.0, 0.0, 0.0),
+          data: {"onTapText": "I am a " + this.selectedModel.name});
+      bool? didAddNodeToAnchor =
+          await this.arObjectManager!.addNode(newNode, planeAnchor: newAnchor);
+      if (didAddNodeToAnchor!) {
+        this.nodes.add(newNode);
+        setState(() {
+          readyToUpload = true;
+        });
       } else {
-        this.arSessionManager!.onError("Adding Anchor failed");
+        this.arSessionManager!.onError("Adding Node to Anchor failed");
       }
+    } else {
+      this.arSessionManager!.onError("Adding Anchor failed");
     }
   }
 
