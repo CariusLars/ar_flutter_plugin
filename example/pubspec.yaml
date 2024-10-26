@@ -25,15 +25,18 @@ dependencies:
   cupertino_icons: ^1.0.2
 
   # Firebase dependencies to shared and manage cloud anchor IDs and related content
-  firebase_core: "^1.6.0"
-  cloud_firestore: "^2.5.3"
-  geoflutterfire: "^3.0.1"
+  # firebase_core: "^1.6.0"
+  # cloud_firestore: "^2.5.3"
+  # geoflutterfire: "^3.0.1"
   path_provider: ^2.0.3
   flutter_archive: ^4.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+dependency_overrides:
+  firebase_core_platform_interface: 4.5.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

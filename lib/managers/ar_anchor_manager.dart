@@ -1,6 +1,5 @@
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef AnchorUploadedHandler = void Function(ARAnchor arAnchor);
