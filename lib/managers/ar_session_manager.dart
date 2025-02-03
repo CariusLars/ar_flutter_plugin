@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
 import 'package:ar_flutter_plugin/models/ar_anchor.dart';
+import 'package:ar_flutter_plugin/models/ar_geospatial_pose.dart';
 import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 import 'package:ar_flutter_plugin/utils/json_converters.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,9 @@ import 'package:vector_math/vector_math_64.dart';
 
 // Type definitions to enforce a consistent use of the API
 typedef ARHitResultHandler = void Function(List<ARHitTestResult> hits);
+
+typedef ARCameraGeospatialPoseHandler = void Function(
+    ARGeospatialPose cameraGeospatialPose);
 
 /// Manages the session configuration, parameters and events of an [ARView]
 class ARSessionManager {
@@ -28,6 +32,8 @@ class ARSessionManager {
 
   /// Receives hit results from user taps with tracked planes or feature points
   late ARHitResultHandler onPlaneOrPointTap;
+
+  ARCameraGeospatialPoseHandler? onCameraGeospatialPoseDetected;
 
   ARSessionManager(int id, this.buildContext, this.planeDetectionConfig,
       {this.debug = false}) {
@@ -103,6 +109,21 @@ class ARSessionManager {
     return distance;
   }
 
+  /// Enables geospatial mode for the application.
+/// 
+/// This method invokes a platform channel to enable geospatial mode.
+/// 
+/// - [iosApiKey]: (Optional) The API key required for iOS devices.
+/// 
+/// Example usage:
+/// ```dart
+/// enableGeospatialMode(iosApiKey: 'your-ios-api-key'); // Required for iOS
+/// enableGeospatialMode(); // Works on Android without API key
+/// ```
+  void enableGeospatialMode({String? iosApiKey}) {
+    _channel.invokeMethod<bool>('enableGeospatialMode', <dynamic, dynamic>{'apiKey': iosApiKey});
+  }
+
   Future<void> _platformCallHandler(MethodCall call) {
     if (debug) {
       print('_platformCallHandler call ${call.method} ${call.arguments}');
@@ -126,6 +147,15 @@ class ARSessionManager {
               return ARHitTestResult.fromJson(e);
             }).toList();
             onPlaneOrPointTap(hitTestResults);
+          }
+          break;
+        case 'onCameraGeospatialPoseDetected':
+          if (onCameraGeospatialPoseDetected != null) {
+            final rawPoseDetected = call.arguments as Map<dynamic, dynamic>;
+            rawPoseDetected['eastUpSouthQuaternion'] = List<double>.from(
+                rawPoseDetected['eastUpSouthQuaternion']);
+            final pose = ARGeospatialPose.fromMap(rawPoseDetected);
+            onCameraGeospatialPoseDetected!(pose);
           }
           break;
         case 'dispose':

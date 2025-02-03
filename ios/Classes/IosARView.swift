@@ -4,6 +4,7 @@ import Foundation
 import ARKit
 import Combine
 import ARCoreCloudAnchors
+import ARCoreGeospatial
 
 class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureRecognizerDelegate, ARSessionDelegate {
     let sceneView: ARSCNView
@@ -74,7 +75,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
 
     func onSessionMethodCalled(_ call :FlutterMethodCall, _ result:FlutterResult) {
         let arguments = call.arguments as? Dictionary<String, Any>
-
+        
+        
         switch call.method {
             case "init":
                 //self.sessionManagerChannel.invokeMethod("onError", arguments: ["SessionTEST from iOS"])
@@ -104,6 +106,22 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 } else {
                     result(nil)
                 }
+            case "enableGeospatialMode":
+                arcoreSession = try! GARSession(apiKey: arguments?["apiKey"] as! String, bundleIdentifier: nil)
+                if(!(arcoreSession?.isGeospatialModeSupported(GARGeospatialMode.enabled) ?? false)) {
+                  result(false)
+                }
+
+                if (arcoreSession != nil) {
+                   let configuration = GARSessionConfiguration();
+                   configuration.geospatialMode = .enabled;
+                   arcoreSession?.setConfiguration(configuration, error: nil);
+                   arcoreMode = true
+                } else {
+                   sessionManagerChannel.invokeMethod("onError", arguments: ["Error initializing Google AR Session"])
+                }
+                
+                break
             case "dispose":
                 onDispose(result)
                 result(nil)
@@ -182,7 +200,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 }
                 break
             case "initGoogleCloudAnchorMode":
-                arcoreSession = try! GARSession.session()
+            arcoreSession = try! GARSession.session()
 
                 if (arcoreSession != nil){
                     let configuration = GARSessionConfiguration();
@@ -366,7 +384,22 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         if (arcoreMode) {
             do {
-                try arcoreSession!.update(frame)
+                let garFrame = try arcoreSession!.update(frame)
+                let earth = garFrame.earth
+                if(earth?.earthState == .enabled) {
+                    let geospatialTransform = earth?.cameraGeospatialTransform
+                    var map = Dictionary<String, Any>();
+                    map["latitude"] = geospatialTransform?.coordinate.latitude
+                    map["longitude"] = geospatialTransform?.coordinate.longitude
+                    map["altitude"] = geospatialTransform?.altitude
+                    var eastUpSouthQuaternion: [Float?] = [geospatialTransform?.eastUpSouthQTarget.imag.x, geospatialTransform?.eastUpSouthQTarget.imag.y, geospatialTransform?.eastUpSouthQTarget.imag.z, geospatialTransform?.eastUpSouthQTarget.real]
+                    map["eastUpSouthQuaternion"] = eastUpSouthQuaternion
+                    map["horizontalAccuracy"] = geospatialTransform?.horizontalAccuracy
+                    map["orientationYawAccuracy"] = geospatialTransform?.orientationYawAccuracy
+                    map["verticalAccuracy"] = geospatialTransform?.verticalAccuracy
+                    
+                    sessionManagerChannel.invokeMethod("onCameraGeospatialPoseDetected", arguments: map)
+                }
             } catch {
                 print(error)
             }

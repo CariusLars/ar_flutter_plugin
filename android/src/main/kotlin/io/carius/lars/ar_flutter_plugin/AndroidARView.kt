@@ -146,6 +146,14 @@ internal class AndroidARView(
                                 handlerThread.quitSafely();
                             }, Handler(handlerThread.looper));
                         }
+                        "enableGeospatialMode" -> {
+                            if(arSceneView.session?.isGeospatialModeSupported(Config.GeospatialMode.ENABLED) == true) {
+                                val config = arSceneView.session?.config
+                                config?.setGeospatialMode(Config.GeospatialMode.ENABLED)
+                                arSceneView.session?.configure(config)
+                            }
+
+                        }
                         "dispose" -> {
                             dispose()
                         }
@@ -657,7 +665,23 @@ internal class AndroidARView(
             //unselect all nodes as we do not want the selection visualizer
             transformationSystem.selectNode(null)
         }
+        if(arSceneView.session?.config?.geospatialMode == Config.GeospatialMode.ENABLED) {
+            val session = arSceneView.session;
+            val earth = session?.earth
+            if (earth?.trackingState == TrackingState.TRACKING) {
+                val cameraGeospatialPose = earth.cameraGeospatialPose
+                val map: HashMap<String, Any> = HashMap<String, Any>()
+                map["latitude"] = cameraGeospatialPose.latitude
+                map["longitude"] = cameraGeospatialPose.longitude
+                map["altitude"] = cameraGeospatialPose.altitude
+                map["eastUpSouthQuaternion"] = cameraGeospatialPose.eastUpSouthQuaternion
+                map["horizontalAccuracy"] = cameraGeospatialPose.horizontalAccuracy
+                map["orientationYawAccuracy"] = cameraGeospatialPose.orientationYawAccuracy
+                map["verticalAccuracy"] = cameraGeospatialPose.verticalAccuracy
 
+                sessionManagerChannel.invokeMethod("onCameraGeospatialPoseDetected", map)
+            }
+        }
     }
 
     private fun addNode(dict_node: HashMap<String, Any>, dict_anchor: HashMap<String, Any>? = null): CompletableFuture<Boolean>{
