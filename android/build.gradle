@@ -2,7 +2,7 @@ group 'io.carius.lars.ar_flutter_plugin'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.3.50'
+    ext.kotlin_version = '1.8.22'
     repositories {
         google()
         jcenter()
@@ -25,8 +25,16 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 30
+    namespace 'com.dsi.ar_flutter_plugin'
+    compileSdkVersion 35
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
