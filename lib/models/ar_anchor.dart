@@ -20,7 +20,7 @@ abstract class ARAnchor {
   final String name;
 
   /// Constructs an [ARAnchor] from a serialized anchor object
-  factory ARAnchor.fromJson(Map<String, dynamic> arguments) {
+  factory ARAnchor.fromJson(Map arguments) {
     final type = arguments['type'];
     switch (type) {
       case 0: //(= AnchorType.plane)
@@ -59,7 +59,7 @@ class ARPlaneAnchor extends ARAnchor {
   /// Time to live of the anchor: Determines how long the anchor is stored once it is uploaded to the google cloud anchor API (optional, defaults to 1 day (24hours))
   int? ttl;
 
-  static ARPlaneAnchor fromJson(Map<String, dynamic> json) =>
+  static ARPlaneAnchor fromJson(Map json) =>
       aRPlaneAnchorFromJson(json);
 
   @override
@@ -67,7 +67,7 @@ class ARPlaneAnchor extends ARAnchor {
 }
 
 /// Constructs an [ARPlaneAnchor] from a serialized PlaneAnchor object
-ARPlaneAnchor aRPlaneAnchorFromJson(Map<String, dynamic> json) {
+ARPlaneAnchor aRPlaneAnchorFromJson(Map json) {
   return ARPlaneAnchor(
     transformation:
         const MatrixConverter().fromJson(json['transformation'] as List),
@@ -99,14 +99,14 @@ class ARUnkownAnchor extends ARAnchor {
       {required AnchorType type, required Matrix4 transformation, String? name})
       : super(type: type, transformation: transformation, name: name);
 
-  static ARUnkownAnchor fromJson(Map<String, dynamic> json) =>
+  static ARUnkownAnchor fromJson(Map json) =>
       aRUnkownAnchorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => aRUnkownAnchorToJson(this);
 }
 
-ARUnkownAnchor aRUnkownAnchorFromJson(Map<String, dynamic> json) {
+ARUnkownAnchor aRUnkownAnchorFromJson(Map json) {
   return ARUnkownAnchor(
     type: json['type'],
     transformation:

@@ -5,9 +5,9 @@ Follow the steps below to set up your application.
 
 ## Set up Google Cloud Anchor Service
 
-The Google Cloud Anchor API is used by the plugin to upload, store and download AR anchors. If your app uses the plugin's shared AR experience features, the following setup steps are required:
+The Google ARCore API is used by the plugin to upload, store and download AR anchors. If your app uses the plugin's shared AR experience features, the following setup steps are required:
 
-1. Activate the [Cloud Anchor API](https://console.cloud.google.com/apis/api/arcorecloudanchor.googleapis.com) in your [Google Cloud Console](https://console.cloud.google.com) for the respective project
+1. Activate the [ARCore API](https://console.cloud.google.com/apis/library/arcore) in your [Google Cloud Console](https://console.cloud.google.com) for the respective project
 2. Register the Android part of your Flutter Application
    * Perform the following steps to create a OAuth2 project (based on the [Android Cloud Anchors Developer Guide](https://developers.google.com/ar/develop/java/cloud-anchors/developer-guide-android?hl=en) and the [Guide for setting up OAuth 2.0](https://support.google.com/cloud/answer/6158849#zippy=)):
      * Go to the [Google Cloud Platform Console](https://console.cloud.google.com).

@@ -15,7 +15,7 @@ internal class CloudAnchorHandler( arSession: Session ) {
     }
 
     private val TAG: String = CloudAnchorHandler::class.java.simpleName
-    private val pendingAnchors = HashMap<Anchor, Pair<String?, CloudAnchorListener?>>()
+    val pendingAnchors = HashMap<Anchor, Pair<String?, CloudAnchorListener?>>()
     private val session: Session = arSession
 
     @Synchronized
@@ -50,6 +50,14 @@ internal class CloudAnchorHandler( arSession: Session ) {
                 }
             }
         }
+    }
+
+    @Synchronized
+    fun dispose() {
+        for (pendingAnchor in pendingAnchors) {
+            pendingAnchor.key.detach()
+        }
+        clearListeners()
     }
 
     // Remove all listeners
