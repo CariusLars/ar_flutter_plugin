@@ -25,6 +25,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
+    namespace 'io.flutter.plugins.arflutterplugin'
     compileSdkVersion 30
 
     sourceSets {
